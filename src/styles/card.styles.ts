@@ -117,6 +117,15 @@ export const cardStyles = css`
     min-height: 180px;
     min-width: 0;
   }
+  .forecast[data-sliding] {
+    overflow: clip;
+  }
+  /* The chart being replaced, drawn over the new one while it slides out. */
+  .scroller.ghost {
+    position: absolute;
+    inset: 0 0 auto 0;
+    pointer-events: none;
+  }
   .scroller {
     overflow-x: auto;
     /* Thin scrollbar, revealed on hover or keyboard focus so it stays out of the way. */

@@ -102,6 +102,50 @@ describe("ha-forecast-card", () => {
     expect(root.querySelectorAll("svg polyline.line-min")).toHaveLength(1);
   });
 
+  it("slides the old chart out and the new one in, then removes the old one", async () => {
+    const finishers: (() => void)[] = [];
+    const animate = vi.fn(() => ({
+      playState: "finished",
+      cancel: vi.fn(),
+      addEventListener: (_: string, callback: () => void) => finishers.push(callback),
+    }));
+    Object.defineProperty(HTMLElement.prototype, "animate", { value: animate, configurable: true });
+    try {
+      const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+      const card = await mount(hass);
+      const root = card.shadowRoot!;
+      expect(animate).not.toHaveBeenCalled();
+      const x = (call: number) => (animate.mock.calls[call] as unknown as [{ transform: string }[]])[0].map((k) => k.transform);
+
+      const tabs = root.querySelectorAll<HTMLButtonElement>(".tabs button");
+      tabs[1].click();
+      await card.updateComplete;
+      expect(animate).toHaveBeenCalledTimes(2);
+      expect(x(0)).toEqual(["translateX(32px)", "translateX(0)"]); // new chart enters from the right
+      expect(x(1)).toEqual(["translateX(0)", "translateX(-32px)"]); // old chart leaves to the left
+      const ghost = root.querySelector(".scroller.ghost");
+      expect(ghost?.getAttribute("aria-hidden")).toBe("true");
+      expect(root.querySelectorAll(".scroller:not(.ghost)")).toHaveLength(1);
+      expect(root.querySelector(".forecast")?.hasAttribute("data-sliding")).toBe(true);
+
+      finishers.forEach((finish) => finish());
+      expect(root.querySelector(".scroller.ghost")).toBeNull();
+      expect(root.querySelector(".forecast")?.hasAttribute("data-sliding")).toBe(false);
+
+      tabs[0].click();
+      await card.updateComplete;
+      expect(x(animate.mock.calls.length - 2)).toEqual(["translateX(-32px)", "translateX(0)"]);
+
+      // Unrelated updates do not replay it.
+      const calls = animate.mock.calls.length;
+      card.hass = { ...hass, states: { ...hass.states, "weather.home": weather({ temperature: 20 }) as never } };
+      await card.updateComplete;
+      expect(animate).toHaveBeenCalledTimes(calls);
+    } finally {
+      delete (HTMLElement.prototype as { animate?: unknown }).animate;
+    }
+  });
+
   it("hides tabs and the strip when the integration only supports daily and has no attributes", async () => {
     const { hass } = makeHass({ hourly: [], daily: nextDays() }, { supported_features: 1, humidity: undefined, wind_speed: undefined, uv_index: undefined });
     const card = await mount(hass);

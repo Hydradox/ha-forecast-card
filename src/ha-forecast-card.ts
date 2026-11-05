@@ -52,6 +52,12 @@ class HaForecastCard extends LitElement {
   private formatters: Formatters = createFormatters(undefined);
   private i18nKey: string | undefined;
   private activeAlerts: WeatherAlert[] = [];
+  /** View drawn by the last render, and the one before it (to slide when the tab changes). */
+  private renderedView?: View;
+  private shownView?: View;
+  /** Copy of the chart being replaced, kept to slide it out. */
+  private outgoing?: { node: HTMLElement; height: number; scrollLeft: number };
+  private slides: Animation[] = [];
   private resizeObserver?: ResizeObserver;
   private observed?: Element;
 
@@ -124,7 +130,73 @@ class HaForecastCard extends LitElement {
     this.daily.configure(this.hass, config.entity, "daily");
   }
 
+  /**
+   * Tab change: the old chart slides out while the new one slides in, and the area eases to the new
+   * height so the content below does not jump. Skipped on first paint and with reduced motion.
+   */
+  private slideForecast(): void {
+    const previous = this.shownView;
+    this.shownView = this.renderedView;
+    const outgoing = this.outgoing;
+    this.outgoing = undefined;
+    if (!previous || !this.renderedView || previous === this.renderedView) return;
+    const forecast = this.renderRoot.querySelector<HTMLElement>(".forecast");
+    const scroller = forecast?.querySelector<HTMLElement>(".scroller:not(.ghost)");
+    if (!forecast || !scroller || typeof scroller.animate !== "function") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    this.slides.forEach((animation) => animation.cancel()); // a quick second click restarts cleanly
+    const batch: Animation[] = (this.slides = []);
+    forecast.querySelectorAll(".ghost").forEach((node) => node.remove());
+
+    const order: View[] = ["hourly", "daily"];
+    const offset = order.indexOf(this.renderedView) > order.indexOf(previous) ? 32 : -32;
+    const timing = { duration: 250, easing: "ease-out" } as const;
+    const finishers: (() => void)[] = [];
+    forecast.toggleAttribute("data-sliding", true); // clips the travel to the card
+
+    batch.push(
+      scroller.animate(
+        [
+          { opacity: 0, transform: `translateX(${offset}px)` },
+          { opacity: 1, transform: "translateX(0)" },
+        ],
+        timing,
+      ),
+    );
+    if (outgoing) {
+      const { node, height, scrollLeft } = outgoing;
+      forecast.append(node);
+      node.scrollLeft = scrollLeft;
+      batch.push(
+        node.animate(
+          [
+            { opacity: 1, transform: "translateX(0)" },
+            { opacity: 0, transform: `translateX(${-offset}px)` },
+          ],
+          { duration: 50, easing: "ease-out", fill: "forwards" }, // gone almost at once; stays hidden until removed
+        ),
+      );
+      finishers.push(() => node.remove());
+      const target = forecast.getBoundingClientRect().height;
+      if (Math.abs(target - height) > 1) {
+        batch.push(forecast.animate([{ height: `${height}px` }, { height: `${target}px` }], timing));
+      }
+    }
+    const done = () => {
+      if (batch.some((animation) => animation.playState === "running")) return;
+      finishers.forEach((finish) => finish());
+      // A newer slide owns the flag; a stale batch (cancel events arrive late) must not clear it.
+      if (batch === this.slides) forecast.toggleAttribute("data-sliding", false);
+    };
+    for (const animation of batch) {
+      animation.addEventListener("finish", done);
+      animation.addEventListener("cancel", done);
+    }
+  }
+
   protected override updated(): void {
+    this.slideForecast();
     // Observe the forecast area (it only exists once data is available).
     const target = this.renderRoot.querySelector(".forecast");
     if (target === (this.observed ?? null) || typeof ResizeObserver === "undefined") return;
@@ -188,7 +260,25 @@ class HaForecastCard extends LitElement {
   };
 
   private selectView(view: View): void {
+    if (view !== this._view) this.captureOutgoing();
     this._view = view;
+  }
+
+  /** Called right before the view changes, while the old chart is still in the DOM. */
+  private captureOutgoing(): void {
+    const forecast = this.renderRoot.querySelector<HTMLElement>(".forecast");
+    const scroller = forecast?.querySelector<HTMLElement>(".scroller:not(.ghost)");
+    if (!forecast || !scroller) {
+      this.outgoing = undefined;
+      return;
+    }
+    const node = scroller.cloneNode(true) as HTMLElement;
+    node.classList.add("ghost");
+    node.removeAttribute("tabindex");
+    node.removeAttribute("role");
+    node.setAttribute("aria-hidden", "true");
+    node.setAttribute("inert", "");
+    this.outgoing = { node, height: forecast.getBoundingClientRect().height, scrollLeft: scroller.scrollLeft };
   }
 
   // Drag-to-scroll for mouse users (touch and trackpads already scroll natively).
@@ -393,6 +483,7 @@ class HaForecastCard extends LitElement {
           )
         : dailySlots(data, now, config.days_to_show, this.formatters, this.localize("common.today"));
 
+    this.renderedView = view;
     const width = this._width;
     const scrollable = width > 0 && width < minChartWidth(view, slots.length);
 
