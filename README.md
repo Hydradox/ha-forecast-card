@@ -113,6 +113,24 @@ tap_action:
 
 Home Assistant has no standard weather-alert API, so the card reads alerts from the entities your provider integration creates. An adapter per provider converts them to one level scale: 1 yellow, 2 orange, 3 red, 4 extreme.
 
+<table>
+  <tr>
+    <th></th>
+    <th>Collapsed</th>
+    <th>Expanded</th>
+  </tr>
+  <tr>
+    <th>Dark</th>
+    <td><img src="docs/images/alerts-collapsed-dark.png" alt="Alert banner, collapsed, dark theme" height="300"></td>
+    <td><img src="docs/images/alerts-expanded-dark.png" alt="Alert list, expanded, dark theme" height="300"></td>
+  </tr>
+  <tr>
+    <th>Light</th>
+    <td><img src="docs/images/alerts-collapsed-light.png" alt="Alert banner, collapsed, light theme" height="300"></td>
+    <td><img src="docs/images/alerts-expanded-light.png" alt="Alert list, expanded, light theme" height="300"></td>
+  </tr>
+</table>
+
 ```yaml
 type: custom:ha-forecast-card
 entity: weather.home
