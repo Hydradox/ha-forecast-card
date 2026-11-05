@@ -103,7 +103,8 @@ const dashboard = {
     {
       title: "Card",
       cards: [
-        card({}),
+        // Showcase card (README screenshots): thresholds tuned so the colour ramp spans the visible range.
+        card({ cold_threshold: 12, hot_threshold: 24 }),
         card({
           name: "Sensor overrides",
           temperature_entity: "sensor.dev_outdoor_temperature",

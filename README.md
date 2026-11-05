@@ -2,14 +2,23 @@
 
 A Home Assistant Lovelace card that shows the weather forecast at a glance: a temperature line over rain bars, hourly or daily, plus humidity, wind and UV with a 5-level scale each.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Hydradox/ha-forecast-card/main/docs/images/hourly-dark.png" alt="Hourly forecast, dark theme" width="380">
-  <img src="https://raw.githubusercontent.com/Hydradox/ha-forecast-card/main/docs/images/daily-dark.png" alt="Daily forecast, dark theme" width="380">
-</p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Hydradox/ha-forecast-card/main/docs/images/hourly-light.png" alt="Hourly forecast, light theme" width="300">
-  <img src="https://raw.githubusercontent.com/Hydradox/ha-forecast-card/main/docs/images/daily-light.png" alt="Daily forecast, light theme" width="300">
-</p>
+<table align="center">
+  <tr>
+    <th></th>
+    <th>Hourly</th>
+    <th>Daily</th>
+  </tr>
+  <tr>
+    <th>Dark</th>
+    <td><img src="docs/images/hourly-dark.png" alt="Hourly forecast, dark theme" height="300"></td>
+    <td><img src="docs/images/daily-dark.png" alt="Daily forecast, dark theme" height="300"></td>
+  </tr>
+  <tr>
+    <th>Light</th>
+    <td><img src="docs/images/hourly-light.png" alt="Hourly forecast, light theme" height="300"></td>
+    <td><img src="docs/images/daily-light.png" alt="Daily forecast, light theme" height="300"></td>
+  </tr>
+</table>
 
 > **AI-assisted project.** This card is designed and written with the help of an AI assistant. It has automated tests and runs against a real Home Assistant during development.
 
@@ -55,7 +64,7 @@ type: custom:ha-forecast-card
 entity: weather.home
 ```
 
-A fuller example:
+Full example:
 
 ```yaml
 type: custom:ha-forecast-card

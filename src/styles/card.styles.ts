@@ -53,11 +53,12 @@ export const cardStyles = css`
   }
   .temperature {
     font-size: 34px;
-    font-weight: 300;
+    font-weight: 500;
     line-height: 1;
   }
   .temperature .unit {
     font-size: 16px;
+    font-weight: 400;
     color: var(--hfc-text-secondary);
   }
   .empty {
