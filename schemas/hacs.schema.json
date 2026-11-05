@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$comment": "Unofficial. Derived from https://www.hacs.xyz/docs/publish/start/ (no official schema is published). Do not add a $schema key to hacs.json itself: HACS may reject unknown keys.",
+  "title": "hacs.json",
+  "type": "object",
+  "required": ["name"],
+  "additionalProperties": false,
+  "properties": {
+    "name": { "type": "string", "description": "Display name shown in HACS." },
+    "content_in_root": { "type": "boolean", "description": "Content lives in the repository root instead of a subdirectory." },
+    "zip_release": { "type": "boolean", "description": "Content is a zip attached to GitHub releases. Requires `filename`. Integrations only." },
+    "filename": { "type": "string", "description": "File HACS looks for (plugin, theme, template, python_script, zip_release)." },
+    "hide_default_branch": { "type": "boolean", "description": "Do not offer the default branch for download." },
+    "country": {
+      "description": "ISO 3166-1 alpha-2 code(s).",
+      "oneOf": [
+        { "type": "string", "pattern": "^[A-Z]{2}$" },
+        { "type": "array", "items": { "type": "string", "pattern": "^[A-Z]{2}$" }, "minItems": 1 }
+      ]
+    },
+    "homeassistant": { "type": "string", "description": "Minimum Home Assistant version, e.g. 2023.9.0 (append b0 to allow betas)." },
+    "hacs": { "type": "string", "description": "Minimum HACS version." },
+    "persistent_directory": { "type": "string", "description": "Path preserved during upgrades. Integrations only." },
+    "render_readme": { "type": "boolean", "description": "Render the README in HACS. Widely used, but not listed in the current docs table." }
+  },
+  "dependencies": { "zip_release": ["filename"] }
+}

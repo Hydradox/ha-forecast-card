@@ -1,0 +1,73 @@
+{
+  "tabs": {
+    "hourly": "Hourly",
+    "daily": "Daily",
+    "label": "Forecast view"
+  },
+  "common": {
+    "now": "Now",
+    "today": "Today",
+    "max": "Max",
+    "min": "Min",
+    "unavailable": "Unavailable",
+    "no_forecast": "No forecast available"
+  },
+  "attributes": {
+    "humidity": "Humidity",
+    "wind": "Wind",
+    "uv": "UV index"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Very dry",
+      "dry": "Dry",
+      "comfort": "Comfortable",
+      "humid": "Humid",
+      "saturated": "Saturated"
+    },
+    "wind": {
+      "light": "Light",
+      "moderate": "Moderate",
+      "strong": "Strong",
+      "intense": "Intense",
+      "storm": "Storm"
+    },
+    "uv": {
+      "low": "Low",
+      "moderate": "Moderate",
+      "high": "High",
+      "very_high": "Very high",
+      "extreme": "Extreme"
+    }
+  },
+  "editor": {
+    "entity": "Weather entity",
+    "name": "Name",
+    "default_view": "Default view",
+    "hours_to_show": "Hours to show",
+    "days_to_show": "Days to show",
+    "show_name": "Show name",
+    "temperature_entity": "Temperature sensor",
+    "humidity_entity": "Humidity sensor",
+    "wind_speed_entity": "Wind speed sensor",
+    "uv_index_entity": "UV index sensor",
+    "cold_threshold": "Cold",
+    "hot_threshold": "Hot",
+    "cold_threshold_help": "Fully blue at or below this.",
+    "hot_threshold_help": "Fully red at or above this.",
+    "tap_action": "Tap action",
+    "temperature_tap_action": "Temperature tap action",
+    "temperature_tap_action_help": "Default: sensor history, or the weather entity.",
+    "section_sensors": "Sensors",
+    "section_actions": "Actions",
+    "threshold_order": "Hot must be higher than cold.",
+    "section_thresholds": "Thresholds"
+  },
+  "chart": {
+    "label_hourly": "Hourly temperature from {min}° to {max}°",
+    "label_daily": "Daily temperatures from {min}° to {max}°",
+    "no_data": "No temperature data",
+    "scroll": "Hourly forecast, scroll to see more",
+    "days": "Daily forecast"
+  }
+}

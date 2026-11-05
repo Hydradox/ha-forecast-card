@@ -1,0 +1,21 @@
+name: HACS
+
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    # TEMPORARY: no release exists yet, so HACS cannot find the plugin file and
+    # would block the PR that creates the first one. Remove after v1.0.0.
+    continue-on-error: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hacs/action@main
+        with:
+          category: plugin

@@ -1,0 +1,41 @@
+{
+  "name": "ha-forecast-card",
+  "version": "0.0.1",
+  "description": "Home Assistant Lovelace card to preview weather forecasts and key weather attributes",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch",
+    "start": "vite",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev:ha": "bash dev/ha.sh up",
+    "dev:ha:down": "bash dev/ha.sh down",
+    "dev:ha:logs": "bash dev/ha.sh logs",
+    "dev:ha:reset": "bash dev/ha.sh reset"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "lit": "^3.3.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^7.1.0",
+    "@semantic-release/git": "^10.0.1",
+    "conventional-changelog-conventionalcommits": "^9.3.1",
+    "eslint": "^10.14.0",
+    "happy-dom": "^21.0.4",
+    "semantic-release": "^25.0.9",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
+  }
+}

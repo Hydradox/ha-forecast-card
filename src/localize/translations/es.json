@@ -1,0 +1,73 @@
+{
+  "tabs": {
+    "hourly": "Por horas",
+    "daily": "Por días",
+    "label": "Vista de previsión"
+  },
+  "common": {
+    "now": "Ahora",
+    "today": "Hoy",
+    "max": "Máx",
+    "min": "Mín",
+    "unavailable": "No disponible",
+    "no_forecast": "Sin previsión disponible"
+  },
+  "attributes": {
+    "humidity": "Humedad",
+    "wind": "Viento",
+    "uv": "Índice UV"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Muy seco",
+      "dry": "Seco",
+      "comfort": "Confort",
+      "humid": "Húmedo",
+      "saturated": "Saturado"
+    },
+    "wind": {
+      "light": "Suave",
+      "moderate": "Moderado",
+      "strong": "Fuerte",
+      "intense": "Intenso",
+      "storm": "Temporal"
+    },
+    "uv": {
+      "low": "Bajo",
+      "moderate": "Moderado",
+      "high": "Alto",
+      "very_high": "Muy alto",
+      "extreme": "Extremo"
+    }
+  },
+  "editor": {
+    "entity": "Entidad de tiempo",
+    "name": "Nombre",
+    "default_view": "Vista por defecto",
+    "hours_to_show": "Horas a mostrar",
+    "days_to_show": "Días a mostrar",
+    "show_name": "Mostrar nombre",
+    "temperature_entity": "Sensor de temperatura",
+    "humidity_entity": "Sensor de humedad",
+    "wind_speed_entity": "Sensor de velocidad del viento",
+    "uv_index_entity": "Sensor de índice UV",
+    "cold_threshold": "Frío",
+    "hot_threshold": "Calor",
+    "cold_threshold_help": "Totalmente azul igual o por debajo.",
+    "hot_threshold_help": "Totalmente rojo igual o por encima.",
+    "tap_action": "Acción al pulsar",
+    "temperature_tap_action": "Acción al pulsar la temperatura",
+    "temperature_tap_action_help": "Por defecto: historial del sensor o la entidad de tiempo.",
+    "section_sensors": "Sensores",
+    "section_actions": "Acciones",
+    "threshold_order": "Calor debe ser mayor que frío.",
+    "section_thresholds": "Umbrales"
+  },
+  "chart": {
+    "label_hourly": "Temperatura por horas de {min}° a {max}°",
+    "label_daily": "Temperaturas diarias de {min}° a {max}°",
+    "no_data": "Sin datos de temperatura",
+    "scroll": "Previsión por horas, desliza para ver más",
+    "days": "Previsión diaria"
+  }
+}
