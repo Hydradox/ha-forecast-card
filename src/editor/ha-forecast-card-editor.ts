@@ -37,7 +37,6 @@ class HaForecastCardEditor extends LitElement {
 
   setConfig(config: Record<string, unknown>): void {
     this._config = hoistSections(config);
-    this._draft = undefined;
   }
 
   /** Unit thresholds are entered in: always the HA display unit. */
@@ -51,7 +50,7 @@ class HaForecastCardEditor extends LitElement {
     return { ...DEFAULT_CONFIG, cold_threshold: cold, hot_threshold: hot };
   }
 
-  private schema(t: Translate, invalid: boolean): Schema[] {
+  private schema(t: Translate): Schema[] {
     const unit = this.unit;
     const range = (celsius: number) => Math.round(convertTemperature(celsius, "°C", unit));
     const threshold = (name: string): Schema => ({
@@ -124,7 +123,6 @@ class HaForecastCardEditor extends LitElement {
         type: "expandable",
         flatten: true, // keep the fields at the top level of the config (not under `section_*`)
         name: "section_thresholds",
-        expanded: invalid,
         schema: [{ type: "grid", name: "", schema: [threshold("cold_threshold"), threshold("hot_threshold")] }],
       },
     ];
@@ -133,7 +131,10 @@ class HaForecastCardEditor extends LitElement {
   protected override render(): TemplateResult | typeof nothing {
     if (!this.hass || !this._config) return nothing;
     const t: Translate = createTranslator((this._config.language as string | undefined) ?? this.hass.language);
-    const data = { ...this.defaults(), ...(this._draft ?? this._config) };
+    const source = this._draft ?? this._config;
+    const data = { ...this.defaults(), ...source };
+    // While editing, an emptied number box stays empty instead of snapping back to the default.
+    for (const key of ["cold_threshold", "hot_threshold"]) if (this._draft && !(key in source)) delete data[key];
     // Only entity ids go through the picker: object entries (custom adapters) are YAML-only and kept on save.
     const alerts = (data.alerts ?? {}) as Partial<AlertsConfig>;
     data.alerts = {
@@ -146,7 +147,7 @@ class HaForecastCardEditor extends LitElement {
       <ha-form
         .hass=${this.hass}
         .data=${data}
-        .schema=${this.schema(t, invalid)}
+        .schema=${this.schema(t)}
         .computeLabel=${(item: { name: string }) => t(`editor.${item.name}`)}
         .computeHelper=${(item: { name: string }) => {
           const key = `editor.${item.name}_help`;

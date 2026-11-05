@@ -84,8 +84,6 @@ describe("editor", () => {
     expect(events).toHaveLength(0);
     expect(editor.shadowRoot!.querySelector("ha-alert")?.textContent).toContain("higher");
     expect(form(editor).data.cold_threshold).toBe(30); // the typed value stays visible
-    const colors = form(editor).schema.find((item) => item.name === "section_thresholds") as Item & { expanded?: boolean };
-    expect(colors.expanded).toBe(true);
 
     change({ ...form(editor).data, cold_threshold: 5 }); // fixed → saved
     await editor.updateComplete;
