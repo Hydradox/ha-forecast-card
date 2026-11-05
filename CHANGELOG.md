@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.1.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.0.2...v1.1.0) (2026-11-05)
+
+### Features
+
+* change tab animation ([75325e4](https://github.com/Hydradox/ha-forecast-card/commit/75325e440b65a81ed2accea80fae057a9ce11e43))
+* weather alerts ([b51cbde](https://github.com/Hydradox/ha-forecast-card/commit/b51cbde72ae87ff84eaebbbe7275ba3dcd40ed32))
+
+### Bug fixes
+
+* alert styles ([2315c8a](https://github.com/Hydradox/ha-forecast-card/commit/2315c8aed50471f2371c7e02116c7e994ccfc216))
+* threshold validation ([0c8d517](https://github.com/Hydradox/ha-forecast-card/commit/0c8d5171a9b292a8f8256ea5967630e4efc0d056))
+
+### Documentation
+
+* updated readme ([f94e768](https://github.com/Hydradox/ha-forecast-card/commit/f94e768f87655552d92bb1425fc2d32963401a55))
+
 ## [1.0.2](https://github.com/Hydradox/ha-forecast-card/compare/v1.0.1...v1.0.2) (2026-11-05)
 
 ### Bug fixes
