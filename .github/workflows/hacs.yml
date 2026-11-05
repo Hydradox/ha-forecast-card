@@ -13,10 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # dist/ is not committed; HACS looks for the plugin file in the workspace
-      # (root, dist/ or a release), and there is no release yet on PR branches.
-      - uses: ./.github/actions/setup
-      - run: npm run build
       - uses: hacs/action@main
         with:
           category: plugin
