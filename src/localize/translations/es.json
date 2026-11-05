@@ -45,6 +45,21 @@
     "name": "Nombre",
     "default_view": "Vista por defecto",
     "hours_to_show": "Horas a mostrar",
-    "days_to_show": "Días a mostrar"
+    "days_to_show": "Días a mostrar",
+    "show_name": "Mostrar nombre",
+    "temperature_entity": "Sensor de temperatura",
+    "humidity_entity": "Sensor de humedad",
+    "wind_speed_entity": "Sensor de velocidad del viento",
+    "uv_index_entity": "Sensor de índice UV",
+    "cold_threshold": "Umbral de frío",
+    "hot_threshold": "Umbral de calor",
+    "cold_threshold_help": "Igual o por debajo, el color es totalmente frío (azul).",
+    "hot_threshold_help": "Igual o por encima, el color es totalmente cálido (rojo).",
+    "tap_action": "Acción al pulsar",
+    "temperature_tap_action": "Acción al pulsar la temperatura",
+    "temperature_tap_action_help": "Por defecto abre el historial del sensor de temperatura (o la entidad de tiempo si no hay).",
+    "section_sensors": "Sensores personalizados",
+    "section_colors": "Colores de temperatura",
+    "section_actions": "Acciones"
   }
 }

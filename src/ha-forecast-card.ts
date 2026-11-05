@@ -8,9 +8,10 @@ import type { Translate } from "./localize";
 import { createTranslator } from "./localize";
 import { cardStyles } from "./styles/card.styles";
 import { tokens } from "./styles/tokens";
-import type { GridOptions, HassEntity, HomeAssistant } from "./types/ha";
+import type { ActionConfig, GridOptions, HassEntity, HomeAssistant } from "./types/ha";
 import type { ForecastType } from "./types/weather";
-import { temperatureColor } from "./utils/temperature";
+import { isInteractive, runAction } from "./utils/actions";
+import { resolveThresholds, temperatureColor } from "./utils/temperature";
 import { toCelsius } from "./utils/units";
 
 import "./editor/ha-forecast-card-editor";
@@ -101,6 +102,36 @@ class HaForecastCard extends LitElement {
     ].filter((id): id is string => !!id);
   }
 
+  // ── Actions ────────────────────────────────────────────────────────────────
+
+  private cardAction(): ActionConfig {
+    return this._config?.tap_action ?? { action: "more-info" };
+  }
+
+  /** Default opens the history graph of the temperature sensor; without one, the weather entity. */
+  private temperatureAction(): ActionConfig {
+    const config = this._config!;
+    return config.temperature_tap_action ?? { action: "more-info", entity: config.temperature_entity };
+  }
+
+  private onCardTap = (): void => {
+    if (this._config && this.hass) runAction(this, this.hass, this.cardAction(), this._config.entity);
+  };
+
+  private onTemperatureTap = (event: Event): void => {
+    event.stopPropagation(); // do not also trigger the card action
+    if (this._config && this.hass) runAction(this, this.hass, this.temperatureAction(), this._config.entity);
+  };
+
+  private onKeydown(handler: (event: Event) => void) {
+    return (event: KeyboardEvent): void => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handler(event);
+      }
+    };
+  }
+
   // ── Rendering ──────────────────────────────────────────────────────────────
 
   protected override render(): TemplateResult | typeof nothing {
@@ -111,33 +142,56 @@ class HaForecastCard extends LitElement {
     if (!weather || weather.state === "unavailable" || weather.state === "unknown") {
       return html`<ha-card><div class="empty">${this.localize("common.unavailable")}</div></ha-card>`;
     }
-    return html`<ha-card>${this.renderHeader(weather)}</ha-card>`;
+    const interactive = isInteractive(this.cardAction());
+    return html`
+      <ha-card
+        class=${interactive ? "interactive" : ""}
+        role=${interactive ? "button" : nothing}
+        tabindex=${interactive ? 0 : nothing}
+        @click=${this.onCardTap}
+        @keydown=${this.onKeydown(this.onCardTap)}
+      >
+        ${this.renderHeader(weather)}
+      </ha-card>
+    `;
   }
 
   private renderHeader(weather: HassEntity): TemplateResult {
     const config = this._config!;
     const attrs = weather.attributes;
-    const unit = (attrs.temperature_unit as string | undefined) ?? this.hass!.config.unit_system.temperature;
     const override = config.temperature_entity && this.hass!.states[config.temperature_entity];
+    const unit =
+      ((override ? override.attributes.unit_of_measurement : attrs.temperature_unit) as string | undefined) ??
+      this.hass!.config.unit_system.temperature;
     const raw = override ? Number(override.state) : Number(attrs.temperature);
     const temperature = Number.isFinite(raw) ? raw : undefined;
     const name = config.name ?? (attrs.friendly_name as string | undefined) ?? weather.entity_id;
+    const thresholds = resolveThresholds(config, this.hass!.config.unit_system.temperature);
     const circle =
       temperature === undefined
         ? "transparent"
-        : `color-mix(in srgb, ${temperatureColor(toCelsius(temperature, unit))} 20%, transparent)`;
+        : `color-mix(in srgb, ${temperatureColor(toCelsius(temperature, unit), thresholds)} 20%, transparent)`;
+    const temperatureInteractive = isInteractive(this.temperatureAction());
     const format = new Intl.NumberFormat(this.translateLanguage, { maximumFractionDigits: 1 });
 
     return html`
       <div class="header">
         <div class="icon" style="--hfc-circle: ${circle}"></div>
         <div class="info">
-          <span class="secondary">${name}</span>
+          ${config.show_name ? html`<span class="secondary">${name}</span>` : nothing}
           <span class="state">${weather.state}</span>
         </div>
         ${temperature === undefined
           ? nothing
-          : html`<div class="temperature">${format.format(temperature)}<span class="unit">${unit}</span></div>`}
+          : html`<div
+              class="temperature ${temperatureInteractive ? "interactive" : ""}"
+              role=${temperatureInteractive ? "button" : nothing}
+              tabindex=${temperatureInteractive ? 0 : nothing}
+              @click=${this.onTemperatureTap}
+              @keydown=${this.onKeydown(this.onTemperatureTap)}
+            >
+              ${format.format(temperature)}<span class="unit">${unit}</span>
+            </div>`}
       </div>
     `;
   }

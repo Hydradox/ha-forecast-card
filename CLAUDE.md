@@ -27,6 +27,8 @@ TypeScript + Lit (no decorators: `static properties` + `declare` fields), Vite l
 - `src/styles/tokens.ts`: `--hfc-*` variables derived from HA theme variables; all colours go through these
 - `test/`: Vitest specs. Keep logic in `utils/` so it stays testable without a DOM.
 
+Unit handling: everything internal is °C. Declare defaults once in °C (`DEFAULT_THRESHOLDS_C` in `utils/temperature.ts`) and convert via `utils/units.ts`; user thresholds are stored in the HA display unit, and the editor strips values equal to the defaults (`compactConfig`) so unit-dependent defaults keep following the unit system. Actions go through `utils/actions.ts` (self-contained, no frontend internals).
+
 Naming gotcha: do not name a field `translate` on the element, since it shadows `HTMLElement.translate`.
 
 ## Home Assistant card conventions to follow

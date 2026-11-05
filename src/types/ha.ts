@@ -40,7 +40,22 @@ export interface HomeAssistant {
     domain: string,
     service: string,
     data?: Record<string, unknown>,
+    target?: Record<string, unknown>,
   ): Promise<unknown>;
+}
+
+/** Subset of the Lovelace action config (the `ui_action` selector produces these). */
+export interface ActionConfig {
+  action: "more-info" | "navigate" | "url" | "perform-action" | "call-service" | "toggle" | "none";
+  /** more-info: entity to open (defaults to the card's weather entity). */
+  entity?: string;
+  navigation_path?: string;
+  url_path?: string;
+  perform_action?: string;
+  service?: string;
+  data?: Record<string, unknown>;
+  service_data?: Record<string, unknown>;
+  target?: Record<string, unknown>;
 }
 
 export interface LovelaceCard extends HTMLElement {

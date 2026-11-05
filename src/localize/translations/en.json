@@ -45,6 +45,21 @@
     "name": "Name",
     "default_view": "Default view",
     "hours_to_show": "Hours to show",
-    "days_to_show": "Days to show"
+    "days_to_show": "Days to show",
+    "show_name": "Show name",
+    "temperature_entity": "Temperature sensor",
+    "humidity_entity": "Humidity sensor",
+    "wind_speed_entity": "Wind speed sensor",
+    "uv_index_entity": "UV index sensor",
+    "cold_threshold": "Cold threshold",
+    "hot_threshold": "Hot threshold",
+    "cold_threshold_help": "At or below this the colour is fully cold (blue).",
+    "hot_threshold_help": "At or above this the colour is fully hot (red).",
+    "tap_action": "Tap action",
+    "temperature_tap_action": "Temperature tap action",
+    "temperature_tap_action_help": "Defaults to the temperature sensor's history (or the weather entity if none is set).",
+    "section_sensors": "Sensor overrides",
+    "section_colors": "Temperature colours",
+    "section_actions": "Actions"
   }
 }

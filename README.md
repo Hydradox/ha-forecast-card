@@ -28,6 +28,7 @@ entity: weather.home
 | ------------------- | ------------------- | -------- | --------------------------------------------------- |
 | `entity`            | string (required)   |          | `weather.*` entity                                  |
 | `name`              | string              | entity   | Card title                                          |
+| `show_name`         | boolean             | `true`   | Show the name line                                  |
 | `default_view`      | `hourly` \| `daily` | `hourly` | Tab shown first                                     |
 | `hours_to_show`     | integer             | `10`     | Hourly slots                                        |
 | `days_to_show`      | integer             | `7`      | Daily slots                                         |
@@ -35,6 +36,10 @@ entity: weather.home
 | `humidity_entity`   | string              |          | Sensor overriding humidity                          |
 | `wind_speed_entity` | string              |          | Sensor overriding wind speed                        |
 | `uv_index_entity`   | string              |          | Sensor overriding UV index                          |
+| `cold_threshold`    | number              | `0` °C / `32` °F | Temperature at or below which the colour is fully cold. In your Home Assistant unit |
+| `hot_threshold`     | number              | `35` °C / `95` °F | Temperature at or above which the colour is fully hot. In your Home Assistant unit |
+| `tap_action`        | action              | `more-info` | Tap on the card (weather entity)                 |
+| `temperature_tap_action` | action         | `more-info` | Tap on the temperature: history of `temperature_entity`, or the weather entity if unset |
 | `language`          | string              | HA UI    | Force a language (`en`, `es`, …)                    |
 
 ## Theming

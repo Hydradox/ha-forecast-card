@@ -12,6 +12,15 @@ export const cardStyles = css`
     gap: 14px;
     color: var(--hfc-text);
   }
+  ha-card.interactive,
+  .temperature.interactive {
+    cursor: pointer;
+  }
+  ha-card:focus-visible,
+  .temperature:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
   .header {
     display: flex;
     align-items: center;
