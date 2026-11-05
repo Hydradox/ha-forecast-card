@@ -44,6 +44,10 @@ const SPRITE = svg`
   <symbol id="hfc-exceptional" viewBox="0 0 24 24"><path d="M12 3.5l9 16H3z M12 10v4.5M12 17.2v.1" style="fill:none;stroke:var(--hfc-warning);stroke-linecap:round;stroke-linejoin:round" stroke-width="1.8"/></symbol>
   <symbol id="hfc-humidity" viewBox="0 0 24 24"><path d="M12 2.8s7 7.2 7 12a7 7 0 0 1-14 0c0-4.8 7-12 7-12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.3 17.3l5.4-5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="9.6" cy="12.7" r="1.2" fill="currentColor"/><circle cx="14.4" cy="16.6" r="1.2" fill="currentColor"/></symbol>
   <symbol id="hfc-wind" viewBox="0 0 24 24"><path d="M3 9h10.5a2.5 2.5 0 1 0-2.5-2.5M3 13.5h15a2.5 2.5 0 1 1-2.5 2.5M3 18h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="hfc-alert" viewBox="0 0 24 24"><path d="M12 3.4l9.2 16H2.8z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 10v4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.1" fill="currentColor"/></symbol>
+  <symbol id="hfc-alert-rain" viewBox="0 0 24 24"><path d="M7 16h10.2a4.3 4.3 0 0 0 .7-8.55A6 6 0 0 0 6.4 8.2 4 4 0 0 0 7 16z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 18.5l-1 3M12.5 18.5l-1 3M16.5 18.5l-1 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+  <symbol id="hfc-alert-temperature" viewBox="0 0 24 24"><path d="M10 14.2V5a2 2 0 1 1 4 0v9.2a4 4 0 1 1-4 0z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="17" r="1.5" fill="currentColor"/></symbol>
+  <symbol id="hfc-chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="hfc-uv" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.5 1.5M16.9 16.9l1.5 1.5M5.6 18.4l1.5-1.5M16.9 7.1l1.5-1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></symbol>
 `;
 
@@ -66,4 +70,15 @@ export function weatherIcon(condition: string | undefined, size: number, isDayti
 
 export function metricIcon(name: "humidity" | "wind" | "uv", size = 20): TemplateResult {
   return html`<svg width=${size} height=${size} viewBox="0 0 24 24" aria-hidden="true" class="metric-icon"><use href="#hfc-${name}"/></svg>`;
+}
+
+/** Alert category → sprite id (wind reuses the metric icon). */
+const ALERT_ICONS = { wind: "wind", rain: "alert-rain", temperature: "alert-temperature", general: "alert" } as const;
+
+export function alertIcon(kind: keyof typeof ALERT_ICONS, size = 22): TemplateResult {
+  return html`<svg width=${size} height=${size} viewBox="0 0 24 24" aria-hidden="true"><use href="#hfc-${ALERT_ICONS[kind]}"/></svg>`;
+}
+
+export function chevronIcon(size = 24): TemplateResult {
+  return html`<svg class="chevron" width=${size} height=${size} viewBox="0 0 24 24" aria-hidden="true"><use href="#hfc-chevron"/></svg>`;
 }

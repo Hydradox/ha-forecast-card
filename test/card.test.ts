@@ -102,6 +102,50 @@ describe("ha-forecast-card", () => {
     expect(root.querySelectorAll("svg polyline.line-min")).toHaveLength(1);
   });
 
+  it("slides the old chart out and the new one in, then removes the old one", async () => {
+    const finishers: (() => void)[] = [];
+    const animate = vi.fn(() => ({
+      playState: "finished",
+      cancel: vi.fn(),
+      addEventListener: (_: string, callback: () => void) => finishers.push(callback),
+    }));
+    Object.defineProperty(HTMLElement.prototype, "animate", { value: animate, configurable: true });
+    try {
+      const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+      const card = await mount(hass);
+      const root = card.shadowRoot!;
+      expect(animate).not.toHaveBeenCalled();
+      const x = (call: number) => (animate.mock.calls[call] as unknown as [{ transform: string }[]])[0].map((k) => k.transform);
+
+      const tabs = root.querySelectorAll<HTMLButtonElement>(".tabs button");
+      tabs[1].click();
+      await card.updateComplete;
+      expect(animate).toHaveBeenCalledTimes(2);
+      expect(x(0)).toEqual(["translateX(32px)", "translateX(0)"]); // new chart enters from the right
+      expect(x(1)).toEqual(["translateX(0)", "translateX(-32px)"]); // old chart leaves to the left
+      const ghost = root.querySelector(".scroller.ghost");
+      expect(ghost?.getAttribute("aria-hidden")).toBe("true");
+      expect(root.querySelectorAll(".scroller:not(.ghost)")).toHaveLength(1);
+      expect(root.querySelector(".forecast")?.hasAttribute("data-sliding")).toBe(true);
+
+      finishers.forEach((finish) => finish());
+      expect(root.querySelector(".scroller.ghost")).toBeNull();
+      expect(root.querySelector(".forecast")?.hasAttribute("data-sliding")).toBe(false);
+
+      tabs[0].click();
+      await card.updateComplete;
+      expect(x(animate.mock.calls.length - 2)).toEqual(["translateX(-32px)", "translateX(0)"]);
+
+      // Unrelated updates do not replay it.
+      const calls = animate.mock.calls.length;
+      card.hass = { ...hass, states: { ...hass.states, "weather.home": weather({ temperature: 20 }) as never } };
+      await card.updateComplete;
+      expect(animate).toHaveBeenCalledTimes(calls);
+    } finally {
+      delete (HTMLElement.prototype as { animate?: unknown }).animate;
+    }
+  });
+
   it("hides tabs and the strip when the integration only supports daily and has no attributes", async () => {
     const { hass } = makeHass({ hourly: [], daily: nextDays() }, { supported_features: 1, humidity: undefined, wind_speed: undefined, uv_index: undefined });
     const card = await mount(hass);
@@ -127,6 +171,133 @@ describe("ha-forecast-card", () => {
     const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
     const card = await mount(hass, { show_name: false });
     expect(card.shadowRoot!.querySelector(".secondary")).toBeNull();
+  });
+});
+
+describe("alerts", () => {
+  const future = (hours: number) => new Date(Date.now() + hours * 3_600_000).toISOString();
+  const addAlerts = (hass: HomeAssistant, alerts: Record<string, unknown>[]) => {
+    hass.states["sensor.nws_alerts"] = {
+      entity_id: "sensor.nws_alerts",
+      state: String(alerts.length),
+      attributes: { alerts },
+      last_changed: "",
+      last_updated: "",
+    };
+  };
+  const three = () => [
+    { event: "Rain", severity: "Moderate", description: "Heavy rain", expires: future(5) },
+    { event: "Wind", severity: "Severe", description: "Gusts up to 90 km/h", expires: future(8) },
+    { event: "Frost", severity: "Minor", expires: future(9) },
+  ];
+
+  it("renders nothing without alerts", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    const card = await mount(hass, { alerts: { entities: ["sensor.nws_alerts"] } });
+    expect(card.shadowRoot!.querySelector(".alerts")).toBeNull();
+  });
+
+  it("pins the most severe alert and slides the rest open without moving it", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    addAlerts(hass, three());
+    const card = await mount(hass, { alerts: { entities: ["sensor.nws_alerts"] } });
+    const root = card.shadowRoot!;
+
+    const pinned = () => root.querySelector(".alerts-pinned")!;
+    const more = () => root.querySelector(".alerts-more")!.closest(".collapse") as HTMLElement;
+    expect(pinned().querySelectorAll(".alert")).toHaveLength(1);
+    expect(pinned().querySelector(".alert-title")?.textContent).toContain("Wind");
+    expect(pinned().querySelector(".alert-chip")?.textContent).toBe("Red");
+    expect(more().hasAttribute("data-open")).toBe(false);
+    expect(more().hasAttribute("inert")).toBe(true);
+    expect(root.querySelector(".alerts")?.hasAttribute("tabindex")).toBe(false);
+    const toggle = root.querySelector(".alert-toggle") as HTMLButtonElement;
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.textContent).toContain("+2");
+    const first = pinned().querySelector(".alert");
+
+    toggle.click();
+    await card.updateComplete;
+    // The same element stays in place: the count and the rest open below it.
+    expect(pinned().querySelector(".alert")).toBe(first);
+    expect(root.querySelector(".alert-toggle")).toBe(toggle);
+    expect(more().hasAttribute("data-open")).toBe(true);
+    expect(more().hasAttribute("inert")).toBe(false);
+    expect(root.querySelectorAll(".alert")).toHaveLength(3);
+    expect(root.querySelector(".alerts-count")).toBeNull();
+    expect(root.querySelector(".alert-text")?.textContent).toBe("Gusts up to 90 km/h");
+    // One scroll area holds the pinned alert too, and is focusable only once there is something to scroll.
+    const scroll = root.querySelector(".alerts") as HTMLElement;
+    expect(scroll.contains(pinned())).toBe(true);
+    expect(scroll.getAttribute("tabindex")).toBe("0");
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+
+    toggle.click();
+    await card.updateComplete;
+    expect(more().hasAttribute("data-open")).toBe(false);
+    expect(pinned().querySelector(".alert")).toBe(first);
+  });
+
+  it("toggles from a click anywhere on an alert, once, unless text is being selected", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    addAlerts(hass, three());
+    const card = await mount(hass, { alerts: { entities: ["sensor.nws_alerts"] } });
+    const root = card.shadowRoot!;
+    const open = () => root.querySelector(".alert-toggle")!.getAttribute("aria-expanded");
+    expect(root.querySelector(".alert")?.classList.contains("expandable")).toBe(true);
+
+    (root.querySelector(".alert-title") as HTMLElement).click();
+    await card.updateComplete;
+    expect(open()).toBe("true");
+
+    (root.querySelector(".alert-toggle") as HTMLButtonElement).click(); // button bubbles to the row: one toggle
+    await card.updateComplete;
+    expect(open()).toBe("false");
+
+    const selection = vi.spyOn(window, "getSelection").mockReturnValue({ toString: () => "Heavy" } as Selection);
+    (root.querySelector(".alert-title") as HTMLElement).click();
+    await card.updateComplete;
+    expect(open()).toBe("false");
+    selection.mockRestore();
+  });
+
+  it("does not look clickable when there is nothing to expand", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    addAlerts(hass, [{ event: "Frost", severity: "Minor", expires: future(9) }]);
+    const card = await mount(hass, { alerts: { entities: ["sensor.nws_alerts"] } });
+    expect(card.shadowRoot!.querySelector(".alert")?.classList.contains("expandable")).toBe(false);
+    expect(card.shadowRoot!.querySelector(".alert-toggle")).toBeNull();
+  });
+
+  it("honours max_visible and min_level", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    addAlerts(hass, three());
+    const card = await mount(hass, { alerts: { entities: ["sensor.nws_alerts"], max_visible: 2, min_level: 2 } });
+    expect(card.shadowRoot!.querySelectorAll(".alerts-pinned .alert")).toHaveLength(2);
+    expect(card.shadowRoot!.querySelector(".alerts-more")).toBeNull();
+    expect(card.shadowRoot!.querySelector(".alert-toggle")?.textContent).not.toContain("+");
+  });
+
+  it("does not trigger the card action when interacting with alerts", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    addAlerts(hass, three());
+    const card = await mount(hass, { alerts: { entities: ["sensor.nws_alerts"] } });
+    const seen: string[] = [];
+    card.addEventListener("hass-more-info", (e) => seen.push((e as CustomEvent).detail.entityId));
+    (card.shadowRoot!.querySelector(".alert-toggle") as HTMLButtonElement).click();
+    expect(seen).toEqual([]);
+  });
+
+  it("re-renders when an alert entity changes", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    addAlerts(hass, three());
+    const card = await mount(hass, { alerts: { entities: ["sensor.nws_alerts"] } });
+    // HA replaces `hass` and the changed entity object; mutating the old one would hide the change.
+    const next = { ...hass, states: { ...hass.states } } as HomeAssistant;
+    addAlerts(next, []);
+    card.hass = next;
+    await card.updateComplete;
+    expect(card.shadowRoot!.querySelector(".alerts")).toBeNull();
   });
 });
 

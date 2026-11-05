@@ -115,6 +115,47 @@ const dashboard = {
         card({ name: "Custom thresholds (10–25 °C), daily first", default_view: "daily", cold_threshold: 10, hot_threshold: 25 }),
         card({ entity: "weather.dev_weather_daily_only", show_name: false }),
         card({ language: "es", hours_to_show: 6, tap_action: { action: "none" } }),
+        // Alerts: drive them with the "Fake alert controls" card below.
+        card({
+          name: "Alerts · NWS style (5 sources of alerts, scrolls when expanded)",
+          alerts: { entities: ["sensor.dev_alerts_nws"] },
+        }),
+        card({
+          name: "Alerts · Meteoalarm + Environment Canada, 2 visible",
+          alerts: { entities: ["binary_sensor.dev_meteoalarm", "sensor.dev_home_warnings"], max_visible: 2 },
+        }),
+        card({
+          name: "Alertas · adaptador propio",
+          language: "es",
+          alerts: {
+            entities: [
+              {
+                entity: "sensor.dev_custom_alert",
+                adapter: "custom",
+                level_attr: "nivel",
+                event_attr: "titulo",
+                expires_attr: "fin",
+                levels: { leve: 1, fuerte: 3 },
+              },
+              "sensor.dev_alerts_nws",
+            ],
+            min_level: 2,
+          },
+        }),
+        {
+          type: "entities",
+          title: "Fake alert controls",
+          entities: [
+            "input_select.dev_alert_rain",
+            "input_select.dev_alert_wind",
+            "input_select.dev_alert_heat",
+            "input_select.dev_alert_snow",
+            "input_select.dev_alert_storm",
+            "input_select.dev_alert_meteoalarm",
+            "input_boolean.dev_alert_ec",
+            "input_select.dev_alert_custom",
+          ],
+        },
         {
           type: "horizontal-stack",
           cards: [card({ name: "Narrow A", hours_to_show: 5 }), card({ name: "Narrow B", default_view: "daily", days_to_show: 5 })],

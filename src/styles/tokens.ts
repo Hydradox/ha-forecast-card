@@ -32,6 +32,16 @@ export const tokens = css`
     --hfc-snow: var(--light-blue-color, #4fc3f7);
     --hfc-warning: var(--error-color, #db4437);
 
+    /* Alert levels: yellow, orange, red, extreme. "-on" is the text colour that stays readable on each. */
+    --hfc-alert-1: var(--yellow-color, #fdd835);
+    --hfc-alert-2: var(--orange-color, #fb8c00);
+    --hfc-alert-3: #c62828;
+    --hfc-alert-4: var(--purple-color, #8e24aa);
+    --hfc-alert-1-on: #212121;
+    --hfc-alert-2-on: #212121;
+    --hfc-alert-3-on: #ffffff;
+    --hfc-alert-4-on: #ffffff;
+
     /* 5-level scales: from low to high. Semantic HA colors with sane fallbacks. */
     --hfc-humidity-1: var(--warning-color, #ffa600);
     --hfc-humidity-2: var(--state-light-active-color, #fdd835);

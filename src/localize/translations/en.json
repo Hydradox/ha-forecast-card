@@ -61,7 +61,14 @@
     "section_sensors": "Sensors",
     "section_actions": "Actions",
     "threshold_order": "Hot must be higher than cold.",
-    "section_thresholds": "Thresholds"
+    "section_thresholds": "Thresholds",
+    "section_alerts": "Alerts",
+    "alerts": "Alerts",
+    "entities": "Alert entities",
+    "entities_help": "Meteoalarm, NWS or Environment Canada entities. Custom sensors need YAML.",
+    "min_level": "Minimum level",
+    "min_level_help": "1 yellow, 2 orange, 3 red, 4 extreme.",
+    "max_visible": "Alerts shown collapsed"
   },
   "chart": {
     "label_hourly": "Hourly temperature from {min}° to {max}°",
@@ -69,5 +76,18 @@
     "no_data": "No temperature data",
     "scroll": "Hourly forecast, scroll to see more",
     "days": "Daily forecast"
+  },
+  "alerts": {
+    "levels": {
+      "1": "Yellow",
+      "2": "Orange",
+      "3": "Red",
+      "4": "Extreme"
+    },
+    "hide": "Hide alerts",
+    "show_more": "Show {count} more alerts",
+    "show_details": "Show alert details",
+    "list": "Weather alerts, scroll to see more",
+    "until": "Until"
   }
 }

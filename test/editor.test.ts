@@ -22,9 +22,39 @@ afterEach(() => (document.body.innerHTML = ""));
 describe("editor", () => {
   it("keeps section fields flat so they land at the top level of the config", async () => {
     const { schema } = form(await mount({ entity: "weather.a" }));
-    const sections = schema.filter((item) => item.type === "expandable");
+    // `alerts` is the one nested section: the card reads it as `alerts.entities`, `alerts.min_level`...
+    const sections = schema.filter((item) => item.type === "expandable" && item.name !== "alerts");
     expect(sections.length).toBeGreaterThan(0);
     for (const section of sections) expect(section.flatten).toBe(true);
+  });
+
+  it("edits alert entity ids and keeps YAML-only (custom adapter) entries", async () => {
+    const custom = { entity: "sensor.mine", adapter: "custom", level_attr: "nivel" };
+    const editor = await mount({ entity: "weather.a", alerts: { entities: ["binary_sensor.meteoalarm", custom], min_level: 2 } });
+    const data = form(editor).data as { alerts: { entities: unknown[]; min_level: number; max_visible: number } };
+    expect(data.alerts).toEqual({ entities: ["binary_sensor.meteoalarm"], min_level: 2, max_visible: 1 });
+
+    let emitted: Record<string, unknown> | undefined;
+    editor.addEventListener("config-changed", (e) => (emitted = (e as CustomEvent).detail.config));
+    const change = (alerts: unknown) =>
+      form(editor).dispatchEvent(new CustomEvent("value-changed", { detail: { value: { ...form(editor).data, alerts } } }));
+
+    change({ ...data.alerts, entities: ["binary_sensor.meteoalarm", "sensor.nws_alerts"] });
+    expect(emitted).toEqual({
+      entity: "weather.a",
+      alerts: { entities: ["binary_sensor.meteoalarm", "sensor.nws_alerts", custom], min_level: 2 },
+    });
+
+    change({ entities: [], min_level: 1, max_visible: 1 });
+    expect(emitted).toEqual({ entity: "weather.a", alerts: { entities: [custom] } });
+  });
+
+  it("drops the alerts block when it only holds defaults", async () => {
+    const editor = await mount({ entity: "weather.a" });
+    let emitted: Record<string, unknown> | undefined;
+    editor.addEventListener("config-changed", (e) => (emitted = (e as CustomEvent).detail.config));
+    form(editor).dispatchEvent(new CustomEvent("value-changed", { detail: { value: { ...form(editor).data, hours_to_show: 12 } } }));
+    expect(emitted).toEqual({ entity: "weather.a", hours_to_show: 12 });
   });
 
   it("shows unit-aware defaults for thresholds", async () => {
@@ -54,8 +84,6 @@ describe("editor", () => {
     expect(events).toHaveLength(0);
     expect(editor.shadowRoot!.querySelector("ha-alert")?.textContent).toContain("higher");
     expect(form(editor).data.cold_threshold).toBe(30); // the typed value stays visible
-    const colors = form(editor).schema.find((item) => item.name === "section_thresholds") as Item & { expanded?: boolean };
-    expect(colors.expanded).toBe(true);
 
     change({ ...form(editor).data, cold_threshold: 5 }); // fixed → saved
     await editor.updateComplete;

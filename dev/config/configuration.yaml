@@ -43,6 +43,49 @@ input_select:
       - windy
       - windy-variant
 
+# Fake alerts: pick a severity per alert (or off). Several at once test the scrollable list.
+  dev_alert_rain:
+    name: Alert · Rain
+    icon: mdi:weather-pouring
+    initial: "off"
+    options: ["off", Minor, Moderate, Severe, Extreme]
+  dev_alert_wind:
+    name: Alert · Wind
+    icon: mdi:weather-windy
+    initial: "off"
+    options: ["off", Minor, Moderate, Severe, Extreme]
+  dev_alert_heat:
+    name: Alert · Heat wave
+    icon: mdi:thermometer-high
+    initial: "off"
+    options: ["off", Minor, Moderate, Severe, Extreme]
+  dev_alert_snow:
+    name: Alert · Snow
+    icon: mdi:weather-snowy
+    initial: "off"
+    options: ["off", Minor, Moderate, Severe, Extreme]
+  dev_alert_storm:
+    name: Alert · Thunderstorms
+    icon: mdi:weather-lightning
+    initial: "off"
+    options: ["off", Minor, Moderate, Severe, Extreme]
+  # One alert each for the Meteoalarm-style and custom-adapter entities.
+  dev_alert_meteoalarm:
+    name: Meteoalarm-style alert
+    icon: mdi:alert
+    initial: "off"
+    options: ["off", Moderate, Severe, Extreme]
+  dev_alert_custom:
+    name: Custom-adapter alert
+    icon: mdi:alert-circle
+    initial: "off"
+    options: ["off", leve, fuerte]
+
+input_boolean:
+  dev_alert_ec:
+    name: Environment Canada warning
+    icon: mdi:alert-octagon
+
 input_number:
   dev_temperature:
     name: Temperature
@@ -184,3 +227,71 @@ template:
         state_class: measurement
         unit_of_measurement: UV index
         state: "{{ (states('input_number.dev_uv') | float(0)) + 3 }}"
+
+  # ── Fake alert providers (see the "Fake alert controls" card) ──────────────
+  # NWS style: state = number of alerts, details in an `alerts` attribute.
+  - sensor:
+      - name: Dev alerts NWS
+        unique_id: dev_alerts_nws
+        state: >-
+          {{ states.input_select
+             | selectattr('entity_id', 'match', 'input_select\\.dev_alert_(rain|wind|heat|snow|storm)$')
+             | rejectattr('state', 'eq', 'off') | list | count }}
+        attributes:
+          alerts: >-
+            {% set defs = [
+              ('rain', 'Heavy rain', 'Up to 15 mm in 12 hours. Avoid river banks and underpasses.', 6),
+              ('wind', 'Strong wind', 'Gusts up to 90 km/h on the coast. Secure loose objects on terraces.', 10),
+              ('heat', 'Heat wave', 'Maximum temperatures above 38 °C inland during the afternoon.', 30),
+              ('snow', 'Snow', 'Accumulations of 5 cm above 800 m. Chains may be required.', 20),
+              ('storm', 'Thunderstorms', 'Hail and intense lightning, locally accompanied by strong gusts.', 4)] %}
+            {% set start = now().replace(minute=0, second=0, microsecond=0) %}
+            {% set ns = namespace(items=[]) %}
+            {% for key, event, text, hours in defs %}
+              {% set level = states('input_select.dev_alert_' ~ key) %}
+              {% if level not in ['off', 'unknown', 'unavailable'] %}
+                {% set ns.items = ns.items + [{
+                  "Event": event,
+                  "Severity": level,
+                  "Headline": event ~ ' issued',
+                  "Description": text,
+                  "Onset": (start + timedelta(hours=loop.index0)).isoformat(),
+                  "Expires": (start + timedelta(hours=hours)).isoformat()
+                }] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.items }}
+
+      # Environment Canada style: `*_warnings` sensor, level comes from the sensor type.
+      - name: Dev home warnings
+        unique_id: dev_home_warnings
+        state: "{{ 1 if is_state('input_boolean.dev_alert_ec', 'on') else 0 }}"
+        attributes:
+          alerts: >-
+            {{ [{"title": "Yellow Warning - Rainfall", "date": now().isoformat()}]
+               if is_state('input_boolean.dev_alert_ec', 'on') else [] }}
+
+      # Custom adapter: own attribute names and level words.
+      - name: Dev custom alert
+        unique_id: dev_custom_alert
+        state: "{{ states('input_select.dev_alert_custom') }}"
+        attributes:
+          nivel: "{{ states('input_select.dev_alert_custom') }}"
+          titulo: Ola de calor
+          fin: "{{ (now() + timedelta(hours=30)).isoformat() }}"
+
+  # Meteoalarm style: one binary sensor with the alert in its attributes.
+  - binary_sensor:
+      - name: Dev meteoalarm
+        unique_id: dev_meteoalarm
+        state: "{{ not is_state('input_select.dev_alert_meteoalarm', 'off') }}"
+        attributes:
+          attribution: Information provided by MeteoAlarm
+          event: Heavy rain
+          headline: Heavy rain expected in the metropolitan area
+          severity: "{{ states('input_select.dev_alert_meteoalarm') }}"
+          awareness_level: >-
+            {{ {'Moderate': '2; yellow; Moderate', 'Severe': '3; orange; Severe', 'Extreme': '4; red; Extreme'}
+               .get(states('input_select.dev_alert_meteoalarm'), '1; green; Minor') }}
+          onset: "{{ now().replace(minute=0, second=0, microsecond=0).isoformat() }}"
+          expires: "{{ now().replace(hour=23, minute=59, second=0, microsecond=0).isoformat() }}"

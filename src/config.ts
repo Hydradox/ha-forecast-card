@@ -1,5 +1,7 @@
 import type { ActionConfig } from "./types/ha";
 import { isActionConfig } from "./utils/actions";
+import type { AlertsConfig } from "./utils/alerts";
+import { parseAlertsConfig } from "./utils/alerts";
 
 export type ForecastView = "hourly" | "daily";
 
@@ -31,6 +33,8 @@ export interface ForecastCardConfig {
   tap_action?: ActionConfig;
   /** Tap on the temperature. Default: more-info of `temperature_entity` (history graph) or the weather entity. */
   temperature_tap_action?: ActionConfig;
+  /** Weather alerts from provider entities (Meteoalarm, NWS, Environment Canada or a custom sensor). */
+  alerts?: AlertsConfig;
   /** Language override; defaults to the Home Assistant UI language. */
   language?: string;
 }
@@ -97,6 +101,8 @@ export function parseConfig(raw: unknown): ResolvedConfig {
       throw new Error(`\`${field}\` must be a valid action`);
     }
   }
+
+  if (config.alerts !== undefined) parseAlertsConfig(config.alerts);
 
   return { ...DEFAULT_CONFIG, ...config } as ResolvedConfig;
 }

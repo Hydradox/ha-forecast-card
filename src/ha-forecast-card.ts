@@ -10,12 +10,15 @@ import { cardStyles } from "./styles/card.styles";
 import { tokens } from "./styles/tokens";
 import type { ActionConfig, GridOptions, HassEntity, HomeAssistant } from "./types/ha";
 import { isInteractive, runAction } from "./utils/actions";
+import type { WeatherAlert } from "./utils/alerts";
+import { ALERT_DEFAULTS, alertSources, collectAlerts, formatWindow } from "./utils/alerts";
 import type { Formatters } from "./utils/format";
 import { createFormatters } from "./utils/format";
 import { cardinal, dailySlots, defined, hourlySlots } from "./utils/forecast-view";
 import { LEVEL_KEYS, getLevel } from "./utils/scales";
 import { resolveThresholds, temperatureColor } from "./utils/temperature";
 import { convertTemperature, toCelsius, toKmh } from "./utils/units";
+import { renderAlerts } from "./views/alerts";
 import type { MetricView } from "./views/attributes";
 import { renderAttributes } from "./views/attributes";
 import { minChartWidth, renderChart } from "./views/chart";
@@ -31,6 +34,7 @@ class HaForecastCard extends LitElement {
     _config: { state: true },
     _view: { state: true },
     _width: { state: true },
+    _alertsOpen: { state: true },
   };
   static override styles = [tokens, cardStyles];
 
@@ -39,12 +43,21 @@ class HaForecastCard extends LitElement {
   declare _view: View;
   /** Width available to the forecast area, from a ResizeObserver. */
   declare _width: number;
+  /** Alert list expanded (all alerts with descriptions) or collapsed (the most severe ones). */
+  declare _alertsOpen: boolean;
 
   private readonly hourly = new ForecastSubscription(this);
   private readonly daily = new ForecastSubscription(this);
   private localize: Translate = createTranslator(undefined);
   private formatters: Formatters = createFormatters(undefined);
   private i18nKey: string | undefined;
+  private activeAlerts: WeatherAlert[] = [];
+  /** View drawn by the last render, and the one before it (to slide when the tab changes). */
+  private renderedView?: View;
+  private shownView?: View;
+  /** Copy of the chart being replaced, kept to slide it out. */
+  private outgoing?: { node: HTMLElement; height: number; scrollLeft: number };
+  private slides: Animation[] = [];
   private resizeObserver?: ResizeObserver;
   private observed?: Element;
 
@@ -52,6 +65,7 @@ class HaForecastCard extends LitElement {
     super();
     this._view = "hourly";
     this._width = 0;
+    this._alertsOpen = false;
   }
 
   // ── Card contract ──────────────────────────────────────────────────────────
@@ -62,7 +76,10 @@ class HaForecastCard extends LitElement {
   }
 
   getCardSize(): number {
-    return 6;
+    // Each visible alert row is about one grid row; the expanded list is capped by its scroll area.
+    const alerts = this.activeAlerts.length;
+    const visible = this._alertsOpen ? Math.min(alerts, 3) : Math.min(alerts, this._config?.alerts?.max_visible ?? ALERT_DEFAULTS.max_visible);
+    return 6 + visible;
   }
 
   getGridOptions(): GridOptions {
@@ -113,7 +130,73 @@ class HaForecastCard extends LitElement {
     this.daily.configure(this.hass, config.entity, "daily");
   }
 
+  /**
+   * Tab change: the old chart slides out while the new one slides in, and the area eases to the new
+   * height so the content below does not jump. Skipped on first paint and with reduced motion.
+   */
+  private slideForecast(): void {
+    const previous = this.shownView;
+    this.shownView = this.renderedView;
+    const outgoing = this.outgoing;
+    this.outgoing = undefined;
+    if (!previous || !this.renderedView || previous === this.renderedView) return;
+    const forecast = this.renderRoot.querySelector<HTMLElement>(".forecast");
+    const scroller = forecast?.querySelector<HTMLElement>(".scroller:not(.ghost)");
+    if (!forecast || !scroller || typeof scroller.animate !== "function") return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    this.slides.forEach((animation) => animation.cancel()); // a quick second click restarts cleanly
+    const batch: Animation[] = (this.slides = []);
+    forecast.querySelectorAll(".ghost").forEach((node) => node.remove());
+
+    const order: View[] = ["hourly", "daily"];
+    const offset = order.indexOf(this.renderedView) > order.indexOf(previous) ? 32 : -32;
+    const timing = { duration: 250, easing: "ease-out" } as const;
+    const finishers: (() => void)[] = [];
+    forecast.toggleAttribute("data-sliding", true); // clips the travel to the card
+
+    batch.push(
+      scroller.animate(
+        [
+          { opacity: 0, transform: `translateX(${offset}px)` },
+          { opacity: 1, transform: "translateX(0)" },
+        ],
+        timing,
+      ),
+    );
+    if (outgoing) {
+      const { node, height, scrollLeft } = outgoing;
+      forecast.append(node);
+      node.scrollLeft = scrollLeft;
+      batch.push(
+        node.animate(
+          [
+            { opacity: 1, transform: "translateX(0)" },
+            { opacity: 0, transform: `translateX(${-offset}px)` },
+          ],
+          { duration: 50, easing: "ease-out", fill: "forwards" }, // gone almost at once; stays hidden until removed
+        ),
+      );
+      finishers.push(() => node.remove());
+      const target = forecast.getBoundingClientRect().height;
+      if (Math.abs(target - height) > 1) {
+        batch.push(forecast.animate([{ height: `${height}px` }, { height: `${target}px` }], timing));
+      }
+    }
+    const done = () => {
+      if (batch.some((animation) => animation.playState === "running")) return;
+      finishers.forEach((finish) => finish());
+      // A newer slide owns the flag; a stale batch (cancel events arrive late) must not clear it.
+      if (batch === this.slides) forecast.toggleAttribute("data-sliding", false);
+    };
+    for (const animation of batch) {
+      animation.addEventListener("finish", done);
+      animation.addEventListener("cancel", done);
+    }
+  }
+
   protected override updated(): void {
+    this.slideForecast();
     // Observe the forecast area (it only exists once data is available).
     const target = this.renderRoot.querySelector(".forecast");
     if (target === (this.observed ?? null) || typeof ResizeObserver === "undefined") return;
@@ -135,6 +218,7 @@ class HaForecastCard extends LitElement {
       c.humidity_entity,
       c.wind_speed_entity,
       c.uv_index_entity,
+      ...alertSources(c.alerts).map((source) => source.entity),
     ].filter((id): id is string => !!id);
   }
 
@@ -171,8 +255,30 @@ class HaForecastCard extends LitElement {
   /** Tabs/scroller live inside the card, so their events must not trigger the card action. */
   private stop = (event: Event): void => event.stopPropagation();
 
+  private toggleAlerts = (): void => {
+    this._alertsOpen = !this._alertsOpen;
+  };
+
   private selectView(view: View): void {
+    if (view !== this._view) this.captureOutgoing();
     this._view = view;
+  }
+
+  /** Called right before the view changes, while the old chart is still in the DOM. */
+  private captureOutgoing(): void {
+    const forecast = this.renderRoot.querySelector<HTMLElement>(".forecast");
+    const scroller = forecast?.querySelector<HTMLElement>(".scroller:not(.ghost)");
+    if (!forecast || !scroller) {
+      this.outgoing = undefined;
+      return;
+    }
+    const node = scroller.cloneNode(true) as HTMLElement;
+    node.classList.add("ghost");
+    node.removeAttribute("tabindex");
+    node.removeAttribute("role");
+    node.setAttribute("aria-hidden", "true");
+    node.setAttribute("inert", "");
+    this.outgoing = { node, height: forecast.getBoundingClientRect().height, scrollLeft: scroller.scrollLeft };
   }
 
   // Drag-to-scroll for mouse users (touch and trackpads already scroll natively).
@@ -237,7 +343,7 @@ class HaForecastCard extends LitElement {
         @click=${this.onCardTap}
         @keydown=${this.onKeydown(this.onCardTap)}
       >
-        ${iconSprite} ${this.renderHeader(weather, current, thresholds, now)}
+        ${iconSprite} ${this.renderHeader(weather, current, thresholds, now)} ${this.renderAlertBanner(now)}
         ${view ? this.renderForecast(weather, view, views, current, thresholds, now) : nothing}
         ${metrics.length ? renderAttributes(metrics) : nothing}
       </ha-card>
@@ -325,6 +431,27 @@ class HaForecastCard extends LitElement {
     `;
   }
 
+  private renderAlertBanner(now: Date): TemplateResult | typeof nothing {
+    const config = this._config!;
+    this.activeAlerts = collectAlerts(this.hass!.states, config.alerts, now);
+    if (!this.activeAlerts.length) return nothing;
+    const labels = { today: this.localize("common.today"), until: this.localize("alerts.until") };
+    const windows = new Map(
+      this.activeAlerts.map((alert) => [alert.id, formatWindow(alert, now, this.formatters, labels)]),
+    );
+    // Alerts only change when their entities do, so the click guard lives on the wrapper (not the card action).
+    return html`<div @click=${this.stop} @keydown=${this.stop}>
+      ${renderAlerts({
+        alerts: this.activeAlerts,
+        maxVisible: config.alerts?.max_visible ?? ALERT_DEFAULTS.max_visible,
+        expanded: this._alertsOpen,
+        onToggle: this.toggleAlerts,
+        windows,
+        localize: this.localize,
+      })}
+    </div>`;
+  }
+
   private renderForecast(
     weather: HassEntity,
     view: View,
@@ -356,6 +483,7 @@ class HaForecastCard extends LitElement {
           )
         : dailySlots(data, now, config.days_to_show, this.formatters, this.localize("common.today"));
 
+    this.renderedView = view;
     const width = this._width;
     const scrollable = width > 0 && width < minChartWidth(view, slots.length);
 

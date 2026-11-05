@@ -61,7 +61,14 @@
     "section_sensors": "Sensores",
     "section_actions": "Acciones",
     "threshold_order": "Calor debe ser mayor que frío.",
-    "section_thresholds": "Umbrales"
+    "section_thresholds": "Umbrales",
+    "section_alerts": "Avisos",
+    "alerts": "Avisos",
+    "entities": "Entidades de avisos",
+    "entities_help": "Entidades de Meteoalarm, NWS o Environment Canada. Los sensores propios requieren YAML.",
+    "min_level": "Nivel mínimo",
+    "min_level_help": "1 amarillo, 2 naranja, 3 rojo, 4 extremo.",
+    "max_visible": "Avisos mostrados plegados"
   },
   "chart": {
     "label_hourly": "Temperatura por horas de {min}° a {max}°",
@@ -69,5 +76,18 @@
     "no_data": "Sin datos de temperatura",
     "scroll": "Previsión por horas, desliza para ver más",
     "days": "Previsión diaria"
+  },
+  "alerts": {
+    "levels": {
+      "1": "Amarillo",
+      "2": "Naranja",
+      "3": "Rojo",
+      "4": "Extremo"
+    },
+    "hide": "Ocultar avisos",
+    "show_more": "Mostrar {count} avisos más",
+    "show_details": "Mostrar detalle del aviso",
+    "list": "Avisos meteorológicos, desliza para ver más",
+    "until": "Hasta"
   }
 }
