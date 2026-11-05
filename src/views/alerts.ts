@@ -18,8 +18,8 @@ export interface AlertsViewOptions {
 /**
  * Alert banner(s) between the header and the tabs.
  * The `maxVisible` most severe alerts are pinned: they never move, the toggle lives in the first one.
- * Expanding slides open their descriptions and, below them, the remaining alerts
- * in a list that scrolls vertically once it outgrows `--hfc-alerts-max-height`.
+ * Expanding slides open their descriptions and, below them, the remaining alerts. The whole block
+ * scrolls vertically once it outgrows `--hfc-alerts-max-height`.
  */
 export function renderAlerts(options: AlertsViewOptions): TemplateResult | typeof nothing {
   const { alerts, maxVisible, expanded, localize } = options;
@@ -29,17 +29,23 @@ export function renderAlerts(options: AlertsViewOptions): TemplateResult | typeo
   const rest = alerts.slice(maxVisible);
   const expandable = rest.length > 0 || pinned.some((alert) => alert.description);
 
-  return html`<div class="alerts">
+  // One scroll area holds every alert, so the pinned ones scroll with the rest. They sit at the top
+  // and the rest opens below them, so expanding never moves them.
+  const scrolls = expanded && rest.length > 0;
+  return html`<div
+    class="alerts"
+    tabindex=${scrolls ? 0 : nothing}
+    role=${scrolls ? "region" : nothing}
+    aria-label=${scrolls ? localize("alerts.list") : nothing}
+  >
     <div class="alerts-pinned">
-      ${pinned.map((alert, index) => renderAlert(alert, options, index === 0 && expandable ? toggle(options, rest.length) : nothing, false))}
+      ${pinned.map((alert, index) => renderAlert(alert, options, expandable, index === 0 && expandable ? toggle(options, rest.length) : nothing, false))}
     </div>
     ${rest.length
       ? html`<div class="collapse" ?data-open=${expanded} ?inert=${!expanded}>
           <div class="collapse-inner">
             <div class="alerts-more">
-              <div class="alert-list" tabindex="0" role="region" aria-label=${localize("alerts.list")}>
-                ${rest.map((alert) => renderAlert(alert, options, nothing, true))}
-              </div>
+              ${rest.map((alert) => renderAlert(alert, options, expandable, nothing, true))}
             </div>
           </div>
         </div>`
@@ -47,18 +53,18 @@ export function renderAlerts(options: AlertsViewOptions): TemplateResult | typeo
   </div>`;
 }
 
-function toggle({ expanded, onToggle, localize }: AlertsViewOptions, hidden: number): TemplateResult {
+function toggle({ expanded, localize }: AlertsViewOptions, hidden: number): TemplateResult {
   const label = expanded
     ? localize("alerts.hide")
     : hidden > 0
       ? localize("alerts.show_more", { count: hidden })
       : localize("alerts.show_details");
+  // No click handler: the click bubbles to the row, which toggles once.
   return html`<button
     type="button"
     class="alert-toggle ${expanded ? "open" : ""}"
     aria-expanded=${expanded}
     aria-label=${label}
-    @click=${onToggle}
   >
     ${!expanded && hidden > 0 ? html`<span>+${hidden}</span>` : nothing}${chevronIcon(24)}
   </button>`;
@@ -66,14 +72,22 @@ function toggle({ expanded, onToggle, localize }: AlertsViewOptions, hidden: num
 
 function renderAlert(
   alert: WeatherAlert,
-  { windows, localize, expanded }: AlertsViewOptions,
+  { windows, localize, expanded, onToggle }: AlertsViewOptions,
+  expandable: boolean,
   action: TemplateResult | typeof nothing,
   /** Rows in the scroll list always show their text; pinned ones slide it open. */
   inList: boolean,
 ): TemplateResult {
-  const window = windows.get(alert.id);
-  const meta = [window, alert.source].filter(Boolean).join(" · ");
-  return html`<div class="alert" style="--level: var(--hfc-alert-${alert.level}); --on: var(--hfc-alert-${alert.level}-on)">
+  const timeWindow = windows.get(alert.id);
+  const meta = [timeWindow, alert.source].filter(Boolean).join(" · ");
+  // The whole row toggles (mouse convenience); the chevron button stays the keyboard and screen-reader control.
+  const onRowClick = () => {
+    if (!window.getSelection?.()?.toString()) onToggle(); // selecting text must not collapse the row
+  };
+  return html`<div
+    class="alert ${expandable ? "expandable" : ""}"
+    @click=${expandable ? onRowClick : nothing}
+    style="--level: var(--hfc-alert-${alert.level}); --on: var(--hfc-alert-${alert.level}-on)">
     <div class="alert-icon">${alertIcon(alert.kind)}</div>
     <div class="alert-body">
       <div class="alert-title">

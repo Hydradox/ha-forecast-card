@@ -210,6 +210,7 @@ describe("alerts", () => {
     expect(pinned().querySelector(".alert-chip")?.textContent).toBe("Red");
     expect(more().hasAttribute("data-open")).toBe(false);
     expect(more().hasAttribute("inert")).toBe(true);
+    expect(root.querySelector(".alerts")?.hasAttribute("tabindex")).toBe(false);
     const toggle = root.querySelector(".alert-toggle") as HTMLButtonElement;
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     expect(toggle.textContent).toContain("+2");
@@ -225,13 +226,47 @@ describe("alerts", () => {
     expect(root.querySelectorAll(".alert")).toHaveLength(3);
     expect(root.querySelector(".alerts-count")).toBeNull();
     expect(root.querySelector(".alert-text")?.textContent).toBe("Gusts up to 90 km/h");
-    expect(root.querySelector(".alert-list")?.getAttribute("tabindex")).toBe("0");
+    // One scroll area holds the pinned alert too, and is focusable only once there is something to scroll.
+    const scroll = root.querySelector(".alerts") as HTMLElement;
+    expect(scroll.contains(pinned())).toBe(true);
+    expect(scroll.getAttribute("tabindex")).toBe("0");
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
 
     toggle.click();
     await card.updateComplete;
     expect(more().hasAttribute("data-open")).toBe(false);
     expect(pinned().querySelector(".alert")).toBe(first);
+  });
+
+  it("toggles from a click anywhere on an alert, once, unless text is being selected", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    addAlerts(hass, three());
+    const card = await mount(hass, { alerts: { entities: ["sensor.nws_alerts"] } });
+    const root = card.shadowRoot!;
+    const open = () => root.querySelector(".alert-toggle")!.getAttribute("aria-expanded");
+    expect(root.querySelector(".alert")?.classList.contains("expandable")).toBe(true);
+
+    (root.querySelector(".alert-title") as HTMLElement).click();
+    await card.updateComplete;
+    expect(open()).toBe("true");
+
+    (root.querySelector(".alert-toggle") as HTMLButtonElement).click(); // button bubbles to the row: one toggle
+    await card.updateComplete;
+    expect(open()).toBe("false");
+
+    const selection = vi.spyOn(window, "getSelection").mockReturnValue({ toString: () => "Heavy" } as Selection);
+    (root.querySelector(".alert-title") as HTMLElement).click();
+    await card.updateComplete;
+    expect(open()).toBe("false");
+    selection.mockRestore();
+  });
+
+  it("does not look clickable when there is nothing to expand", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    addAlerts(hass, [{ event: "Frost", severity: "Minor", expires: future(9) }]);
+    const card = await mount(hass, { alerts: { entities: ["sensor.nws_alerts"] } });
+    expect(card.shadowRoot!.querySelector(".alert")?.classList.contains("expandable")).toBe(false);
+    expect(card.shadowRoot!.querySelector(".alert-toggle")).toBeNull();
   });
 
   it("honours max_visible and min_level", async () => {

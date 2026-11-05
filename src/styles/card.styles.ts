@@ -240,6 +240,17 @@ export const cardStyles = css`
   /* Alerts */
   .alerts {
     min-width: 0;
+    cursor: default; /* the card itself may be clickable; alerts are not part of that action */
+    /* Tall lists scroll inside the card instead of stretching it; pinned alerts scroll with the rest. */
+    max-height: var(--hfc-alerts-max-height, 300px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--hfc-divider) transparent;
+  }
+  .alerts:focus-visible {
+    outline: 2px solid var(--hfc-accent);
+    outline-offset: -2px;
+    border-radius: 8px;
   }
   .alerts-pinned,
   .alerts-more {
@@ -273,22 +284,6 @@ export const cardStyles = css`
   .collapse[data-open] > .collapse-inner {
     opacity: 1;
   }
-  .alert-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    /* Tall lists scroll inside the card instead of stretching it. */
-    max-height: var(--hfc-alerts-max-height, 300px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
-    scrollbar-color: var(--hfc-divider) transparent;
-  }
-  .alert-list:focus-visible {
-    outline: 2px solid var(--hfc-accent);
-    outline-offset: -2px;
-    border-radius: 8px;
-  }
   .alert {
     display: flex;
     gap: 12px;
@@ -297,6 +292,12 @@ export const cardStyles = css`
     border-radius: 10px;
     background: color-mix(in srgb, var(--level) 14%, var(--hfc-surface));
     border: 1px solid color-mix(in srgb, var(--level) 60%, transparent);
+  }
+  .alert.expandable {
+    cursor: pointer;
+  }
+  .alert.expandable:hover {
+    background: color-mix(in srgb, var(--level) 22%, var(--hfc-surface));
   }
   .alert-icon {
     width: 36px;
