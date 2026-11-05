@@ -1,6 +1,6 @@
 {
   "name": "ha-forecast-card",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Home Assistant Lovelace card to preview weather forecasts and key weather attributes",
   "license": "GPL-3.0-or-later",
   "type": "module",

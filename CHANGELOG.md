@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.1](https://github.com/Hydradox/ha-forecast-card/compare/v1.0.0...v1.0.1) (2026-11-05)
+
+### Bug fixes
+
+* size the card to its content in sections view ([d82b3d2](https://github.com/Hydradox/ha-forecast-card/commit/d82b3d22c9b8836854ca1fa2a2f1569a0f7145d8))
+
 ## 1.0.0 (2026-11-05)
 
 ### Features
