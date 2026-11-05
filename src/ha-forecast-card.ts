@@ -66,7 +66,8 @@ class HaForecastCard extends LitElement {
   }
 
   getGridOptions(): GridOptions {
-    return { columns: 12, rows: 6, min_columns: 6, min_rows: 4 };
+    // Content-sized: a fixed row count overflows the tile (hourly and daily differ in height).
+    return { columns: 12, rows: "auto", min_columns: 6 };
   }
 
   static getStubConfig(hass?: HomeAssistant): Record<string, unknown> {
