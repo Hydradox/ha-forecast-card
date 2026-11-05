@@ -29,6 +29,12 @@ const LAYOUT = {
   daily: { minColumn: 40, height: 100, top: 20, bottom: 80, bars: 80, icon: 28, radius: 3.5, line: 2.5 },
 } as const;
 
+/** Without rain there are no bars, so the temperature line takes the space and the rain row is dropped. */
+const DRY = {
+  hourly: { height: 104, bottom: 82 },
+  daily: { height: 112, bottom: 88 },
+} as const;
+
 /** Minimum width a chart needs; used by the card to decide whether the scroller shows its fade. */
 export const minChartWidth = (kind: ChartKind, columns: number): number => LAYOUT[kind].minColumn * columns;
 
@@ -36,7 +42,6 @@ export function renderChart(input: ChartInput): TemplateResult | typeof nothing 
   const { kind, slots, fmt, localize } = input;
   if (!slots.length) return html`<div class="empty">${localize("common.no_forecast")}</div>`;
 
-  const layout = LAYOUT[kind];
   const columns = slots.length;
   const width = Math.max(input.width, minChartWidth(kind, columns));
   const column = width / columns;
@@ -46,10 +51,12 @@ export function renderChart(input: ChartInput): TemplateResult | typeof nothing 
   const minSeries = kind === "daily" ? slots.map((slot) => slot.templow) : [];
   const all = [...maxSeries, ...minSeries].filter(defined);
   const range = extent(all);
-  const y = range ? createScale(range[0], range[1], layout.top, layout.bottom) : () => layout.top;
-
   const mode = rainMode(slots);
   const rain = slots.map((slot) => rainValue(slot, mode));
+  const dry = !rain.some((value) => defined(value) && value > 0);
+  const layout = dry ? { ...LAYOUT[kind], ...DRY[kind] } : LAYOUT[kind];
+  const y = range ? createScale(range[0], range[1], layout.top, layout.bottom) : () => layout.top;
+
   const largest = Math.max(0, ...rain.filter(defined));
   const floor = mode === "probability" ? 100 : input.precipitationUnit === "in" ? RAIN_FLOOR.in : RAIN_FLOOR.mm;
   const barWidth = Math.min(30, column * 0.6);
@@ -75,7 +82,7 @@ export function renderChart(input: ChartInput): TemplateResult | typeof nothing 
           const h = Math.max(barHeight(value, largest, floor, layout.bars), 2);
           return svg`<rect class="bar" x=${x(i) - barWidth / 2} y=${layout.height - h} width=${barWidth} height=${h} rx="4"/>`;
         })}
-        <line class="baseline" x1="0" x2=${width} y1=${layout.height - 0.5} y2=${layout.height - 0.5}/>
+        ${dry ? nothing : svg`<line class="baseline" x1="0" x2=${width} y1=${layout.height - 0.5} y2=${layout.height - 0.5}/>`}
         ${minPoints.length
           ? svg`<polyline class="line-min" points=${polyline(minPoints)}/>
               ${minPoints.map((p) => svg`<circle class="dot-min" cx=${p.x} cy=${p.y} r="3"/>
@@ -85,9 +92,7 @@ export function renderChart(input: ChartInput): TemplateResult | typeof nothing 
         ${maxPoints.map((p) => svg`<circle class="dot" cx=${p.x} cy=${p.y} r=${layout.radius} stroke=${range ? "url(#hfc-gradient)" : "currentColor"}/>
           <text class="label" x=${p.x} y=${p.y - (kind === "hourly" ? 10 : 8)}>${fmt.number(p.v)}°</text>`)}
       </svg>
-      <div class="row rain">
-        ${rain.map((value) => rainLabel(value, mode, input))}
-      </div>
+      ${dry ? nothing : html`<div class="row rain">${rain.map((value) => rainLabel(value, mode, input))}</div>`}
     </div>
   `;
 }
