@@ -61,12 +61,12 @@ Separate workflows in `.github/workflows/`, with shared setup in `.github/action
 - `pr-title.yml`: enforces a Conventional Commit PR title.
 - `quality.yml`: parallel `typecheck`, `lint`, `test`, `build` jobs. Runs on PRs and is reused (`workflow_call`) by release.
 - `hacs.yml`: `hacs/action` validation. Runs on PRs, manual dispatch, and is reused by release. No scheduled run (not needed).
-- `release.yml`: on push to `main`, calls `quality` and `hacs`, then `publish` runs semantic-release (`.releaserc.json`) only if both passed.
+- `release.yml`: on push to `main`, calls `quality`, then `publish` runs semantic-release (`.releaserc.json`) after `quality`, and `hacs` validates the resulting release.
 
 - **Never bump versions or edit `CHANGELOG.md` by hand.** semantic-release derives the version from Conventional Commits, writes the CHANGELOG, builds, commits `chore(release): x.y.z [skip ci]`, tags `vX.Y.Z` and attaches `dist/ha-forecast-card.js` to the GitHub release.
 - Commit/PR-title format: `feat:` → minor, `fix:`/`perf:` → patch, `feat!:` or a `BREAKING CHANGE:` footer → major. `docs`, `refactor` appear in the notes; `chore`, `ci`, `build`, `test`, `style` are hidden and release nothing. PR titles are enforced; use squash-merge so the title becomes the commit.
 - `conventional-changelog-conventionalcommits` must stay on major 9: v10 needs a newer changelog writer than semantic-release bundles and breaks release notes.
-- HACS reads the plugin file from the GitHub API (latest release asset, or a committed root/`dist/` file), not from the CI workspace, so validation fails until a release with `ha-forecast-card.js` exists. A bootstrap release `v0.1.0` (manual, with the bundle attached) is needed once; semantic-release continues from it (next: 0.2.0 on `feat:`, 0.1.1 on `fix:`; 1.0.0 needs a `BREAKING CHANGE:`). `__VERSION__` in the bundle comes from `package.json` at build time.
+- The first release will be `1.0.0` (no earlier tags). HACS reads the plugin file from the GitHub API (latest release asset or a committed root/`dist/` file), not the CI workspace, so `hacs` runs *after* `publish` in `release.yml`, and the PR-time HACS check fails until the first release exists. `__VERSION__` in the bundle comes from `package.json` at build time.
 - `main` must allow the release job to push (no required-PR rule without a bypass for GitHub Actions).
 
 ## HACS / GitHub distribution requirements

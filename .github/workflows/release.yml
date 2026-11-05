@@ -16,11 +16,8 @@ jobs:
   quality:
     uses: ./.github/workflows/quality.yml
 
-  hacs:
-    uses: ./.github/workflows/hacs.yml
-
   publish:
-    needs: [quality, hacs]
+    needs: quality
     runs-on: ubuntu-latest
     permissions:
       contents: write # tag, release, push the CHANGELOG commit
@@ -35,3 +32,9 @@ jobs:
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # HACS reads the plugin file from the latest release, so it can only be
+  # validated after the release exists (running it first would block the first one).
+  hacs:
+    needs: publish
+    uses: ./.github/workflows/hacs.yml
