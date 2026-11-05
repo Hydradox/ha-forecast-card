@@ -136,13 +136,6 @@ card_mod:
 
 The full list of variables is in [`src/styles/tokens.ts`](src/styles/tokens.ts).
 
-## Troubleshooting
-
-- **"Custom element doesn't exist: ha-forecast-card"**: the resource isn't loaded. Check that it is listed under **Settings → Dashboards → Resources**, then hard-reload the browser (Ctrl+Shift+R).
-- **No forecast, only the header**: the integration doesn't support hourly or daily forecasts, or it hasn't delivered them yet.
-- **The card didn't change after an update**: clear the browser cache or hard-reload. Home Assistant serves `/local` files with a long cache time.
-- **Temperature colours look wrong**: check that `hot_threshold` is greater than `cold_threshold` and that both are in your Home Assistant unit.
-
 ## Development
 
 ```bash
