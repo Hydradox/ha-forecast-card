@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.2](https://github.com/Hydradox/ha-forecast-card/compare/v1.0.1...v1.0.2) (2026-11-05)
+
+### Bug fixes
+
+* scroll bar hide and rain ([e88a93a](https://github.com/Hydradox/ha-forecast-card/commit/e88a93a938f1972420cc901692c72f14c5288331))
+
 ## [1.0.1](https://github.com/Hydradox/ha-forecast-card/compare/v1.0.0...v1.0.1) (2026-11-05)
 
 ### Bug fixes
