@@ -10,12 +10,15 @@ import { cardStyles } from "./styles/card.styles";
 import { tokens } from "./styles/tokens";
 import type { ActionConfig, GridOptions, HassEntity, HomeAssistant } from "./types/ha";
 import { isInteractive, runAction } from "./utils/actions";
+import type { WeatherAlert } from "./utils/alerts";
+import { ALERT_DEFAULTS, alertSources, collectAlerts, formatWindow } from "./utils/alerts";
 import type { Formatters } from "./utils/format";
 import { createFormatters } from "./utils/format";
 import { cardinal, dailySlots, defined, hourlySlots } from "./utils/forecast-view";
 import { LEVEL_KEYS, getLevel } from "./utils/scales";
 import { resolveThresholds, temperatureColor } from "./utils/temperature";
 import { convertTemperature, toCelsius, toKmh } from "./utils/units";
+import { renderAlerts } from "./views/alerts";
 import type { MetricView } from "./views/attributes";
 import { renderAttributes } from "./views/attributes";
 import { minChartWidth, renderChart } from "./views/chart";
@@ -31,6 +34,7 @@ class HaForecastCard extends LitElement {
     _config: { state: true },
     _view: { state: true },
     _width: { state: true },
+    _alertsOpen: { state: true },
   };
   static override styles = [tokens, cardStyles];
 
@@ -39,12 +43,15 @@ class HaForecastCard extends LitElement {
   declare _view: View;
   /** Width available to the forecast area, from a ResizeObserver. */
   declare _width: number;
+  /** Alert list expanded (all alerts with descriptions) or collapsed (the most severe ones). */
+  declare _alertsOpen: boolean;
 
   private readonly hourly = new ForecastSubscription(this);
   private readonly daily = new ForecastSubscription(this);
   private localize: Translate = createTranslator(undefined);
   private formatters: Formatters = createFormatters(undefined);
   private i18nKey: string | undefined;
+  private activeAlerts: WeatherAlert[] = [];
   private resizeObserver?: ResizeObserver;
   private observed?: Element;
 
@@ -52,6 +59,7 @@ class HaForecastCard extends LitElement {
     super();
     this._view = "hourly";
     this._width = 0;
+    this._alertsOpen = false;
   }
 
   // ── Card contract ──────────────────────────────────────────────────────────
@@ -62,7 +70,10 @@ class HaForecastCard extends LitElement {
   }
 
   getCardSize(): number {
-    return 6;
+    // Each visible alert row is about one grid row; the expanded list is capped by its scroll area.
+    const alerts = this.activeAlerts.length;
+    const visible = this._alertsOpen ? Math.min(alerts, 3) : Math.min(alerts, this._config?.alerts?.max_visible ?? ALERT_DEFAULTS.max_visible);
+    return 6 + visible;
   }
 
   getGridOptions(): GridOptions {
@@ -135,6 +146,7 @@ class HaForecastCard extends LitElement {
       c.humidity_entity,
       c.wind_speed_entity,
       c.uv_index_entity,
+      ...alertSources(c.alerts).map((source) => source.entity),
     ].filter((id): id is string => !!id);
   }
 
@@ -170,6 +182,10 @@ class HaForecastCard extends LitElement {
 
   /** Tabs/scroller live inside the card, so their events must not trigger the card action. */
   private stop = (event: Event): void => event.stopPropagation();
+
+  private toggleAlerts = (): void => {
+    this._alertsOpen = !this._alertsOpen;
+  };
 
   private selectView(view: View): void {
     this._view = view;
@@ -237,7 +253,7 @@ class HaForecastCard extends LitElement {
         @click=${this.onCardTap}
         @keydown=${this.onKeydown(this.onCardTap)}
       >
-        ${iconSprite} ${this.renderHeader(weather, current, thresholds, now)}
+        ${iconSprite} ${this.renderHeader(weather, current, thresholds, now)} ${this.renderAlertBanner(now)}
         ${view ? this.renderForecast(weather, view, views, current, thresholds, now) : nothing}
         ${metrics.length ? renderAttributes(metrics) : nothing}
       </ha-card>
@@ -323,6 +339,27 @@ class HaForecastCard extends LitElement {
             </div>`}
       </div>
     `;
+  }
+
+  private renderAlertBanner(now: Date): TemplateResult | typeof nothing {
+    const config = this._config!;
+    this.activeAlerts = collectAlerts(this.hass!.states, config.alerts, now);
+    if (!this.activeAlerts.length) return nothing;
+    const labels = { today: this.localize("common.today"), until: this.localize("alerts.until") };
+    const windows = new Map(
+      this.activeAlerts.map((alert) => [alert.id, formatWindow(alert, now, this.formatters, labels)]),
+    );
+    // Alerts only change when their entities do, so the click guard lives on the wrapper (not the card action).
+    return html`<div @click=${this.stop} @keydown=${this.stop}>
+      ${renderAlerts({
+        alerts: this.activeAlerts,
+        maxVisible: config.alerts?.max_visible ?? ALERT_DEFAULTS.max_visible,
+        expanded: this._alertsOpen,
+        onToggle: this.toggleAlerts,
+        windows,
+        localize: this.localize,
+      })}
+    </div>`;
   }
 
   private renderForecast(

@@ -5,6 +5,8 @@ import { EDITOR_TAG } from "../const";
 import type { Translate } from "../localize";
 import { createTranslator } from "../localize";
 import type { HomeAssistant } from "../types/ha";
+import type { AlertsConfig } from "../utils/alerts";
+import { ALERT_DEFAULTS, compactAlerts } from "../utils/alerts";
 import { defaultThresholds } from "../utils/temperature";
 import { convertTemperature, temperatureUnit } from "../utils/units";
 
@@ -102,6 +104,15 @@ class HaForecastCardEditor extends LitElement {
       },
       {
         type: "expandable",
+        name: "alerts", // nested on purpose: the card reads `alerts.entities`, `alerts.min_level`...
+        schema: [
+          { name: "entities", selector: { entity: { multiple: true, filter: [{ domain: ["sensor", "binary_sensor"] }] } } },
+          { name: "min_level", selector: { number: { min: 1, max: 4, step: 1, mode: "slider" } } },
+          { name: "max_visible", selector: { number: { min: 1, max: 5, mode: "box" } } },
+        ],
+      },
+      {
+        type: "expandable",
         flatten: true, // keep the fields at the top level of the config (not under `section_*`)
         name: "section_actions",
         schema: [
@@ -123,6 +134,13 @@ class HaForecastCardEditor extends LitElement {
     if (!this.hass || !this._config) return nothing;
     const t: Translate = createTranslator((this._config.language as string | undefined) ?? this.hass.language);
     const data = { ...this.defaults(), ...(this._draft ?? this._config) };
+    // Only entity ids go through the picker: object entries (custom adapters) are YAML-only and kept on save.
+    const alerts = (data.alerts ?? {}) as Partial<AlertsConfig>;
+    data.alerts = {
+      ...ALERT_DEFAULTS,
+      ...alerts,
+      entities: (alerts.entities ?? []).filter((item): item is string => typeof item === "string"),
+    };
     const invalid = !thresholdsInOrder(data.cold_threshold, data.hot_threshold);
     return html`
       <ha-form
@@ -143,8 +161,14 @@ class HaForecastCardEditor extends LitElement {
 
   private onValueChanged(event: CustomEvent<{ value: Record<string, unknown> }>): void {
     event.stopPropagation();
-    const value = event.detail.value;
-    this._draft = value;
+    const { alerts, ...rest } = event.detail.value;
+    const yamlOnly = ((this._config?.alerts as Partial<AlertsConfig> | undefined)?.entities ?? []).filter(
+      (item) => typeof item !== "string",
+    );
+    const picked = alerts as Partial<AlertsConfig> | undefined;
+    const merged = compactAlerts(picked ? ({ ...picked, entities: [...(picked.entities ?? []), ...yamlOnly] } as AlertsConfig) : undefined);
+    const value: Record<string, unknown> = { ...rest, ...(merged ? { alerts: merged } : {}) };
+    this._draft = { ...event.detail.value };
     // Invalid input stays in the form (with an error) and is not saved, so the card keeps its last valid config.
     if (!thresholdsInOrder(value.cold_threshold, value.hot_threshold)) return;
     this.dispatchEvent(

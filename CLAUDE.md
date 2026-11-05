@@ -20,12 +20,12 @@ TypeScript + Lit (no decorators: `static properties` + `declare` fields), Vite l
 
 - `src/ha-forecast-card.ts`: card element, `shouldUpdate` filtering, `customCards` registration
 - `src/editor/`: `ha-form` visual editor
-- `src/views/`: render functions (no extra custom elements): `icons.ts` (SVG sprite + condition→icon), `chart.ts` (hourly/daily SVG chart), `attributes.ts` (humidity/wind/UV strip)
+- `src/views/`: render functions (no extra custom elements): `icons.ts` (SVG sprite + condition→icon), `chart.ts` (hourly/daily SVG chart), `attributes.ts` (humidity/wind/UV strip), `alerts.ts` (alert banner and scrollable list)
 - `src/utils/forecast-view.ts` (slot selection, scales, rain bars) and `format.ts` (Intl formatters, cached): pure and tested
 - `src/controllers/forecast-subscription.ts`: `weather/subscribe_forecast` lifecycle (ReactiveController)
 - `src/config.ts`: config types, defaults, `parseConfig` validation
 - `src/localize/`: `createTranslator`; add a language by adding `translations/<lang>.json` and registering it in `index.ts`
-- `src/utils/`: pure, unit-tested logic (`scales.ts` level thresholds, `temperature.ts` colour ramp, `units.ts`)
+- `src/utils/`: pure, unit-tested logic (`alerts.ts` provider adapters → normalized alerts, `scales.ts` level thresholds, `temperature.ts` colour ramp, `units.ts`)
 - `src/styles/tokens.ts`: `--hfc-*` variables derived from HA theme variables; all colours go through these
 - `test/`: Vitest specs. Keep logic in `utils/` so it stays testable without a DOM.
 

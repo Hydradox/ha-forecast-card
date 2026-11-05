@@ -29,6 +29,7 @@ A Home Assistant Lovelace card that shows the weather forecast at a glance: a te
 - **Humidity, wind and UV** with a level label and a 5-segment scale.
 - **Temperature colours** for the header icon and the chart line, with configurable cold and hot thresholds.
 - **Per-value sensor overrides**: use your own sensors for temperature, humidity, wind speed or UV and get their updates in realtime.
+- **Weather alerts** from Meteoalarm, NWS, Environment Canada or any sensor, shown as a banner that expands into a scrollable list.
 - **Tap actions** on the card and on the temperature (by default, the temperature opens the sensor history).
 - **Visual editor** for every option, and everything is also available in YAML.
 - **Themes**: only Home Assistant theme variables are used, so light, dark and custom themes apply automatically.
@@ -99,6 +100,7 @@ tap_action:
 | `hot_threshold` | number | `35` °C / `95` °F | At or above this temperature the colour is fully hot (red). Must be greater than `cold_threshold`. |
 | `tap_action` | action | `more-info` | What tapping the card does. Opens the weather entity by default. |
 | `temperature_tap_action` | action | `more-info` | What tapping the temperature does. Opens the history of `temperature_entity`, or the weather entity if none is set. |
+| `alerts` | object | | Weather alerts, see [Alerts](#alerts). |
 | `language` | string | Home Assistant language | Force a language (`en`, `es`). |
 
 **Thresholds** are in your Home Assistant temperature unit. Leave them out to use the defaults, which follow the unit system.
@@ -106,6 +108,59 @@ tap_action:
 **Actions** support `more-info`, `navigate`, `url`, `toggle`, `perform-action` and `none`. Only tap is supported (no hold or double tap yet).
 
 **Missing data** is handled gracefully: humidity, wind and UV only appear when a value exists, and rain falls back to precipitation probability if the integration provides no amounts.
+
+### Alerts
+
+Home Assistant has no standard weather-alert API, so the card reads alerts from the entities your provider integration creates. An adapter per provider converts them to one level scale: 1 yellow, 2 orange, 3 red, 4 extreme.
+
+```yaml
+type: custom:ha-forecast-card
+entity: weather.home
+alerts:
+  entities:
+    - binary_sensor.meteoalarm_madrid
+    - entity: sensor.mi_proveedor
+      adapter: custom
+      level_attr: nivel
+      event_attr: titulo
+      expires_attr: fin
+      levels:
+        leve: 1
+        fuerte: 3
+  min_level: 1
+  max_visible: 1
+```
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `alerts.entities` | list | **required** | Entity ids, or objects with the options below. |
+| `alerts.min_level` | 1–4 | `1` | Hide alerts below this level. |
+| `alerts.max_visible` | integer ≥ 1 | `1` | Alerts shown while collapsed. The rest, and the descriptions, appear when expanded. |
+
+Options of an entity object:
+
+| Option | Description |
+| --- | --- |
+| `entity` | **Required.** The alert entity. |
+| `adapter` | `auto` (default, detected from the entity), `meteoalarm`, `nws`, `environment_canada` or `custom`. |
+| `level_attr` | Attribute holding the level. With `custom` it is required. |
+| `event_attr`, `headline_attr`, `description_attr`, `starts_attr`, `expires_attr` | Attribute names, to override what the adapter looks for. |
+| `levels` | Maps the raw value of `level_attr` to a level (0 hides it). Numbers 1–4 need no map. |
+
+How each provider is mapped:
+
+| Provider | Reads | Level |
+| --- | --- | --- |
+| Meteoalarm | `awareness_level` colour, else `severity` | yellow / Moderate = 1, orange / Severe = 2, red / Extreme = 3. Green and Minor are hidden. |
+| NWS | `severity` of each item in the `alerts` attribute | Minor = 1, Moderate = 2, Severe = 3, Extreme = 4 |
+| Environment Canada | The sensor type (`*_warnings`, `*_watches`, `*_statements`, `*_advisories`) | warning = 3, watch = 2, statement and advisory = 1. Endings are hidden. |
+| Anything else | `custom` adapter | From `level_attr` and `levels`. |
+
+An entity can carry one alert in its attributes, or a list in an `alerts` attribute. Inactive entities (`off`, `0`, `unavailable`) and alerts whose end time has passed are ignored. With no alerts the banner takes no space. When the expanded list is taller than 300 px it scrolls vertically; change that with the `--hfc-alerts-max-height` CSS variable. Alert colours are `--hfc-alert-1` to `--hfc-alert-4`.
+
+The visual editor lists entity ids. Entries that use an adapter object are YAML-only and are kept when you edit in the UI.
+
+> The attribute names above come from the integrations' documented behaviour and have not been checked against live data yet. If an alert does not show, check the entity attributes in Developer Tools and use `custom` with the matching attribute names.
 
 ### Scales
 
