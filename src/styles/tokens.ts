@@ -14,8 +14,23 @@ export const tokens = css`
     --hfc-accent: var(--primary-color);
     --hfc-radius: var(--ha-card-border-radius, 12px);
 
-    /* Precipitation bars */
+    --hfc-surface: var(--ha-card-background, var(--card-background-color, #fff));
+
+    /* Precipitation */
     --hfc-rain: var(--info-color, var(--primary-color));
+    --hfc-rain-bar: color-mix(in srgb, var(--hfc-rain) 30%, transparent);
+    --hfc-rain-text: color-mix(in srgb, var(--hfc-rain) 65%, var(--hfc-text));
+
+    /* Weather icons */
+    --hfc-sun-fill: var(--amber-color, #ffb300);
+    --hfc-sun-stroke: var(--orange-color, #ef6c00);
+    --hfc-cloud-stroke: var(--blue-grey-color, #607d8b);
+    --hfc-cloud-fill: color-mix(in srgb, var(--hfc-cloud-stroke) 14%, var(--hfc-surface));
+    --hfc-moon-stroke: var(--indigo-color, #5c6bc0);
+    --hfc-moon-fill: color-mix(in srgb, var(--hfc-moon-stroke) 15%, var(--hfc-surface));
+    --hfc-bolt: var(--amber-color, #ffb300);
+    --hfc-snow: var(--light-blue-color, #4fc3f7);
+    --hfc-warning: var(--error-color, #db4437);
 
     /* 5-level scales: from low to high. Semantic HA colors with sane fallbacks. */
     --hfc-humidity-1: var(--warning-color, #ffa600);

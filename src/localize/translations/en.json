@@ -61,5 +61,12 @@
     "section_sensors": "Sensor overrides",
     "section_colors": "Temperature colours",
     "section_actions": "Actions"
+  },
+  "chart": {
+    "label_hourly": "Hourly temperature from {min}° to {max}°",
+    "label_daily": "Daily temperatures from {min}° to {max}°",
+    "no_data": "No temperature data",
+    "scroll": "Hourly forecast, scroll to see more",
+    "days": "Daily forecast"
   }
 }

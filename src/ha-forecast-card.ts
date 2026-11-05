@@ -3,43 +3,55 @@ import { LitElement, html, nothing } from "lit";
 import type { ResolvedConfig } from "./config";
 import { parseConfig } from "./config";
 import { CARD_TAG, EDITOR_TAG } from "./const";
-import { ForecastSubscription } from "./controllers/forecast-subscription";
+import { ForecastSubscription, supportsForecast } from "./controllers/forecast-subscription";
 import type { Translate } from "./localize";
 import { createTranslator } from "./localize";
 import { cardStyles } from "./styles/card.styles";
 import { tokens } from "./styles/tokens";
 import type { ActionConfig, GridOptions, HassEntity, HomeAssistant } from "./types/ha";
-import type { ForecastType } from "./types/weather";
 import { isInteractive, runAction } from "./utils/actions";
+import type { Formatters } from "./utils/format";
+import { createFormatters } from "./utils/format";
+import { cardinal, dailySlots, defined, hourlySlots } from "./utils/forecast-view";
+import { LEVEL_KEYS, getLevel } from "./utils/scales";
 import { resolveThresholds, temperatureColor } from "./utils/temperature";
-import { toCelsius } from "./utils/units";
+import { convertTemperature, toCelsius, toKmh } from "./utils/units";
+import type { MetricView } from "./views/attributes";
+import { renderAttributes } from "./views/attributes";
+import { minChartWidth, renderChart } from "./views/chart";
+import { iconSprite, weatherIcon } from "./views/icons";
 
 import "./editor/ha-forecast-card-editor";
 
-const VIEW_TO_FORECAST: Record<ResolvedConfig["default_view"], ForecastType> = {
-  hourly: "hourly",
-  daily: "daily",
-};
+type View = ResolvedConfig["default_view"];
 
 class HaForecastCard extends LitElement {
   static override properties = {
     hass: { attribute: false },
     _config: { state: true },
     _view: { state: true },
+    _width: { state: true },
   };
   static override styles = [tokens, cardStyles];
 
   declare hass?: HomeAssistant;
   declare _config?: ResolvedConfig;
-  declare _view: ResolvedConfig["default_view"];
+  declare _view: View;
+  /** Width available to the forecast area, from a ResizeObserver. */
+  declare _width: number;
 
-  private readonly forecast = new ForecastSubscription(this);
+  private readonly hourly = new ForecastSubscription(this);
+  private readonly daily = new ForecastSubscription(this);
   private localize: Translate = createTranslator(undefined);
-  private translateLanguage: string | undefined;
+  private formatters: Formatters = createFormatters(undefined);
+  private i18nKey: string | undefined;
+  private resizeObserver?: ResizeObserver;
+  private observed?: Element;
 
   constructor() {
     super();
     this._view = "hourly";
+    this._width = 0;
   }
 
   // ── Card contract ──────────────────────────────────────────────────────────
@@ -50,11 +62,11 @@ class HaForecastCard extends LitElement {
   }
 
   getCardSize(): number {
-    return 5;
+    return 6;
   }
 
   getGridOptions(): GridOptions {
-    return { columns: 12, rows: 5, min_columns: 6, min_rows: 4 };
+    return { columns: 12, rows: 6, min_columns: 6, min_rows: 4 };
   }
 
   static getStubConfig(hass?: HomeAssistant): Record<string, unknown> {
@@ -64,6 +76,13 @@ class HaForecastCard extends LitElement {
 
   static getConfigElement(): HTMLElement {
     return document.createElement(EDITOR_TAG);
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = undefined;
+    this.observed = undefined;
   }
 
   // ── Update pipeline ────────────────────────────────────────────────────────
@@ -83,11 +102,27 @@ class HaForecastCard extends LitElement {
     const config = this._config;
     if (!config) return;
     const language = config.language ?? this.hass?.locale?.language ?? this.hass?.language;
-    if (language !== this.translateLanguage) {
-      this.translateLanguage = language;
+    const key = [language, this.hass?.locale?.time_format, this.hass?.locale?.time_zone].join("|");
+    if (key !== this.i18nKey) {
+      this.i18nKey = key;
       this.localize = createTranslator(language);
+      this.formatters = createFormatters(language, this.hass?.locale, this.hass?.config.time_zone);
     }
-    this.forecast.configure(this.hass, config.entity, VIEW_TO_FORECAST[this._view]);
+    this.hourly.configure(this.hass, config.entity, "hourly");
+    this.daily.configure(this.hass, config.entity, "daily");
+  }
+
+  protected override updated(): void {
+    // Observe the forecast area (it only exists once data is available).
+    const target = this.renderRoot.querySelector(".forecast");
+    if (target === (this.observed ?? null) || typeof ResizeObserver === "undefined") return;
+    this.resizeObserver ??= new ResizeObserver(([entry]) => {
+      const width = Math.floor(entry.contentRect.width);
+      if (width !== this._width) this._width = width;
+    });
+    if (this.observed) this.resizeObserver.unobserve(this.observed);
+    this.observed = target ?? undefined;
+    if (target) this.resizeObserver.observe(target);
   }
 
   private watchedEntities(): string[] {
@@ -132,6 +167,18 @@ class HaForecastCard extends LitElement {
     };
   }
 
+  /** Tabs/scroller live inside the card, so their events must not trigger the card action. */
+  private stop = (event: Event): void => event.stopPropagation();
+
+  private selectView(view: View): void {
+    this._view = view;
+  }
+
+  private onScroll(event: Event): void {
+    const el = event.currentTarget as HTMLElement;
+    el.toggleAttribute("data-end", el.scrollLeft + el.clientWidth >= el.scrollWidth - 2);
+  }
+
   // ── Rendering ──────────────────────────────────────────────────────────────
 
   protected override render(): TemplateResult | typeof nothing {
@@ -143,6 +190,13 @@ class HaForecastCard extends LitElement {
       return html`<ha-card><div class="empty">${this.localize("common.unavailable")}</div></ha-card>`;
     }
     const interactive = isInteractive(this.cardAction());
+    const now = new Date();
+    const current = this.currentTemperature(weather);
+    const thresholds = resolveThresholds(config, this.hass.config.unit_system.temperature);
+    const views = this.availableViews(weather);
+    const view = views.includes(this._view) ? this._view : views[0];
+    const metrics = this.metrics(weather);
+
     return html`
       <ha-card
         class=${interactive ? "interactive" : ""}
@@ -151,49 +205,201 @@ class HaForecastCard extends LitElement {
         @click=${this.onCardTap}
         @keydown=${this.onKeydown(this.onCardTap)}
       >
-        ${this.renderHeader(weather)}
+        ${iconSprite} ${this.renderHeader(weather, current, thresholds, now)}
+        ${view ? this.renderForecast(weather, view, views, current, thresholds, now) : nothing}
+        ${metrics.length ? renderAttributes(metrics) : nothing}
       </ha-card>
     `;
   }
 
-  private renderHeader(weather: HassEntity): TemplateResult {
+  /** The unit the *displayed* current temperature is in (override sensor wins). */
+  private temperatureUnit(weather: HassEntity): string {
+    const override = this.overrideEntity(this._config?.temperature_entity);
+    return (
+      ((override ? override.attributes.unit_of_measurement : weather.attributes.temperature_unit) as string | undefined) ??
+      this.hass!.config.unit_system.temperature
+    );
+  }
+
+  private overrideEntity(id: string | undefined): HassEntity | undefined {
+    return id ? this.hass!.states[id] : undefined;
+  }
+
+  private currentTemperature(weather: HassEntity): number | undefined {
+    const override = this.overrideEntity(this._config?.temperature_entity);
+    const raw = override ? override.state : weather.attributes.temperature;
+    const value = raw === null || raw === undefined || raw === "" ? NaN : Number(raw);
+    return Number.isFinite(value) ? value : undefined;
+  }
+
+  private availableViews(weather: HassEntity): View[] {
+    const features = weather.attributes.supported_features;
+    const views: View[] = [];
+    if (supportsForecast(features, "hourly")) views.push("hourly");
+    if (supportsForecast(features, "daily")) views.push("daily");
+    return views;
+  }
+
+  private conditionLabel(weather: HassEntity): string {
+    const hass = this.hass!;
+    return (
+      hass.formatEntityState?.(weather) ||
+      hass.localize?.(`component.weather.entity_component._.state.${weather.state}`) ||
+      weather.state
+    );
+  }
+
+  private renderHeader(
+    weather: HassEntity,
+    temperature: number | undefined,
+    thresholds: ReturnType<typeof resolveThresholds>,
+    now: Date,
+  ): TemplateResult {
     const config = this._config!;
-    const attrs = weather.attributes;
-    const override = config.temperature_entity && this.hass!.states[config.temperature_entity];
-    const unit =
-      ((override ? override.attributes.unit_of_measurement : attrs.temperature_unit) as string | undefined) ??
-      this.hass!.config.unit_system.temperature;
-    const raw = override ? Number(override.state) : Number(attrs.temperature);
-    const temperature = Number.isFinite(raw) ? raw : undefined;
-    const name = config.name ?? (attrs.friendly_name as string | undefined) ?? weather.entity_id;
-    const thresholds = resolveThresholds(config, this.hass!.config.unit_system.temperature);
+    const fmt = this.formatters;
+    const unit = this.temperatureUnit(weather);
+    const name = config.name ?? (weather.attributes.friendly_name as string | undefined) ?? weather.entity_id;
     const circle =
       temperature === undefined
         ? "transparent"
         : `color-mix(in srgb, ${temperatureColor(toCelsius(temperature, unit), thresholds)} 20%, transparent)`;
-    const temperatureInteractive = isInteractive(this.temperatureAction());
-    const format = new Intl.NumberFormat(this.translateLanguage, { maximumFractionDigits: 1 });
+    const interactive = isInteractive(this.temperatureAction());
+    const today = dailySlots(this.daily.forecast, now, 1, fmt, "")[0];
+    const range =
+      today?.isCurrent && defined(today.temperature) && defined(today.templow)
+        ? `${this.localize("common.max")} ${fmt.number(today.temperature)}° · ${this.localize("common.min")} ${fmt.number(today.templow)}°`
+        : undefined;
 
     return html`
       <div class="header">
-        <div class="icon" style="--hfc-circle: ${circle}"></div>
+        <div class="icon" style="--hfc-circle: ${circle}">${weatherIcon(weather.state, 38)}</div>
         <div class="info">
           ${config.show_name ? html`<span class="secondary">${name}</span>` : nothing}
-          <span class="state">${weather.state}</span>
+          <span class="state">${this.conditionLabel(weather)}</span>
+          ${range ? html`<span class="range">${range}</span>` : nothing}
         </div>
         ${temperature === undefined
           ? nothing
           : html`<div
-              class="temperature ${temperatureInteractive ? "interactive" : ""}"
-              role=${temperatureInteractive ? "button" : nothing}
-              tabindex=${temperatureInteractive ? 0 : nothing}
+              class="temperature ${interactive ? "interactive" : ""}"
+              role=${interactive ? "button" : nothing}
+              tabindex=${interactive ? 0 : nothing}
               @click=${this.onTemperatureTap}
               @keydown=${this.onKeydown(this.onTemperatureTap)}
             >
-              ${format.format(temperature)}<span class="unit">${unit}</span>
+              ${fmt.number(temperature, 1)}<span class="unit">${unit}</span>
             </div>`}
       </div>
     `;
+  }
+
+  private renderForecast(
+    weather: HassEntity,
+    view: View,
+    views: View[],
+    current: number | undefined,
+    thresholds: ReturnType<typeof resolveThresholds>,
+    now: Date,
+  ): TemplateResult {
+    const config = this._config!;
+    const attrs = weather.attributes;
+    const forecastUnit = (attrs.temperature_unit as string | undefined) ?? this.hass!.config.unit_system.temperature;
+    const precipitationUnit =
+      (attrs.precipitation_unit as string | undefined) ?? this.hass!.config.unit_system.precipitation ?? "mm";
+    const data = view === "hourly" ? this.hourly.forecast : this.daily.forecast;
+
+    const slots =
+      view === "hourly"
+        ? hourlySlots(
+            data,
+            now,
+            config.hours_to_show,
+            this.formatters,
+            {
+              condition: weather.state,
+              temperature:
+                current === undefined ? undefined : convertTemperature(current, this.temperatureUnit(weather), forecastUnit),
+            },
+            this.localize("common.now"),
+          )
+        : dailySlots(data, now, config.days_to_show, this.formatters, this.localize("common.today"));
+
+    const width = this._width;
+    const scrollable = width > 0 && width < minChartWidth(view, slots.length);
+
+    return html`
+      ${views.length > 1
+        ? html`<div class="tabs" role="group" aria-label=${this.localize("tabs.label")} @click=${this.stop} @keydown=${this.stop}>
+            ${views.map(
+              (v) => html`<button type="button" aria-pressed=${v === view} @click=${() => this.selectView(v)}>
+                ${this.localize(`tabs.${v}`)}
+              </button>`,
+            )}
+          </div>`
+        : nothing}
+      <div class="forecast" @click=${this.stop} @keydown=${this.stop}>
+        ${data === undefined
+          ? nothing
+          : html`<div
+              class="scroller ${scrollable ? "scrollable" : ""}"
+              tabindex=${scrollable ? 0 : nothing}
+              role=${scrollable ? "region" : nothing}
+              aria-label=${scrollable ? this.localize(view === "hourly" ? "chart.scroll" : "chart.days") : nothing}
+              @scroll=${this.onScroll}
+            >
+              ${renderChart({
+                kind: view,
+                slots,
+                width,
+                temperatureUnit: forecastUnit,
+                precipitationUnit,
+                thresholds,
+                fmt: this.formatters,
+                localize: this.localize,
+              })}
+            </div>`}
+      </div>
+    `;
+  }
+
+  private metrics(weather: HassEntity): MetricView[] {
+    const config = this._config!;
+    const hass = this.hass!;
+    const attrs = weather.attributes;
+    const fmt = this.formatters;
+    const read = (id: string | undefined, fallback: unknown) => {
+      const override = this.overrideEntity(id);
+      const raw = override ? override.state : fallback;
+      const value = raw === null || raw === undefined || raw === "" ? NaN : Number(raw);
+      return { value, unit: override?.attributes.unit_of_measurement as string | undefined };
+    };
+    const out: MetricView[] = [];
+    const push = (metric: "humidity" | "wind" | "uv", value: number, text: string, scaled = value) => {
+      const level = getLevel(metric, scaled);
+      out.push({
+        metric,
+        value: text,
+        level,
+        levelLabel: this.localize(`levels.${metric}.${LEVEL_KEYS[metric][level]}`),
+        name: this.localize(`attributes.${metric}`),
+      });
+    };
+
+    const humidity = read(config.humidity_entity, attrs.humidity);
+    if (Number.isFinite(humidity.value)) push("humidity", humidity.value, `${fmt.number(humidity.value)} %`);
+
+    const wind = read(config.wind_speed_entity, attrs.wind_speed);
+    if (Number.isFinite(wind.value)) {
+      const unit =
+        wind.unit ?? (attrs.wind_speed_unit as string | undefined) ?? hass.config.unit_system.wind_speed ?? "km/h";
+      const bearing = cardinal(attrs.wind_bearing as number | string | undefined);
+      const direction = bearing ? (hass.localize?.(`ui.card.weather.cardinal_direction.${bearing.toLowerCase()}`) || bearing) : "";
+      push("wind", wind.value, `${fmt.number(wind.value, 1)} ${unit}${direction ? ` ${direction}` : ""}`, toKmh(wind.value, unit));
+    }
+
+    const uv = read(config.uv_index_entity, attrs.uv_index);
+    if (Number.isFinite(uv.value)) push("uv", uv.value, fmt.number(uv.value, 1));
+    return out;
   }
 }
 

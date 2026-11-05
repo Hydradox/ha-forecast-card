@@ -61,5 +61,12 @@
     "section_sensors": "Sensores personalizados",
     "section_colors": "Colores de temperatura",
     "section_actions": "Acciones"
+  },
+  "chart": {
+    "label_hourly": "Temperatura por horas de {min}° a {max}°",
+    "label_daily": "Temperaturas diarias de {min}° a {max}°",
+    "no_data": "Sin datos de temperatura",
+    "scroll": "Previsión por horas, desliza para ver más",
+    "days": "Previsión diaria"
   }
 }

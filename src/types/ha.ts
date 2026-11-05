@@ -36,6 +36,10 @@ export interface HomeAssistant {
   locale: HassLocale;
   connection: HassConnection;
   themes?: { darkMode?: boolean };
+  /** Translate a HA frontend string key, e.g. `ui.card.weather.cardinal_direction.n`. */
+  localize?(key: string, ...args: unknown[]): string;
+  /** Localised, human readable entity state (newer HA versions). */
+  formatEntityState?(stateObj: HassEntity): string;
   callService(
     domain: string,
     service: string,
