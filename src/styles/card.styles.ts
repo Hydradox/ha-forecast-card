@@ -226,7 +226,7 @@ export const cardStyles = css`
   /* Humidity / wind / UV strip */
   .attributes {
     display: grid;
-    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    grid-template-columns: var(--columns);
   }
   .metric {
     display: flex;

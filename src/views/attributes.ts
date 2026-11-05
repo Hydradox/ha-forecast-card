@@ -15,8 +15,12 @@ export interface MetricView {
 
 /** Humidity / wind / UV strip: level label, icon + value and a 5-segment scale bar. */
 export function renderAttributes(metrics: readonly MetricView[]): TemplateResult {
-  return html`<div class="attributes" style="--n:${metrics.length}">${metrics.map(renderMetric)}</div>`;
+  const columns = metrics.map((m) => `minmax(0, ${WEIGHT[m.metric]}fr)`).join(" ");
+  return html`<div class="attributes" style="--columns:${columns}">${metrics.map(renderMetric)}</div>`;
 }
+
+/** Wind carries the longest text ("10 km/h ESE"), so it gets a wider column. */
+const WEIGHT: Record<ScaleMetric, number> = { humidity: 1, wind: 1.45, uv: 1 };
 
 function renderMetric(m: MetricView): TemplateResult {
   return html`

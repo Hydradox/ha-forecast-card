@@ -73,6 +73,6 @@ Separate workflows in `.github/workflows/`, with shared setup in `.github/action
 
 - `hacs.json` at the repo root (`name`, `render_readme`, optionally `filename`).
 - The built JS file must be named after the repo (`ha-forecast-card.js`) and be attached to GitHub **releases** (HACS prefers release assets over committed `dist/`). Releases use semver tags.
-- README must document installation (HACS + manual), resource URL (`/hacsfiles/ha-forecast-card/ha-forecast-card.js`, type `module`) and every config option, with screenshots.
+- README must document installation (HACS + manual), the resource URL and every config option, and must contain images (HACS `images` check). Screenshots (dark and light, hourly and daily) live in `docs/images/` and are linked with absolute `raw.githubusercontent.com/.../main/...` URLs so they render inside HACS; they 404 until merged to `main`. Keep README options in sync with `src/config.ts` and the editor.
 - CI under `.github/workflows/`: build + lint + test, plus the `hacs/action` validation and a release workflow that builds and uploads the bundle.
-- Repo needs a description and topics on GitHub to pass HACS validation.
+- The GitHub repo needs a description, topics and Issues enabled to pass HACS validation (set in the repo settings; not stored in the code).

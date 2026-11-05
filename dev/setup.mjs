@@ -21,10 +21,13 @@ const post = (path, body, token) =>
 async function waitForHa() {
   for (let i = 0; i < 120; i++) {
     try {
-      return await json("/api/onboarding");
+      const response = await fetch(`${base}/api/onboarding`);
+      if (response.status === 404) return []; // up, and onboarding is finished (HA stops serving it)
+      if (response.ok) return await response.json();
     } catch {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // not reachable yet
     }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
   }
   throw new Error("Home Assistant did not come up in 4 minutes (see `dev/ha.sh logs`)");
 }
