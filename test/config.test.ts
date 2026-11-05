@@ -37,3 +37,11 @@ describe("compactConfig", () => {
     expect(out).toEqual({ type: "x", entity: "weather.a", hours_to_show: 12, hot_threshold: 90 });
   });
 });
+
+describe("threshold order", () => {
+  it("rejects hot <= cold", () => {
+    expect(() => parseConfig({ entity: "weather.a", cold_threshold: 20, hot_threshold: 20 })).toThrow(/greater/);
+    expect(() => parseConfig({ entity: "weather.a", cold_threshold: 20, hot_threshold: 10 })).toThrow(/greater/);
+    expect(parseConfig({ entity: "weather.a", cold_threshold: 10, hot_threshold: 20 }).hot_threshold).toBe(20);
+  });
+});

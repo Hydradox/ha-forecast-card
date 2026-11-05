@@ -118,10 +118,17 @@ export const cardStyles = css`
   }
   .scroller {
     overflow-x: auto;
-    scrollbar-width: none;
+    /* Visible, discreet scrollbar so mouse users can see and grab it. */
+    scrollbar-width: thin;
+    scrollbar-color: var(--hfc-divider) transparent;
+    padding-bottom: 6px;
   }
-  .scroller::-webkit-scrollbar {
-    display: none;
+  .scroller.scrollable {
+    cursor: grab;
+  }
+  .scroller[data-dragging] {
+    cursor: grabbing;
+    user-select: none;
   }
   .scroller:focus-visible {
     outline: 2px solid var(--hfc-accent);

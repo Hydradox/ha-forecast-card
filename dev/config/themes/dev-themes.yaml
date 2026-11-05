@@ -1,0 +1,25 @@
+# Custom themes to check the card follows non-default HA themes.
+Dev Warm:
+  primary-color: "#d84315"
+  primary-text-color: "#3e2723"
+  secondary-text-color: "#8d6e63"
+  divider-color: "#d7ccc8"
+  ha-card-background: "#fff8f1"
+  card-background-color: "#fff8f1"
+  ha-card-border-radius: 20px
+  modes:
+    dark:
+      primary-color: "#ff8a65"
+      primary-text-color: "#ffe0d1"
+      secondary-text-color: "#bcaaa4"
+      divider-color: "#4e342e"
+      ha-card-background: "#2b1d1a"
+      card-background-color: "#2b1d1a"
+Dev Mono:
+  primary-color: "#00bfa5"
+  primary-text-color: "#cfd8dc"
+  secondary-text-color: "#78909c"
+  divider-color: "#37474f"
+  ha-card-background: "#102027"
+  card-background-color: "#102027"
+  ha-card-border-radius: 4px

@@ -129,3 +129,22 @@ describe("ha-forecast-card", () => {
     expect(card.shadowRoot!.querySelector(".secondary")).toBeNull();
   });
 });
+
+describe("drag to scroll", () => {
+  it("scrolls the chart when dragging with the mouse, but not on a plain click", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    const card = await mount(hass);
+    const scroller = card.shadowRoot!.querySelector(".scroller") as HTMLElement;
+    const pointer = (type: string, x: number) =>
+      scroller.dispatchEvent(new PointerEvent(type, { pointerType: "mouse", button: 0, clientX: x, bubbles: true }));
+
+    pointer("pointerdown", 200);
+    pointer("pointermove", 198); // below threshold
+    expect(scroller.hasAttribute("data-dragging")).toBe(false);
+    pointer("pointermove", 120);
+    expect(scroller.hasAttribute("data-dragging")).toBe(true);
+    expect(scroller.scrollLeft).toBe(80);
+    pointer("pointerup", 120);
+    expect(scroller.hasAttribute("data-dragging")).toBe(false);
+  });
+});

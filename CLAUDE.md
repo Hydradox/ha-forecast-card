@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-`ha-forecast-card` is a Home Assistant Lovelace custom card that previews weather forecasts and key weather attributes. It is distributed through GitHub and HACS (Dashboard/"plugin" category). The card renders the header (condition icon, name, state, max/min, temperature), Hourly/7-day tabs, the temperature line over precipitation bars, and the humidity/wind/UV strip. Not yet verified visually inside a real Home Assistant (dev environment is planned for the end).
+`ha-forecast-card` is a Home Assistant Lovelace custom card that previews weather forecasts and key weather attributes. It is distributed through GitHub and HACS (Dashboard/"plugin" category). The card renders the header (condition icon, name, state, max/min, temperature), Hourly/Daily tabs, the temperature line over precipitation bars, and the humidity/wind/UV strip. Not yet verified visually inside a real Home Assistant (dev environment is planned for the end).
 
-**Design source of truth:** the Claude artifact "Tarjeta de tiempo y clima", page "C4 v2a · Estados" (boards E1–E6): header with icon circle tinted by temperature, Hourly/7-day tabs, temperature line over rain bars, and a humidity/wind/UV strip where each metric shows a 5-level scale bar. Defaults to English (US); Spanish is also shipped.
+**Design source of truth:** the Claude artifact "Tarjeta de tiempo y clima", page "C4 v2a · Estados" (boards E1–E6): header with icon circle tinted by temperature, Hourly/Daily tabs, temperature line over rain bars, and a humidity/wind/UV strip where each metric shows a 5-level scale bar. Defaults to English (US); Spanish is also shipped.
 
 ## Stack and commands
 
@@ -30,6 +30,8 @@ TypeScript + Lit (no decorators: `static properties` + `declare` fields), Vite l
 - `test/`: Vitest specs. Keep logic in `utils/` so it stays testable without a DOM.
 
 Unit handling: everything internal is °C. Declare defaults once in °C (`DEFAULT_THRESHOLDS_C` in `utils/temperature.ts`) and convert via `utils/units.ts`; user thresholds are stored in the HA display unit, and the editor strips values equal to the defaults (`compactConfig`) so unit-dependent defaults keep following the unit system. Actions go through `utils/actions.ts` (self-contained, no frontend internals).
+
+Dev environment: `npm run dev:ha` runs a throwaway Home Assistant in Podman (`dev/ha.sh`, seed config in `dev/config`, onboarding and dashboard via `dev/setup.mjs`, login `dev`/`dev`). Use it, not mocks, to check visuals, themes and the editor.
 
 Naming gotcha: do not name a field `translate` on the element, since it shadows `HTMLElement.translate`.
 

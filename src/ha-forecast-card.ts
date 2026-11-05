@@ -174,6 +174,37 @@ class HaForecastCard extends LitElement {
     this._view = view;
   }
 
+  // Drag-to-scroll for mouse users (touch and trackpads already scroll natively).
+  private drag?: { x: number; scrollLeft: number; moved: boolean };
+
+  private onPointerDown = (event: PointerEvent): void => {
+    if (event.pointerType !== "mouse" || event.button !== 0) return;
+    const el = event.currentTarget as HTMLElement;
+    this.drag = { x: event.clientX, scrollLeft: el.scrollLeft, moved: false };
+  };
+
+  private onPointerMove = (event: PointerEvent): void => {
+    const drag = this.drag;
+    if (!drag) return;
+    const el = event.currentTarget as HTMLElement;
+    const delta = event.clientX - drag.x;
+    if (!drag.moved) {
+      if (Math.abs(delta) < 4) return; // a plain click is not a drag
+      drag.moved = true;
+      el.setAttribute("data-dragging", "");
+      el.setPointerCapture?.(event.pointerId);
+    }
+    el.scrollLeft = drag.scrollLeft - delta;
+  };
+
+  private onPointerEnd = (event: PointerEvent): void => {
+    if (!this.drag) return;
+    const el = event.currentTarget as HTMLElement;
+    this.drag = undefined;
+    el.removeAttribute("data-dragging");
+    if (el.hasPointerCapture?.(event.pointerId)) el.releasePointerCapture(event.pointerId);
+  };
+
   private onScroll(event: Event): void {
     const el = event.currentTarget as HTMLElement;
     el.toggleAttribute("data-end", el.scrollLeft + el.clientWidth >= el.scrollWidth - 2);
@@ -346,6 +377,10 @@ class HaForecastCard extends LitElement {
               role=${scrollable ? "region" : nothing}
               aria-label=${scrollable ? this.localize(view === "hourly" ? "chart.scroll" : "chart.days") : nothing}
               @scroll=${this.onScroll}
+              @pointerdown=${this.onPointerDown}
+              @pointermove=${this.onPointerMove}
+              @pointerup=${this.onPointerEnd}
+              @pointercancel=${this.onPointerEnd}
             >
               ${renderChart({
                 kind: view,

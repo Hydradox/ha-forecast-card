@@ -88,6 +88,9 @@ export function parseConfig(raw: unknown): ResolvedConfig {
       throw new Error(`\`${field}\` must be a number`);
     }
   }
+  if (config.cold_threshold !== undefined && config.hot_threshold !== undefined && config.hot_threshold <= config.cold_threshold) {
+    throw new Error("`hot_threshold` must be greater than `cold_threshold`");
+  }
   for (const field of ["tap_action", "temperature_tap_action"] as const) {
     const value = config[field];
     if (value !== undefined && !isActionConfig(value)) {
@@ -111,4 +114,9 @@ export function compactConfig(
       ([key, value]) => value !== undefined && value !== "" && value !== null && value !== defaults[key],
     ),
   );
+}
+
+/** Both thresholds (display unit) must be ordered; used by the editor, mirrors `parseConfig`. */
+export function thresholdsInOrder(cold: unknown, hot: unknown): boolean {
+  return !(typeof cold === "number" && typeof hot === "number" && hot <= cold);
 }

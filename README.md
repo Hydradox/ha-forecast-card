@@ -1,6 +1,6 @@
 # Forecast at glance (`ha-forecast-card`)
 
-Home Assistant Lovelace card to preview the weather forecast (hourly / 7 days) and key weather attributes (humidity, wind, UV) with a temperature line over rain bars.
+Home Assistant Lovelace card to preview the weather forecast (hourly / daily) and key weather attributes (humidity, wind, UV) with a temperature line over rain bars.
 
 > **Status:** project scaffolding. The card currently renders the header; chart, tabs and attribute strip are in progress.
 
@@ -55,6 +55,17 @@ npm run watch      # rebuild dist/ha-forecast-card.js on change
 npm run build      # production bundle
 npm run typecheck && npm run lint && npm test
 ```
+
+### Try it in a real Home Assistant (Podman)
+
+```bash
+npm run build         # or keep `npm run watch` running
+npm run dev:ha        # starts HA on http://localhost:8123 and sets everything up
+```
+
+Log in with `dev` / `dev`. The script registers the card as a dashboard resource, creates a "Forecast dev" dashboard with several card variants and adds template weather entities (`weather.dev_weather`, `weather.dev_weather_daily_only`) plus sensors, driven by input helpers (condition, temperature, humidity, wind, UV, rain) so you can change the fake weather live. Two custom themes (`Dev Warm`, `Dev Mono`) are available in your profile to check theming; switch to dark mode there too. To test °F, set the unit system to US customary in Settings → General.
+
+After rebuilding, run `npm run dev:ha` again (it is idempotent and busts the cache) or hard-reload the browser. Other commands: `npm run dev:ha:logs`, `npm run dev:ha:down`, `npm run dev:ha:reset` (wipes the dev HA state). Set `HA_PORT` / `HA_IMAGE` to override the port or image. The throwaway state lives in `dev/config` (git-ignored).
 
 ## License
 

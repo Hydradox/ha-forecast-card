@@ -1,7 +1,7 @@
 {
   "tabs": {
     "hourly": "Hourly",
-    "daily": "7 days",
+    "daily": "Daily",
     "label": "Forecast view"
   },
   "common": {
@@ -51,16 +51,17 @@
     "humidity_entity": "Humidity sensor",
     "wind_speed_entity": "Wind speed sensor",
     "uv_index_entity": "UV index sensor",
-    "cold_threshold": "Cold threshold",
-    "hot_threshold": "Hot threshold",
-    "cold_threshold_help": "At or below this the colour is fully cold (blue).",
-    "hot_threshold_help": "At or above this the colour is fully hot (red).",
+    "cold_threshold": "Cold",
+    "hot_threshold": "Hot",
+    "cold_threshold_help": "Fully blue at or below this.",
+    "hot_threshold_help": "Fully red at or above this.",
     "tap_action": "Tap action",
     "temperature_tap_action": "Temperature tap action",
-    "temperature_tap_action_help": "Defaults to the temperature sensor's history (or the weather entity if none is set).",
-    "section_sensors": "Sensor overrides",
-    "section_colors": "Temperature colours",
-    "section_actions": "Actions"
+    "temperature_tap_action_help": "Default: sensor history, or the weather entity.",
+    "section_sensors": "Sensors",
+    "section_actions": "Actions",
+    "threshold_order": "Hot must be higher than cold.",
+    "section_thresholds": "Thresholds"
   },
   "chart": {
     "label_hourly": "Hourly temperature from {min}° to {max}°",

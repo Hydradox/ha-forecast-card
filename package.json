@@ -12,7 +12,11 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "dev:ha": "bash dev/ha.sh up",
+    "dev:ha:down": "bash dev/ha.sh down",
+    "dev:ha:logs": "bash dev/ha.sh logs",
+    "dev:ha:reset": "bash dev/ha.sh reset"
   },
   "engines": {
     "node": ">=20"

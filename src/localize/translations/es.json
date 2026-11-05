@@ -1,7 +1,7 @@
 {
   "tabs": {
     "hourly": "Por horas",
-    "daily": "7 días",
+    "daily": "Por días",
     "label": "Vista de previsión"
   },
   "common": {
@@ -51,16 +51,17 @@
     "humidity_entity": "Sensor de humedad",
     "wind_speed_entity": "Sensor de velocidad del viento",
     "uv_index_entity": "Sensor de índice UV",
-    "cold_threshold": "Umbral de frío",
-    "hot_threshold": "Umbral de calor",
-    "cold_threshold_help": "Igual o por debajo, el color es totalmente frío (azul).",
-    "hot_threshold_help": "Igual o por encima, el color es totalmente cálido (rojo).",
+    "cold_threshold": "Frío",
+    "hot_threshold": "Calor",
+    "cold_threshold_help": "Totalmente azul igual o por debajo.",
+    "hot_threshold_help": "Totalmente rojo igual o por encima.",
     "tap_action": "Acción al pulsar",
     "temperature_tap_action": "Acción al pulsar la temperatura",
-    "temperature_tap_action_help": "Por defecto abre el historial del sensor de temperatura (o la entidad de tiempo si no hay).",
-    "section_sensors": "Sensores personalizados",
-    "section_colors": "Colores de temperatura",
-    "section_actions": "Acciones"
+    "temperature_tap_action_help": "Por defecto: historial del sensor o la entidad de tiempo.",
+    "section_sensors": "Sensores",
+    "section_actions": "Acciones",
+    "threshold_order": "Calor debe ser mayor que frío.",
+    "section_thresholds": "Umbrales"
   },
   "chart": {
     "label_hourly": "Temperatura por horas de {min}° a {max}°",
