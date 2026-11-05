@@ -119,10 +119,14 @@ export const cardStyles = css`
   }
   .scroller {
     overflow-x: auto;
-    /* Visible, discreet scrollbar so mouse users can see and grab it. */
+    /* Thin scrollbar, revealed on hover or keyboard focus so it stays out of the way. */
     scrollbar-width: thin;
-    scrollbar-color: var(--hfc-divider) transparent;
+    scrollbar-color: transparent transparent;
     padding-bottom: 6px;
+  }
+  .scroller:hover,
+  .scroller:focus-visible {
+    scrollbar-color: var(--hfc-divider) transparent;
   }
   .scroller.scrollable {
     cursor: grab;
