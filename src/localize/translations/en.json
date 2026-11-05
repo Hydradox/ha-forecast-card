@@ -1,0 +1,50 @@
+{
+  "tabs": {
+    "hourly": "Hourly",
+    "daily": "7 days",
+    "label": "Forecast view"
+  },
+  "common": {
+    "now": "Now",
+    "today": "Today",
+    "max": "Max",
+    "min": "Min",
+    "unavailable": "Unavailable",
+    "no_forecast": "No forecast available"
+  },
+  "attributes": {
+    "humidity": "Humidity",
+    "wind": "Wind",
+    "uv": "UV index"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Very dry",
+      "dry": "Dry",
+      "comfort": "Comfortable",
+      "humid": "Humid",
+      "saturated": "Saturated"
+    },
+    "wind": {
+      "light": "Light",
+      "moderate": "Moderate",
+      "strong": "Strong",
+      "intense": "Intense",
+      "storm": "Storm"
+    },
+    "uv": {
+      "low": "Low",
+      "moderate": "Moderate",
+      "high": "High",
+      "very_high": "Very high",
+      "extreme": "Extreme"
+    }
+  },
+  "editor": {
+    "entity": "Weather entity",
+    "name": "Name",
+    "default_view": "Default view",
+    "hours_to_show": "Hours to show",
+    "days_to_show": "Days to show"
+  }
+}

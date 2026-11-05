@@ -1,0 +1,6 @@
+{
+  "name": "Forecast at glance",
+  "render_readme": true,
+  "filename": "ha-forecast-card.js",
+  "homeassistant": "2023.9.0"
+}

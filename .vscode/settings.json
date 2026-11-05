@@ -1,0 +1,5 @@
+{
+  "json.schemas": [
+    { "fileMatch": ["/hacs.json"], "url": "./schemas/hacs.schema.json" }
+  ]
+}

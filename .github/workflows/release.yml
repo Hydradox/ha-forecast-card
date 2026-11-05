@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+# Never cancel a run on main: a half-finished release must not be interrupted.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    uses: ./.github/workflows/quality.yml
+
+  hacs:
+    uses: ./.github/workflows/hacs.yml
+
+  publish:
+    needs: [quality, hacs]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # tag, release, push the CHANGELOG commit
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # semantic-release needs the full history and tags
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,11 @@
+name: Setup
+description: Install Node and project dependencies (cached)
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: npm
+    - run: npm ci
+      shell: bash

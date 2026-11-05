@@ -1,0 +1,50 @@
+{
+  "tabs": {
+    "hourly": "Por horas",
+    "daily": "7 días",
+    "label": "Vista de previsión"
+  },
+  "common": {
+    "now": "Ahora",
+    "today": "Hoy",
+    "max": "Máx",
+    "min": "Mín",
+    "unavailable": "No disponible",
+    "no_forecast": "Sin previsión disponible"
+  },
+  "attributes": {
+    "humidity": "Humedad",
+    "wind": "Viento",
+    "uv": "Índice UV"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Muy seco",
+      "dry": "Seco",
+      "comfort": "Confort",
+      "humid": "Húmedo",
+      "saturated": "Saturado"
+    },
+    "wind": {
+      "light": "Suave",
+      "moderate": "Moderado",
+      "strong": "Fuerte",
+      "intense": "Intenso",
+      "storm": "Temporal"
+    },
+    "uv": {
+      "low": "Bajo",
+      "moderate": "Moderado",
+      "high": "Alto",
+      "very_high": "Muy alto",
+      "extreme": "Extremo"
+    }
+  },
+  "editor": {
+    "entity": "Entidad de tiempo",
+    "name": "Nombre",
+    "default_view": "Vista por defecto",
+    "hours_to_show": "Horas a mostrar",
+    "days_to_show": "Días a mostrar"
+  }
+}
