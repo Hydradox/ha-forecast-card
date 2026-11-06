@@ -1,0 +1,20 @@
+version: 2
+updates:
+  # Dependabot titles must be Conventional Commits (pr-title.yml): runtime deps
+  # (bundled into the card) release a patch, tooling and actions release nothing.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "fix(deps)"
+      prefix-development: "chore(deps)"
+    groups:
+      dev-dependencies:
+        dependency-type: development
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci(deps)"
