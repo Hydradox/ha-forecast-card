@@ -10,7 +10,7 @@
     "watch": "vite build --watch",
     "start": "vite",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "test": "vitest run",
     "test:watch": "vitest",
     "dev:ha": "bash dev/ha.sh up",
@@ -25,16 +25,14 @@
     "lit": "^3.3.3"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
     "conventional-changelog-conventionalcommits": "^10.4.1",
-    "eslint": "^10.14.0",
     "happy-dom": "^21.0.4",
+    "oxlint": "^1.92.0",
     "semantic-release": "^25.0.9",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.72.1",
+    "typescript": "^7.0.2",
     "vite": "^8.3.6",
     "vitest": "^5.1.0"
   },

@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Stack and commands
 
-TypeScript + Lit (no decorators: `static properties` + `declare` fields), Vite library build to one ES file, Vitest (happy-dom), ESLint flat config.
+TypeScript + Lit (no decorators: `static properties` + `declare` fields), Vite library build to one ES file, Vitest (happy-dom), Oxlint (`.oxlintrc.json`; typescript-eslint does not support TypeScript 7).
 
 - `npm run build`: production bundle to `dist/ha-forecast-card.js`
 - `npm run watch` / `npm start`: rebuild on change / Vite dev server
