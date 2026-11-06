@@ -44,6 +44,10 @@ A Home Assistant Lovelace card that shows the weather forecast at a glance: a te
 
 ### HACS
 
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Hydradox&repository=ha-forecast-card&category=plugin)
+
+Use the button above, or add it by hand:
+
 1. In HACS, open the three-dot menu → **Custom repositories**.
 2. Add `https://github.com/Hydradox/ha-forecast-card` with type **Dashboard**.
 3. Search for **Forecast at glance**, download it and reload your browser.
