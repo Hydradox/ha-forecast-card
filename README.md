@@ -33,7 +33,7 @@ A Home Assistant Lovelace card that shows the weather forecast at a glance: a te
 - **Tap actions** on the card and on the temperature (by default, the temperature opens the sensor history).
 - **Visual editor** for every option, and everything is also available in YAML.
 - **Themes**: only Home Assistant theme variables are used, so light, dark and custom themes apply automatically.
-- **Languages**: English and Spanish. Dates, times and numbers follow your Home Assistant locale and units.
+- **Languages**: English, Spanish, Dutch, German, French, Italian, Polish, Swedish, Danish, Norwegian and Portuguese. Dates, times and numbers follow your Home Assistant locale and units.
 
 ## Requirements
 

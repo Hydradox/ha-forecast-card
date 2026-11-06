@@ -1,0 +1,93 @@
+{
+  "tabs": {
+    "hourly": "Par heure",
+    "daily": "Par jour",
+    "label": "Vue des prévisions"
+  },
+  "common": {
+    "now": "Maintenant",
+    "today": "Aujourd’hui",
+    "max": "Max",
+    "min": "Min",
+    "unavailable": "Indisponible",
+    "no_forecast": "Aucune prévision disponible"
+  },
+  "attributes": {
+    "humidity": "Humidité",
+    "wind": "Vent",
+    "uv": "Indice UV"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Très sec",
+      "dry": "Sec",
+      "comfort": "Confortable",
+      "humid": "Humide",
+      "saturated": "Saturé"
+    },
+    "wind": {
+      "light": "Faible",
+      "moderate": "Modéré",
+      "strong": "Fort",
+      "intense": "Très fort",
+      "storm": "Tempête"
+    },
+    "uv": {
+      "low": "Faible",
+      "moderate": "Modéré",
+      "high": "Élevé",
+      "very_high": "Très élevé",
+      "extreme": "Extrême"
+    }
+  },
+  "editor": {
+    "entity": "Entité météo",
+    "name": "Nom",
+    "default_view": "Vue par défaut",
+    "hours_to_show": "Heures à afficher",
+    "days_to_show": "Jours à afficher",
+    "show_name": "Afficher le nom",
+    "temperature_entity": "Capteur de température",
+    "humidity_entity": "Capteur d’humidité",
+    "wind_speed_entity": "Capteur de vitesse du vent",
+    "uv_index_entity": "Capteur d’indice UV",
+    "cold_threshold": "Froid",
+    "hot_threshold": "Chaud",
+    "cold_threshold_help": "Entièrement bleu à cette valeur ou en dessous.",
+    "hot_threshold_help": "Entièrement rouge à cette valeur ou au-dessus.",
+    "tap_action": "Action au toucher",
+    "temperature_tap_action": "Action au toucher de la température",
+    "temperature_tap_action_help": "Par défaut : historique du capteur, ou l’entité météo.",
+    "section_sensors": "Capteurs",
+    "section_actions": "Actions",
+    "threshold_order": "Chaud doit être supérieur à froid.",
+    "section_thresholds": "Seuils",
+    "section_alerts": "Alertes",
+    "alerts": "Alertes",
+    "entities": "Entités d’alerte",
+    "entities_help": "Entités Meteoalarm, NWS ou Environment Canada. Les capteurs personnalisés nécessitent du YAML.",
+    "min_level": "Niveau minimal",
+    "min_level_help": "1 jaune, 2 orange, 3 rouge, 4 extrême.",
+    "max_visible": "Alertes affichées en mode réduit"
+  },
+  "chart": {
+    "label_hourly": "Température par heure de {min}° à {max}°",
+    "label_daily": "Températures par jour de {min}° à {max}°",
+    "no_data": "Aucune donnée de température",
+    "scroll": "Prévisions par heure, faites défiler pour en voir plus",
+    "days": "Prévisions par jour"
+  },
+  "alerts": {
+    "levels": {
+      "1": "Jaune",
+      "2": "Orange",
+      "3": "Rouge",
+      "4": "Extrême"
+    },
+    "hide": "Masquer les alertes",
+    "show_more": "Afficher {count} alertes de plus",
+    "show_details": "Afficher les détails de l’alerte",
+    "list": "Alertes météo, faites défiler pour en voir plus",
+    "until": "Jusqu’à"
+  }
+}

@@ -1,11 +1,20 @@
 import { DEFAULT_LANGUAGE } from "../const";
+import da from "./translations/da.json";
+import de from "./translations/de.json";
 import en from "./translations/en.json";
 import es from "./translations/es.json";
+import fr from "./translations/fr.json";
+import it from "./translations/it.json";
+import nb from "./translations/nb.json";
+import nl from "./translations/nl.json";
+import pl from "./translations/pl.json";
+import pt from "./translations/pt.json";
+import sv from "./translations/sv.json";
 
 type Dictionary = { [key: string]: string | Dictionary };
 
 /** Register a new language by adding its JSON file here. English is the fallback. */
-const DICTIONARIES: Record<string, Dictionary> = { en, es };
+const DICTIONARIES: Record<string, Dictionary> = { da, de, en, es, fr, it, nb, nl, no: nb, pl, pt, sv };
 
 export type Translate = (key: string, vars?: Record<string, string | number>) => string;
 
