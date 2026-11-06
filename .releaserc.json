@@ -12,13 +12,13 @@
             { "type": "feat", "section": "Features" },
             { "type": "fix", "section": "Bug fixes" },
             { "type": "perf", "section": "Performance" },
-            { "type": "refactor", "section": "Refactoring" },
-            { "type": "docs", "section": "Documentation" },
-            { "type": "build", "hidden": true },
-            { "type": "chore", "hidden": true },
-            { "type": "ci", "hidden": true },
-            { "type": "style", "hidden": true },
-            { "type": "test", "hidden": true }
+            { "type": "refactor", "section": "Refactoring", "effect": "changelog" },
+            { "type": "docs", "section": "Documentation", "effect": "changelog" },
+            { "type": "build", "effect": "hidden" },
+            { "type": "chore", "effect": "hidden" },
+            { "type": "ci", "effect": "hidden" },
+            { "type": "style", "effect": "hidden" },
+            { "type": "test", "effect": "hidden" }
           ]
         }
       }
