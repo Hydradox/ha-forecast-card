@@ -1,0 +1,93 @@
+{
+  "tabs": {
+    "hourly": "Per time",
+    "daily": "Per dag",
+    "label": "Værmeldingsvisning"
+  },
+  "common": {
+    "now": "Nå",
+    "today": "I dag",
+    "max": "Maks",
+    "min": "Min",
+    "unavailable": "Utilgjengelig",
+    "no_forecast": "Ingen værmelding tilgjengelig"
+  },
+  "attributes": {
+    "humidity": "Luftfuktighet",
+    "wind": "Vind",
+    "uv": "UV-indeks"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Veldig tørr",
+      "dry": "Tørr",
+      "comfort": "Behagelig",
+      "humid": "Fuktig",
+      "saturated": "Mettet"
+    },
+    "wind": {
+      "light": "Svak",
+      "moderate": "Moderat",
+      "strong": "Sterk",
+      "intense": "Veldig sterk",
+      "storm": "Storm"
+    },
+    "uv": {
+      "low": "Lav",
+      "moderate": "Moderat",
+      "high": "Høy",
+      "very_high": "Svært høy",
+      "extreme": "Ekstrem"
+    }
+  },
+  "editor": {
+    "entity": "Værentitet",
+    "name": "Navn",
+    "default_view": "Standardvisning",
+    "hours_to_show": "Timer som vises",
+    "days_to_show": "Dager som vises",
+    "show_name": "Vis navn",
+    "temperature_entity": "Temperatursensor",
+    "humidity_entity": "Luftfuktighetssensor",
+    "wind_speed_entity": "Vindhastighetssensor",
+    "uv_index_entity": "UV-indekssensor",
+    "cold_threshold": "Kaldt",
+    "hot_threshold": "Varmt",
+    "cold_threshold_help": "Helt blå ved denne verdien eller lavere.",
+    "hot_threshold_help": "Helt rød ved denne verdien eller høyere.",
+    "tap_action": "Trykkhandling",
+    "temperature_tap_action": "Trykkhandling for temperatur",
+    "temperature_tap_action_help": "Standard: sensorhistorikk eller værentiteten.",
+    "section_sensors": "Sensorer",
+    "section_actions": "Handlinger",
+    "threshold_order": "Varmt må være høyere enn kaldt.",
+    "section_thresholds": "Terskelverdier",
+    "section_alerts": "Farevarsler",
+    "alerts": "Farevarsler",
+    "entities": "Varselentiteter",
+    "entities_help": "Meteoalarm-, NWS- eller Environment Canada-entiteter. Egendefinerte sensorer krever YAML.",
+    "min_level": "Laveste nivå",
+    "min_level_help": "1 gul, 2 oransje, 3 rød, 4 ekstrem.",
+    "max_visible": "Farevarsler vist i sammenfoldet visning"
+  },
+  "chart": {
+    "label_hourly": "Temperatur per time fra {min}° til {max}°",
+    "label_daily": "Temperaturer per dag fra {min}° til {max}°",
+    "no_data": "Ingen temperaturdata",
+    "scroll": "Timesvarsel, rull for å se mer",
+    "days": "Dagsvarsel"
+  },
+  "alerts": {
+    "levels": {
+      "1": "Gul",
+      "2": "Oransje",
+      "3": "Rød",
+      "4": "Ekstrem"
+    },
+    "hide": "Skjul farevarsler",
+    "show_more": "Vis {count} flere farevarsler",
+    "show_details": "Vis detaljer om farevarselet",
+    "list": "Farevarsler for været, rull for å se mer",
+    "until": "Til"
+  }
+}

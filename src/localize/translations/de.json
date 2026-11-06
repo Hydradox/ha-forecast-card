@@ -1,0 +1,93 @@
+{
+  "tabs": {
+    "hourly": "Stündlich",
+    "daily": "Täglich",
+    "label": "Vorhersageansicht"
+  },
+  "common": {
+    "now": "Jetzt",
+    "today": "Heute",
+    "max": "Max",
+    "min": "Min",
+    "unavailable": "Nicht verfügbar",
+    "no_forecast": "Keine Vorhersage verfügbar"
+  },
+  "attributes": {
+    "humidity": "Luftfeuchtigkeit",
+    "wind": "Wind",
+    "uv": "UV-Index"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Sehr trocken",
+      "dry": "Trocken",
+      "comfort": "Angenehm",
+      "humid": "Feucht",
+      "saturated": "Gesättigt"
+    },
+    "wind": {
+      "light": "Schwach",
+      "moderate": "Mäßig",
+      "strong": "Stark",
+      "intense": "Sehr stark",
+      "storm": "Sturm"
+    },
+    "uv": {
+      "low": "Niedrig",
+      "moderate": "Mäßig",
+      "high": "Hoch",
+      "very_high": "Sehr hoch",
+      "extreme": "Extrem"
+    }
+  },
+  "editor": {
+    "entity": "Wetter-Entität",
+    "name": "Name",
+    "default_view": "Standardansicht",
+    "hours_to_show": "Anzuzeigende Stunden",
+    "days_to_show": "Anzuzeigende Tage",
+    "show_name": "Namen anzeigen",
+    "temperature_entity": "Temperatursensor",
+    "humidity_entity": "Luftfeuchtigkeitssensor",
+    "wind_speed_entity": "Windgeschwindigkeitssensor",
+    "uv_index_entity": "UV-Index-Sensor",
+    "cold_threshold": "Kalt",
+    "hot_threshold": "Heiß",
+    "cold_threshold_help": "Ab diesem Wert abwärts vollständig blau.",
+    "hot_threshold_help": "Ab diesem Wert aufwärts vollständig rot.",
+    "tap_action": "Tippaktion",
+    "temperature_tap_action": "Tippaktion Temperatur",
+    "temperature_tap_action_help": "Standard: Sensorverlauf oder die Wetter-Entität.",
+    "section_sensors": "Sensoren",
+    "section_actions": "Aktionen",
+    "threshold_order": "Heiß muss höher sein als kalt.",
+    "section_thresholds": "Schwellenwerte",
+    "section_alerts": "Warnungen",
+    "alerts": "Warnungen",
+    "entities": "Warn-Entitäten",
+    "entities_help": "Meteoalarm-, NWS- oder Environment-Canada-Entitäten. Eigene Sensoren erfordern YAML.",
+    "min_level": "Mindeststufe",
+    "min_level_help": "1 gelb, 2 orange, 3 rot, 4 extrem.",
+    "max_visible": "Warnungen im eingeklappten Zustand"
+  },
+  "chart": {
+    "label_hourly": "Stündliche Temperatur von {min}° bis {max}°",
+    "label_daily": "Tägliche Temperaturen von {min}° bis {max}°",
+    "no_data": "Keine Temperaturdaten",
+    "scroll": "Stündliche Vorhersage, scrollen für mehr",
+    "days": "Tägliche Vorhersage"
+  },
+  "alerts": {
+    "levels": {
+      "1": "Gelb",
+      "2": "Orange",
+      "3": "Rot",
+      "4": "Extrem"
+    },
+    "hide": "Warnungen ausblenden",
+    "show_more": "{count} weitere Warnungen anzeigen",
+    "show_details": "Warndetails anzeigen",
+    "list": "Wetterwarnungen, scrollen für mehr",
+    "until": "Bis"
+  }
+}

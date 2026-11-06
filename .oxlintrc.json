@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": { "correctness": "error" },
+  "env": { "browser": true, "es2022": true },
+  "ignorePatterns": ["dist", "node_modules"],
+  "rules": {
+    "typescript/consistent-type-imports": "error",
+    "no-unused-vars": "error"
+  },
+  "overrides": [
+    { "files": ["dev/**/*.mjs", "*.config.js", "*.config.ts"], "env": { "node": true } }
+  ]
+}

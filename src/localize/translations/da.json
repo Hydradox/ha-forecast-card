@@ -1,0 +1,93 @@
+{
+  "tabs": {
+    "hourly": "Pr. time",
+    "daily": "Pr. dag",
+    "label": "Prognosevisning"
+  },
+  "common": {
+    "now": "Nu",
+    "today": "I dag",
+    "max": "Maks",
+    "min": "Min",
+    "unavailable": "Utilgængelig",
+    "no_forecast": "Ingen prognose tilgængelig"
+  },
+  "attributes": {
+    "humidity": "Luftfugtighed",
+    "wind": "Vind",
+    "uv": "UV-indeks"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Meget tør",
+      "dry": "Tør",
+      "comfort": "Behagelig",
+      "humid": "Fugtig",
+      "saturated": "Mættet"
+    },
+    "wind": {
+      "light": "Svag",
+      "moderate": "Jævn",
+      "strong": "Hård",
+      "intense": "Meget hård",
+      "storm": "Storm"
+    },
+    "uv": {
+      "low": "Lav",
+      "moderate": "Moderat",
+      "high": "Høj",
+      "very_high": "Meget høj",
+      "extreme": "Ekstrem"
+    }
+  },
+  "editor": {
+    "entity": "Vejrentitet",
+    "name": "Navn",
+    "default_view": "Standardvisning",
+    "hours_to_show": "Timer, der vises",
+    "days_to_show": "Dage, der vises",
+    "show_name": "Vis navn",
+    "temperature_entity": "Temperatursensor",
+    "humidity_entity": "Luftfugtighedssensor",
+    "wind_speed_entity": "Vindhastighedssensor",
+    "uv_index_entity": "UV-indekssensor",
+    "cold_threshold": "Koldt",
+    "hot_threshold": "Varmt",
+    "cold_threshold_help": "Helt blå ved denne værdi eller lavere.",
+    "hot_threshold_help": "Helt rød ved denne værdi eller højere.",
+    "tap_action": "Trykhandling",
+    "temperature_tap_action": "Trykhandling for temperatur",
+    "temperature_tap_action_help": "Standard: sensorhistorik eller vejrentiteten.",
+    "section_sensors": "Sensorer",
+    "section_actions": "Handlinger",
+    "threshold_order": "Varmt skal være højere end koldt.",
+    "section_thresholds": "Tærskelværdier",
+    "section_alerts": "Advarsler",
+    "alerts": "Advarsler",
+    "entities": "Advarselsentiteter",
+    "entities_help": "Meteoalarm-, NWS- eller Environment Canada-entiteter. Brugerdefinerede sensorer kræver YAML.",
+    "min_level": "Mindste niveau",
+    "min_level_help": "1 gul, 2 orange, 3 rød, 4 ekstrem.",
+    "max_visible": "Advarsler vist i sammenfoldet visning"
+  },
+  "chart": {
+    "label_hourly": "Temperatur pr. time fra {min}° til {max}°",
+    "label_daily": "Temperaturer pr. dag fra {min}° til {max}°",
+    "no_data": "Ingen temperaturdata",
+    "scroll": "Timeprognose, rul for at se mere",
+    "days": "Dagsprognose"
+  },
+  "alerts": {
+    "levels": {
+      "1": "Gul",
+      "2": "Orange",
+      "3": "Rød",
+      "4": "Ekstrem"
+    },
+    "hide": "Skjul advarsler",
+    "show_more": "Vis {count} flere advarsler",
+    "show_details": "Vis advarselsdetaljer",
+    "list": "Vejradvarsler, rul for at se mere",
+    "until": "Indtil"
+  }
+}

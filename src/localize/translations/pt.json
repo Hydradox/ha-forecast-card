@@ -1,0 +1,93 @@
+{
+  "tabs": {
+    "hourly": "Por hora",
+    "daily": "Por dia",
+    "label": "Vista da previsão"
+  },
+  "common": {
+    "now": "Agora",
+    "today": "Hoje",
+    "max": "Máx",
+    "min": "Mín",
+    "unavailable": "Indisponível",
+    "no_forecast": "Sem previsão disponível"
+  },
+  "attributes": {
+    "humidity": "Humidade",
+    "wind": "Vento",
+    "uv": "Índice UV"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Muito seco",
+      "dry": "Seco",
+      "comfort": "Confortável",
+      "humid": "Húmido",
+      "saturated": "Saturado"
+    },
+    "wind": {
+      "light": "Fraco",
+      "moderate": "Moderado",
+      "strong": "Forte",
+      "intense": "Muito forte",
+      "storm": "Tempestade"
+    },
+    "uv": {
+      "low": "Baixo",
+      "moderate": "Moderado",
+      "high": "Alto",
+      "very_high": "Muito alto",
+      "extreme": "Extremo"
+    }
+  },
+  "editor": {
+    "entity": "Entidade meteorológica",
+    "name": "Nome",
+    "default_view": "Vista predefinida",
+    "hours_to_show": "Horas a mostrar",
+    "days_to_show": "Dias a mostrar",
+    "show_name": "Mostrar nome",
+    "temperature_entity": "Sensor de temperatura",
+    "humidity_entity": "Sensor de humidade",
+    "wind_speed_entity": "Sensor de velocidade do vento",
+    "uv_index_entity": "Sensor de índice UV",
+    "cold_threshold": "Frio",
+    "hot_threshold": "Quente",
+    "cold_threshold_help": "Totalmente azul neste valor ou abaixo.",
+    "hot_threshold_help": "Totalmente vermelho neste valor ou acima.",
+    "tap_action": "Ação ao tocar",
+    "temperature_tap_action": "Ação ao tocar na temperatura",
+    "temperature_tap_action_help": "Predefinição: histórico do sensor ou a entidade meteorológica.",
+    "section_sensors": "Sensores",
+    "section_actions": "Ações",
+    "threshold_order": "O valor de quente tem de ser superior ao de frio.",
+    "section_thresholds": "Limiares",
+    "section_alerts": "Avisos",
+    "alerts": "Avisos",
+    "entities": "Entidades de aviso",
+    "entities_help": "Entidades Meteoalarm, NWS ou Environment Canada. Os sensores personalizados requerem YAML.",
+    "min_level": "Nível mínimo",
+    "min_level_help": "1 amarelo, 2 laranja, 3 vermelho, 4 extremo.",
+    "max_visible": "Avisos mostrados em modo recolhido"
+  },
+  "chart": {
+    "label_hourly": "Temperatura por hora de {min}° a {max}°",
+    "label_daily": "Temperaturas por dia de {min}° a {max}°",
+    "no_data": "Sem dados de temperatura",
+    "scroll": "Previsão por hora, desloque para ver mais",
+    "days": "Previsão por dia"
+  },
+  "alerts": {
+    "levels": {
+      "1": "Amarelo",
+      "2": "Laranja",
+      "3": "Vermelho",
+      "4": "Extremo"
+    },
+    "hide": "Ocultar avisos",
+    "show_more": "Mostrar mais {count} avisos",
+    "show_details": "Mostrar detalhes do aviso",
+    "list": "Avisos meteorológicos, desloque para ver mais",
+    "until": "Até"
+  }
+}

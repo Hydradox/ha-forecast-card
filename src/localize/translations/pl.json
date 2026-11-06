@@ -1,0 +1,93 @@
+{
+  "tabs": {
+    "hourly": "Godzinowa",
+    "daily": "Dzienna",
+    "label": "Widok prognozy"
+  },
+  "common": {
+    "now": "Teraz",
+    "today": "Dziś",
+    "max": "Maks",
+    "min": "Min",
+    "unavailable": "Niedostępne",
+    "no_forecast": "Brak dostępnej prognozy"
+  },
+  "attributes": {
+    "humidity": "Wilgotność",
+    "wind": "Wiatr",
+    "uv": "Indeks UV"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Bardzo sucho",
+      "dry": "Sucho",
+      "comfort": "Komfortowo",
+      "humid": "Wilgotno",
+      "saturated": "Bardzo wilgotno"
+    },
+    "wind": {
+      "light": "Słaby",
+      "moderate": "Umiarkowany",
+      "strong": "Silny",
+      "intense": "Bardzo silny",
+      "storm": "Wichura"
+    },
+    "uv": {
+      "low": "Niski",
+      "moderate": "Umiarkowany",
+      "high": "Wysoki",
+      "very_high": "Bardzo wysoki",
+      "extreme": "Ekstremalny"
+    }
+  },
+  "editor": {
+    "entity": "Encja pogody",
+    "name": "Nazwa",
+    "default_view": "Widok domyślny",
+    "hours_to_show": "Liczba godzin",
+    "days_to_show": "Liczba dni",
+    "show_name": "Pokaż nazwę",
+    "temperature_entity": "Czujnik temperatury",
+    "humidity_entity": "Czujnik wilgotności",
+    "wind_speed_entity": "Czujnik prędkości wiatru",
+    "uv_index_entity": "Czujnik indeksu UV",
+    "cold_threshold": "Zimno",
+    "hot_threshold": "Gorąco",
+    "cold_threshold_help": "W pełni niebieski przy tej wartości lub niższej.",
+    "hot_threshold_help": "W pełni czerwony przy tej wartości lub wyższej.",
+    "tap_action": "Akcja po dotknięciu",
+    "temperature_tap_action": "Akcja po dotknięciu temperatury",
+    "temperature_tap_action_help": "Domyślnie: historia czujnika lub encja pogody.",
+    "section_sensors": "Czujniki",
+    "section_actions": "Akcje",
+    "threshold_order": "Wartość dla gorąca musi być wyższa niż dla zimna.",
+    "section_thresholds": "Progi",
+    "section_alerts": "Ostrzeżenia",
+    "alerts": "Ostrzeżenia",
+    "entities": "Encje ostrzeżeń",
+    "entities_help": "Encje Meteoalarm, NWS lub Environment Canada. Niestandardowe czujniki wymagają YAML.",
+    "min_level": "Minimalny poziom",
+    "min_level_help": "1 żółty, 2 pomarańczowy, 3 czerwony, 4 ekstremalny.",
+    "max_visible": "Liczba ostrzeżeń w widoku zwiniętym"
+  },
+  "chart": {
+    "label_hourly": "Temperatura godzinowa od {min}° do {max}°",
+    "label_daily": "Temperatury dzienne od {min}° do {max}°",
+    "no_data": "Brak danych o temperaturze",
+    "scroll": "Prognoza godzinowa, przewiń, aby zobaczyć więcej",
+    "days": "Prognoza dzienna"
+  },
+  "alerts": {
+    "levels": {
+      "1": "Żółty",
+      "2": "Pomarańczowy",
+      "3": "Czerwony",
+      "4": "Ekstremalny"
+    },
+    "hide": "Ukryj ostrzeżenia",
+    "show_more": "Pokaż pozostałe ostrzeżenia ({count})",
+    "show_details": "Pokaż szczegóły ostrzeżenia",
+    "list": "Ostrzeżenia pogodowe, przewiń, aby zobaczyć więcej",
+    "until": "Do"
+  }
+}

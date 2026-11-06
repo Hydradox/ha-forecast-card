@@ -1,0 +1,93 @@
+{
+  "tabs": {
+    "hourly": "Per uur",
+    "daily": "Per dag",
+    "label": "Verwachtingsweergave"
+  },
+  "common": {
+    "now": "Nu",
+    "today": "Vandaag",
+    "max": "Max",
+    "min": "Min",
+    "unavailable": "Niet beschikbaar",
+    "no_forecast": "Geen verwachting beschikbaar"
+  },
+  "attributes": {
+    "humidity": "Luchtvochtigheid",
+    "wind": "Wind",
+    "uv": "UV-index"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Zeer droog",
+      "dry": "Droog",
+      "comfort": "Comfortabel",
+      "humid": "Vochtig",
+      "saturated": "Verzadigd"
+    },
+    "wind": {
+      "light": "Zwak",
+      "moderate": "Matig",
+      "strong": "Krachtig",
+      "intense": "Hard",
+      "storm": "Storm"
+    },
+    "uv": {
+      "low": "Laag",
+      "moderate": "Matig",
+      "high": "Hoog",
+      "very_high": "Zeer hoog",
+      "extreme": "Extreem"
+    }
+  },
+  "editor": {
+    "entity": "Weerentiteit",
+    "name": "Naam",
+    "default_view": "Standaardweergave",
+    "hours_to_show": "Aantal uren",
+    "days_to_show": "Aantal dagen",
+    "show_name": "Naam tonen",
+    "temperature_entity": "Temperatuursensor",
+    "humidity_entity": "Luchtvochtigheidssensor",
+    "wind_speed_entity": "Windsnelheidssensor",
+    "uv_index_entity": "UV-indexsensor",
+    "cold_threshold": "Koud",
+    "hot_threshold": "Heet",
+    "cold_threshold_help": "Volledig blauw bij deze waarde of lager.",
+    "hot_threshold_help": "Volledig rood bij deze waarde of hoger.",
+    "tap_action": "Tikactie",
+    "temperature_tap_action": "Tikactie temperatuur",
+    "temperature_tap_action_help": "Standaard: sensorgeschiedenis of de weerentiteit.",
+    "section_sensors": "Sensoren",
+    "section_actions": "Acties",
+    "threshold_order": "Heet moet hoger zijn dan koud.",
+    "section_thresholds": "Drempelwaarden",
+    "section_alerts": "Waarschuwingen",
+    "alerts": "Waarschuwingen",
+    "entities": "Waarschuwingsentiteiten",
+    "entities_help": "Meteoalarm-, NWS- of Environment Canada-entiteiten. Eigen sensoren vereisen YAML.",
+    "min_level": "Minimaal niveau",
+    "min_level_help": "1 geel, 2 oranje, 3 rood, 4 extreem.",
+    "max_visible": "Waarschuwingen ingeklapt getoond"
+  },
+  "chart": {
+    "label_hourly": "Temperatuur per uur van {min}° tot {max}°",
+    "label_daily": "Temperaturen per dag van {min}° tot {max}°",
+    "no_data": "Geen temperatuurgegevens",
+    "scroll": "Verwachting per uur, scroll voor meer",
+    "days": "Verwachting per dag"
+  },
+  "alerts": {
+    "levels": {
+      "1": "Geel",
+      "2": "Oranje",
+      "3": "Rood",
+      "4": "Extreem"
+    },
+    "hide": "Waarschuwingen verbergen",
+    "show_more": "Nog {count} waarschuwingen tonen",
+    "show_details": "Details van waarschuwing tonen",
+    "list": "Weerwaarschuwingen, scroll voor meer",
+    "until": "Tot"
+  }
+}

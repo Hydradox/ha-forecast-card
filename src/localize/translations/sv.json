@@ -1,0 +1,93 @@
+{
+  "tabs": {
+    "hourly": "Per timme",
+    "daily": "Per dag",
+    "label": "Prognosvy"
+  },
+  "common": {
+    "now": "Nu",
+    "today": "Idag",
+    "max": "Max",
+    "min": "Min",
+    "unavailable": "Otillgänglig",
+    "no_forecast": "Ingen prognos tillgänglig"
+  },
+  "attributes": {
+    "humidity": "Luftfuktighet",
+    "wind": "Vind",
+    "uv": "UV-index"
+  },
+  "levels": {
+    "humidity": {
+      "very_dry": "Mycket torr",
+      "dry": "Torr",
+      "comfort": "Behaglig",
+      "humid": "Fuktig",
+      "saturated": "Mättad"
+    },
+    "wind": {
+      "light": "Svag",
+      "moderate": "Måttlig",
+      "strong": "Stark",
+      "intense": "Mycket stark",
+      "storm": "Storm"
+    },
+    "uv": {
+      "low": "Låg",
+      "moderate": "Måttlig",
+      "high": "Hög",
+      "very_high": "Mycket hög",
+      "extreme": "Extrem"
+    }
+  },
+  "editor": {
+    "entity": "Väderentitet",
+    "name": "Namn",
+    "default_view": "Standardvy",
+    "hours_to_show": "Timmar att visa",
+    "days_to_show": "Dagar att visa",
+    "show_name": "Visa namn",
+    "temperature_entity": "Temperatursensor",
+    "humidity_entity": "Luftfuktighetssensor",
+    "wind_speed_entity": "Vindhastighetssensor",
+    "uv_index_entity": "UV-indexsensor",
+    "cold_threshold": "Kallt",
+    "hot_threshold": "Varmt",
+    "cold_threshold_help": "Helt blå vid detta värde eller lägre.",
+    "hot_threshold_help": "Helt röd vid detta värde eller högre.",
+    "tap_action": "Tryckåtgärd",
+    "temperature_tap_action": "Tryckåtgärd för temperatur",
+    "temperature_tap_action_help": "Standard: sensorns historik eller väderentiteten.",
+    "section_sensors": "Sensorer",
+    "section_actions": "Åtgärder",
+    "threshold_order": "Varmt måste vara högre än kallt.",
+    "section_thresholds": "Tröskelvärden",
+    "section_alerts": "Varningar",
+    "alerts": "Varningar",
+    "entities": "Varningsentiteter",
+    "entities_help": "Meteoalarm-, NWS- eller Environment Canada-entiteter. Egna sensorer kräver YAML.",
+    "min_level": "Lägsta nivå",
+    "min_level_help": "1 gul, 2 orange, 3 röd, 4 extrem.",
+    "max_visible": "Varningar som visas hopfällda"
+  },
+  "chart": {
+    "label_hourly": "Temperatur per timme från {min}° till {max}°",
+    "label_daily": "Temperaturer per dag från {min}° till {max}°",
+    "no_data": "Inga temperaturdata",
+    "scroll": "Timprognos, rulla för att se mer",
+    "days": "Dagsprognos"
+  },
+  "alerts": {
+    "levels": {
+      "1": "Gul",
+      "2": "Orange",
+      "3": "Röd",
+      "4": "Extrem"
+    },
+    "hide": "Dölj varningar",
+    "show_more": "Visa {count} fler varningar",
+    "show_details": "Visa varningsdetaljer",
+    "list": "Vädervarningar, rulla för att se mer",
+    "until": "Till"
+  }
+}

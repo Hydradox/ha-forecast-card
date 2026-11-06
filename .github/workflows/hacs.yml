@@ -11,11 +11,9 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    # TEMPORARY: no release exists yet, so HACS cannot find the plugin file and
-    # would block the PR that creates the first one. Remove after v1.0.0.
-    continue-on-error: ${{ github.event_name == 'pull_request' }}
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: hacs/action@main
         with:
           category: plugin
