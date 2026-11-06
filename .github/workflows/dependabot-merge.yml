@@ -1,0 +1,45 @@
+name: Dependabot merge
+
+# Squash-merges Dependabot tooling/actions updates (titled chore(deps) / ci(deps), see
+# dependabot.yml) once the Quality workflow has passed on the PR. Runtime deps
+# (fix(deps)) are bundled into the card and stay manual.
+#
+# It runs as a separate workflow_run (not a job inside quality.yml) because quality.yml
+# is also called by release.yml, and a called workflow cannot ask for more permissions
+# than its caller grants. Nothing from the PR is checked out or executed here.
+# Merges made with GITHUB_TOKEN do not trigger the release workflow, which is fine
+# because these commits release nothing.
+on:
+  workflow_run:
+    workflows: [Quality]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Squash-merge tooling updates
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+        run: |
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No pull request attached to this run."
+            exit 0
+          fi
+          title=$(gh pr view "$PR_NUMBER" --repo "$REPO" --json title --jq .title)
+          case "$title" in
+            "chore(deps)"*|"ci(deps)"*) gh pr merge "$PR_NUMBER" --repo "$REPO" --squash ;;
+            *) echo "Not a tooling update, leaving it for manual review." ;;
+          esac
