@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.1.0...v1.2.0) (2026-11-06)
+
+### Features
+
+* more languages ([0a0b044](https://github.com/Hydradox/ha-forecast-card/commit/0a0b044cdeddddc99cf02f5a317e33acb29d76a8))
+
+### Documentation
+
+* add open-in-HACS button to readme ([1eaec47](https://github.com/Hydradox/ha-forecast-card/commit/1eaec478ec090e6ad4ab4e2b1cedbde9a542712a))
+
 ## [1.1.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.0.2...v1.1.0) (2026-11-05)
 
 ### Features
