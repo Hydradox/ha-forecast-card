@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.2.0...v1.3.0) (2026-11-09)
+
+### Features
+
+* new card desgin, climate and festivities ([5044da9](https://github.com/Hydradox/ha-forecast-card/commit/5044da956689d5dda61b2addfd35f02917cd5e58))
+* updated readme ([deb0ba6](https://github.com/Hydradox/ha-forecast-card/commit/deb0ba6ccb4f0e348855990597d5fc8f1fbf29b5))
+
 ## [1.2.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.1.0...v1.2.0) (2026-11-06)
 
 ### Features
