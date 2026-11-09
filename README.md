@@ -2,23 +2,15 @@
 
 A Home Assistant Lovelace card that shows the weather forecast at a glance: a temperature line over rain bars, hourly or daily, plus humidity, wind and UV with a 5-level scale each.
 
-<table align="center">
-  <tr>
-    <th></th>
-    <th>Hourly</th>
-    <th>Daily</th>
-  </tr>
-  <tr>
-    <th>Dark</th>
-    <td><img src="docs/images/hourly-dark.png" alt="Hourly forecast, dark theme" height="300"></td>
-    <td><img src="docs/images/daily-dark.png" alt="Daily forecast, dark theme" height="300"></td>
-  </tr>
-  <tr>
-    <th>Light</th>
-    <td><img src="docs/images/hourly-light.png" alt="Hourly forecast, light theme" height="300"></td>
-    <td><img src="docs/images/daily-light.png" alt="Daily forecast, light theme" height="300"></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/images/hourly-dark.png" alt="Hourly forecast, dark theme" width="400">
+  <img src="docs/images/daily-dark.png" alt="Daily forecast, dark theme" width="400">
+</p>
+
+<p align="center">
+  <img src="docs/images/hourly-light.png" alt="Hourly forecast, light theme" width="400">
+  <img src="docs/images/daily-light.png" alt="Daily forecast, light theme" width="400">
+</p>
 
 > **AI-assisted project.** This card is designed and written with the help of an AI assistant. It has automated tests and runs against a real Home Assistant during development.
 
@@ -47,12 +39,6 @@ A Home Assistant Lovelace card that shows the weather forecast at a glance: a te
 ### HACS
 
 [![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Hydradox&repository=ha-forecast-card&category=plugin)
-
-Use the button above, or add it by hand:
-
-1. In HACS, open the three-dot menu → **Custom repositories**.
-2. Add `https://github.com/Hydradox/ha-forecast-card` with type **Dashboard**.
-3. Search for **Forecast at glance**, download it and reload your browser.
 
 HACS adds the dashboard resource for you.
 
@@ -122,23 +108,15 @@ tap_action:
 
 Home Assistant has no standard weather-alert API, so the card reads alerts from the entities your provider integration creates. An adapter per provider converts them to one level scale: 1 yellow, 2 orange, 3 red, 4 extreme.
 
-<table>
-  <tr>
-    <th></th>
-    <th>Collapsed</th>
-    <th>Expanded</th>
-  </tr>
-  <tr>
-    <th>Dark</th>
-    <td><img src="docs/images/alerts-collapsed-dark.png" alt="Alert banner, collapsed, dark theme" height="300"></td>
-    <td><img src="docs/images/alerts-expanded-dark.png" alt="Alert list, expanded, dark theme" height="300"></td>
-  </tr>
-  <tr>
-    <th>Light</th>
-    <td><img src="docs/images/alerts-collapsed-light.png" alt="Alert banner, collapsed, light theme" height="300"></td>
-    <td><img src="docs/images/alerts-expanded-light.png" alt="Alert list, expanded, light theme" height="300"></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/images/alerts-collapsed-dark.png" alt="Alert banner, collapsed, dark theme" width="400">
+  <img src="docs/images/alerts-expanded-dark.png" alt="Alert list, expanded, dark theme" width="400">
+</p>
+
+<p align="center">
+  <img src="docs/images/alerts-collapsed-light.png" alt="Alert banner, collapsed, light theme" width="400">
+  <img src="docs/images/alerts-expanded-light.png" alt="Alert list, expanded, light theme" width="400">
+</p>
 
 ```yaml
 type: custom:ha-forecast-card
@@ -202,6 +180,13 @@ The level shown for each metric uses fixed ranges:
 Wind in other units is converted before choosing the level.
 
 ### Festivities
+
+<p align="center">
+  <img src="docs/images/halloween-dark.png" alt="Halloween festivity, dark theme" width="400">
+  <img src="docs/images/halloween-light.png" alt="Halloween festivity, light theme" width="400">
+</p>
+
+Halloween is shown above. Epiphany, Valentine's Day, Carnival, Fallas, Easter, Christmas and New Year's Eve also exist, each with its own palette, ornaments and animation, and you will see them on their dates (or by forcing one with `festivity`).
 
 `festivity` controls the seasonal decoration (palette, ambient animation, corner and bottom ornaments and a small icon before the name). It sits on top of the weather effect and replaces the theme's card colours while active.
 
