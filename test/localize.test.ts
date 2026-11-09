@@ -52,3 +52,29 @@ describe("localize", () => {
     expect(createTranslator("en")("nope.missing")).toBe("nope.missing");
   });
 });
+
+describe("condition names", () => {
+  it("ships every HA weather condition in every language", async () => {
+    const { createTranslator } = await import("../src/localize");
+    for (const language of ["en", "es", "fr", "de", "it", "pt", "nl", "da", "nb", "sv", "pl"]) {
+      const t = createTranslator(language);
+      for (const c of ["clear-night", "cloudy", "exceptional", "fog", "hail", "lightning", "lightning-rainy", "partlycloudy", "pouring", "rainy", "snowy", "snowy-rainy", "sunny", "windy", "windy-variant"]) {
+        expect(t(`conditions.${c}`), `${language}/${c}`).not.toBe(`conditions.${c}`);
+      }
+    }
+    expect(createTranslator("es")("conditions.sunny")).toBe("Soleado");
+  });
+});
+
+describe("festivity names", () => {
+  it("ships every festivity in every language", async () => {
+    const { createTranslator } = await import("../src/localize");
+    for (const language of ["en", "es", "fr", "de", "it", "pt", "nl", "da", "nb", "sv", "pl"]) {
+      const t = createTranslator(language);
+      for (const id of ["auto", "none", "halloween", "christmas", "new_year", "epiphany", "valentine", "carnival", "fallas", "easter"]) {
+        expect(t(`festivities.${id}`), `${language}/${id}`).not.toBe(`festivities.${id}`);
+      }
+      expect(t("editor.festivity"), language).not.toBe("editor.festivity");
+    }
+  });
+});

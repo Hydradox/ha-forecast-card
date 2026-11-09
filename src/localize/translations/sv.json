@@ -12,6 +12,35 @@
     "unavailable": "Otillgänglig",
     "no_forecast": "Ingen prognos tillgänglig"
   },
+  "conditions": {
+    "clear-night": "Klart, natt",
+    "cloudy": "Mulet",
+    "exceptional": "Exceptionellt",
+    "fog": "Dimma",
+    "hail": "Hagel",
+    "lightning": "Blixtar",
+    "lightning-rainy": "Åska med regn",
+    "partlycloudy": "Delvis molnigt",
+    "pouring": "Ösregn",
+    "rainy": "Regn",
+    "snowy": "Snö",
+    "snowy-rainy": "Snöblandat regn",
+    "sunny": "Soligt",
+    "windy": "Blåsigt",
+    "windy-variant": "Blåsigt och molnigt"
+  },
+  "festivities": {
+    "auto": "Automatisk (efter datum)",
+    "none": "Ingen",
+    "halloween": "Halloween",
+    "christmas": "Jul",
+    "new_year": "Nyårsafton",
+    "epiphany": "Trettondedag jul",
+    "valentine": "Alla hjärtans dag",
+    "carnival": "Karneval",
+    "fallas": "Fallas (Valencia)",
+    "easter": "Påsk"
+  },
   "attributes": {
     "humidity": "Luftfuktighet",
     "wind": "Vind",
@@ -68,7 +97,21 @@
     "entities_help": "Meteoalarm-, NWS- eller Environment Canada-entiteter. Egna sensorer kräver YAML.",
     "min_level": "Lägsta nivå",
     "min_level_help": "1 gul, 2 orange, 3 röd, 4 extrem.",
-    "max_visible": "Varningar som visas hopfällda"
+    "max_visible": "Varningar som visas hopfällda",
+    "festivity": "Högtid",
+    "festivity_help": "Säsongsdekoration. Automatisk följer kalendern.",
+    "weather_effects": "Vädereffekter",
+    "section_festivities": "Högtider",
+    "enabled": "Aktiverad",
+    "start": "Start",
+    "end": "Slut",
+    "start_offset": "Start (dagar från påsk)",
+    "end_offset": "Slut (dagar från påsk)",
+    "start_help": "Månad-dag, t.ex. 03-15. Årsskifte går bra (12-27 till 01-01).",
+    "start_offset_help": "Dagar från påskdagen; negativt är före.",
+    "festivity_dates_invalid": "Använd riktiga MM-DD-datum och heltal för påsk och karneval.",
+    "end_help": "Månad-dag, t.ex. 03-15. Årsskifte går bra (12-27 till 01-01).",
+    "end_offset_help": "Dagar från påskdagen; negativt är före."
   },
   "chart": {
     "label_hourly": "Temperatur per timme från {min}° till {max}°",

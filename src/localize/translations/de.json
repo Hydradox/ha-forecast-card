@@ -12,6 +12,35 @@
     "unavailable": "Nicht verfügbar",
     "no_forecast": "Keine Vorhersage verfügbar"
   },
+  "conditions": {
+    "clear-night": "Klar, Nacht",
+    "cloudy": "Bewölkt",
+    "exceptional": "Außergewöhnlich",
+    "fog": "Nebel",
+    "hail": "Hagel",
+    "lightning": "Gewitter",
+    "lightning-rainy": "Gewitter mit Regen",
+    "partlycloudy": "Teilweise bewölkt",
+    "pouring": "Starkregen",
+    "rainy": "Regnerisch",
+    "snowy": "Schneefall",
+    "snowy-rainy": "Schneeregen",
+    "sunny": "Sonnig",
+    "windy": "Windig",
+    "windy-variant": "Windig und bewölkt"
+  },
+  "festivities": {
+    "auto": "Automatisch (nach Datum)",
+    "none": "Keine",
+    "halloween": "Halloween",
+    "christmas": "Weihnachten",
+    "new_year": "Silvester",
+    "epiphany": "Heilige Drei Könige",
+    "valentine": "Valentinstag",
+    "carnival": "Karneval",
+    "fallas": "Fallas (Valencia)",
+    "easter": "Ostern"
+  },
   "attributes": {
     "humidity": "Luftfeuchtigkeit",
     "wind": "Wind",
@@ -68,7 +97,21 @@
     "entities_help": "Meteoalarm-, NWS- oder Environment-Canada-Entitäten. Eigene Sensoren erfordern YAML.",
     "min_level": "Mindeststufe",
     "min_level_help": "1 gelb, 2 orange, 3 rot, 4 extrem.",
-    "max_visible": "Warnungen im eingeklappten Zustand"
+    "max_visible": "Warnungen im eingeklappten Zustand",
+    "festivity": "Feiertag",
+    "festivity_help": "Saisonale Dekoration. Automatisch folgt dem Kalender.",
+    "weather_effects": "Wettereffekte",
+    "section_festivities": "Feiertage",
+    "enabled": "Aktiviert",
+    "start": "Beginn",
+    "end": "Ende",
+    "start_offset": "Beginn (Tage ab Ostern)",
+    "end_offset": "Ende (Tage ab Ostern)",
+    "start_help": "Monat-Tag, z. B. 03-15. Jahreswechsel ist erlaubt (12-27 bis 01-01).",
+    "start_offset_help": "Tage ab Ostersonntag; negativ ist davor.",
+    "festivity_dates_invalid": "Gültige MM-DD-Daten verwenden, bei Ostern und Karneval ganze Zahlen.",
+    "end_help": "Monat-Tag, z. B. 03-15. Jahreswechsel ist erlaubt (12-27 bis 01-01).",
+    "end_offset_help": "Tage ab Ostersonntag; negativ ist davor."
   },
   "chart": {
     "label_hourly": "Stündliche Temperatur von {min}° bis {max}°",

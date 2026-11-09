@@ -95,16 +95,129 @@ function connect(token) {
   return { ready, send, close: () => socket.close() };
 }
 
-const card = (extra) => ({ type: "custom:ha-forecast-card", entity: "weather.dev_weather", ...extra });
+// Every card follows the Festivity control (auto = by date, none, or a festivity), unless it sets its own.
+const card = (extra) => ({ type: "custom:ha-forecast-card", entity: "weather.dev_weather", festivity: "input_select.dev_festivity", ...extra });
+const heading = (text, icon) => ({ type: "heading", heading: text, heading_style: "title", ...(icon ? { icon } : {}) });
+const controls = (title, entities) => ({ type: "entities", title, show_header_toggle: false, entities });
+const section = (...cards) => ({ type: "grid", cards });
+
+// Fixed-condition weather entities (dev/config/gallery.yaml), grouped by family.
+const gallery = (entity, name) => card({ entity, name });
+const GALLERY = {
+  "Sky": [
+    ["sunny", "Sunny"], ["clear_night", "Clear night"], ["partly_cloudy", "Partly cloudy"], ["cloudy", "Cloudy"], ["fog", "Fog"],
+  ],
+  "Precipitation": [
+    ["rainy", "Rainy"], ["pouring", "Pouring"], ["snowy", "Snowy"], ["sleet", "Sleet"], ["hail", "Hail"],
+  ],
+  "Storm, wind and alerts": [
+    ["thunderstorm", "Thunderstorm"], ["dry_thunderstorm", "Dry thunderstorm"], ["windy", "Windy"],
+    ["windy_and_cloudy", "Windy and cloudy"], ["exceptional", "Exceptional"],
+  ],
+};
+const LANGUAGES = ["en", "es", "fr", "de", "it", "pt", "nl", "da", "nb", "sv", "pl"];
+
+// Controls shared by several views (they drive weather.dev_weather).
+const weatherControls = [
+  controls("Weather", ["input_select.dev_condition", "input_select.dev_festivity"]),
+  controls("Conditions", [
+    "input_number.dev_temperature",
+    "input_number.dev_humidity",
+    "input_number.dev_wind",
+    "input_number.dev_wind_bearing",
+    "input_number.dev_uv",
+    "input_number.dev_rain",
+  ]),
+];
+const alertControls = controls("Fake alerts", [
+  "input_select.dev_alert_rain",
+  "input_select.dev_alert_wind",
+  "input_select.dev_alert_heat",
+  "input_select.dev_alert_snow",
+  "input_select.dev_alert_storm",
+  "input_select.dev_alert_meteoalarm",
+  "input_boolean.dev_alert_ec",
+  "input_select.dev_alert_custom",
+]);
+
+const view = (title, path, icon, sections) => ({ type: "sections", title, path, icon, max_columns: 4, sections });
 
 const dashboard = {
   title: "Forecast dev",
   views: [
-    {
-      title: "Card",
-      cards: [
+    // Day-to-day: controls on the left, the card to look at, then sizes and the other tab.
+    view("Playground", "playground", "mdi:tune", [
+      section(heading("Controls", "mdi:tune"), ...weatherControls),
+      section(
+        heading("Card", "mdi:weather-partly-cloudy"),
         // Showcase card (README screenshots): thresholds tuned so the colour ramp spans the visible range.
         card({ cold_threshold: 12, hot_threshold: 24 }),
+        card({ name: "Daily first", default_view: "daily", cold_threshold: 12, hot_threshold: 24 }),
+      ),
+      section(
+        heading("Sizes", "mdi:resize"),
+        { type: "horizontal-stack", cards: [card({ name: "Narrow A", hours_to_show: 5 }), card({ name: "Narrow B", default_view: "daily", days_to_show: 5 })] },
+        card({ name: "A name long enough to be cut off at the end of the line", hours_to_show: 6 }),
+      ),
+    ]),
+
+    // One card per weather condition (and its effect), light/dark follows the profile theme.
+    view("Gallery", "gallery", "mdi:view-grid", [
+      section(
+        heading("Festivity", "mdi:party-popper"),
+        controls("Applies to every card", ["input_select.dev_festivity"]),
+        { type: "markdown", content: "Switch **light/dark** in your profile (*Browser theme → Dark mode*) to check both palettes of every effect and festivity." },
+      ),
+      ...Object.entries(GALLERY).map(([group, items]) =>
+        section(heading(group), ...items.map(([id, name]) => gallery(`weather.gallery_${id}`, name))),
+      ),
+    ]),
+
+    // One card per festivity, each forced with its own `festivity` value (light/dark follows the profile theme).
+    view("Festivities", "festivities", "mdi:party-popper", [
+      section(
+        heading("Calendar", "mdi:calendar"),
+        controls("Applies to the other views", ["input_select.dev_festivity"]),
+        {
+          type: "markdown",
+          content:
+            "Automatic windows: **Fallas** Mar 15–19 · **Valentine** Feb 10–14 · **Halloween** Oct 24–Nov 1 · **Christmas** Dec 1–26 · **New Year** Dec 27–Jan 1 · **Epiphany** Jan 2–6 · **Easter** Palm Sunday–Easter Monday · **Carnival** Thursday before Shrove Tuesday to Shrove Tuesday.",
+        },
+        card({ name: "Automatic (today)", festivity: "auto", entity: "weather.gallery_partly_cloudy" }),
+      ),
+      section(
+        heading("Autumn and winter", "mdi:snowflake"),
+        ...[["halloween", "Halloween"], ["christmas", "Christmas"], ["new_year", "New Year's Eve"], ["epiphany", "Epiphany"]].map(([id, name]) =>
+          card({ name, festivity: id, entity: "weather.gallery_partly_cloudy" }),
+        ),
+      ),
+      section(
+        heading("Spring", "mdi:flower"),
+        ...[["valentine", "Valentine's Day"], ["carnival", "Carnival"], ["fallas", "Fallas"], ["easter", "Easter"]].map(([id, name]) =>
+          card({ name, festivity: id, entity: "weather.gallery_partly_cloudy" }),
+        ),
+      ),
+    ]),
+
+    view("Layout", "layout", "mdi:page-layout-body", [
+      section(heading("Controls", "mdi:tune"), ...weatherControls),
+      section(
+        heading("Header and tabs", "mdi:format-header-1"),
+        card({ entity: "weather.dev_weather_daily_only", show_name: false, name: "Daily only, no name" }),
+        card({ name: "Hourly, 6 slots, no tap action", hours_to_show: 6, tap_action: { action: "none" } }),
+        card({ name: "Daily, 5 days", default_view: "daily", days_to_show: 5 }),
+      ),
+      section(
+        heading("Narrow", "mdi:resize"),
+        { type: "horizontal-stack", cards: [card({ name: "Narrow A", hours_to_show: 5 }), card({ name: "Narrow B", default_view: "daily", days_to_show: 5 })] },
+        { type: "horizontal-stack", cards: [card({ name: "Tiny" }), card({ name: "Tiny", default_view: "daily" })] },
+      ),
+    ]),
+
+    view("Data", "data", "mdi:database-cog", [
+      section(heading("Controls", "mdi:tune"), ...weatherControls),
+      section(
+        heading("Sensor overrides", "mdi:thermometer"),
         card({
           name: "Sensor overrides",
           temperature_entity: "sensor.dev_outdoor_temperature",
@@ -112,18 +225,27 @@ const dashboard = {
           wind_speed_entity: "sensor.dev_outdoor_wind",
           uv_index_entity: "sensor.dev_outdoor_uv",
         }),
-        card({ name: "Custom thresholds (10–25 °C), daily first", default_view: "daily", cold_threshold: 10, hot_threshold: 25 }),
-        card({ entity: "weather.dev_weather_daily_only", show_name: false }),
-        card({ language: "es", hours_to_show: 6, tap_action: { action: "none" } }),
-        // Alerts: drive them with the "Fake alert controls" card below.
-        card({
-          name: "Alerts · NWS style (5 sources of alerts, scrolls when expanded)",
-          alerts: { entities: ["sensor.dev_alerts_nws"] },
-        }),
+        card({ entity: "weather.dev_weather_daily_only", name: "No wind or UV (daily only)" }),
+      ),
+      section(
+        heading("Colour thresholds", "mdi:palette"),
+        card({ name: "Custom thresholds (10–25 °C)", cold_threshold: 10, hot_threshold: 25 }),
+        card({ name: "Default thresholds" }),
+      ),
+    ]),
+
+    view("Alerts", "alerts", "mdi:alert", [
+      section(heading("Controls", "mdi:tune"), alertControls),
+      section(
+        heading("Providers", "mdi:alert-circle-outline"),
+        card({ name: "Alerts · NWS style (5 sources of alerts, scrolls when expanded)", alerts: { entities: ["sensor.dev_alerts_nws"] } }),
         card({
           name: "Alerts · Meteoalarm + Environment Canada, 2 visible",
           alerts: { entities: ["binary_sensor.dev_meteoalarm", "sensor.dev_home_warnings"], max_visible: 2 },
         }),
+      ),
+      section(
+        heading("Custom adapter", "mdi:code-braces"),
         card({
           name: "Alertas · adaptador propio",
           language: "es",
@@ -142,39 +264,15 @@ const dashboard = {
             min_level: 2,
           },
         }),
-        {
-          type: "entities",
-          title: "Fake alert controls",
-          entities: [
-            "input_select.dev_alert_rain",
-            "input_select.dev_alert_wind",
-            "input_select.dev_alert_heat",
-            "input_select.dev_alert_snow",
-            "input_select.dev_alert_storm",
-            "input_select.dev_alert_meteoalarm",
-            "input_boolean.dev_alert_ec",
-            "input_select.dev_alert_custom",
-          ],
-        },
-        {
-          type: "horizontal-stack",
-          cards: [card({ name: "Narrow A", hours_to_show: 5 }), card({ name: "Narrow B", default_view: "daily", days_to_show: 5 })],
-        },
-        {
-          type: "entities",
-          title: "Fake weather controls",
-          entities: [
-            "input_select.dev_condition",
-            "input_number.dev_temperature",
-            "input_number.dev_humidity",
-            "input_number.dev_wind",
-            "input_number.dev_wind_bearing",
-            "input_number.dev_uv",
-            "input_number.dev_rain",
-          ],
-        },
-      ],
-    },
+      ),
+    ]),
+
+    view("Languages", "languages", "mdi:translate", [
+      section(heading("Controls", "mdi:tune"), ...weatherControls),
+      ...[0, 1, 2, 3].map((n) =>
+        section(...LANGUAGES.filter((_, i) => i % 4 === n).map((language) => card({ name: `Language · ${language}`, language }))),
+      ),
+    ]),
   ],
 };
 

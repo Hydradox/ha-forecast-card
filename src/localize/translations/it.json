@@ -12,6 +12,35 @@
     "unavailable": "Non disponibile",
     "no_forecast": "Nessuna previsione disponibile"
   },
+  "conditions": {
+    "clear-night": "Sereno, notte",
+    "cloudy": "Nuvoloso",
+    "exceptional": "Eccezionale",
+    "fog": "Nebbia",
+    "hail": "Grandine",
+    "lightning": "Fulmini",
+    "lightning-rainy": "Temporale con pioggia",
+    "partlycloudy": "Parzialmente nuvoloso",
+    "pouring": "Pioggia battente",
+    "rainy": "Piovoso",
+    "snowy": "Nevoso",
+    "snowy-rainy": "Nevischio",
+    "sunny": "Soleggiato",
+    "windy": "Ventoso",
+    "windy-variant": "Ventoso e nuvoloso"
+  },
+  "festivities": {
+    "auto": "Automatica (per data)",
+    "none": "Nessuna",
+    "halloween": "Halloween",
+    "christmas": "Natale",
+    "new_year": "Capodanno",
+    "epiphany": "Epifania (Re Magi)",
+    "valentine": "San Valentino",
+    "carnival": "Carnevale",
+    "fallas": "Fallas (Valencia)",
+    "easter": "Pasqua"
+  },
   "attributes": {
     "humidity": "Umidità",
     "wind": "Vento",
@@ -68,7 +97,21 @@
     "entities_help": "Entità Meteoalarm, NWS o Environment Canada. I sensori personalizzati richiedono YAML.",
     "min_level": "Livello minimo",
     "min_level_help": "1 giallo, 2 arancione, 3 rosso, 4 estremo.",
-    "max_visible": "Allerte mostrate in forma compatta"
+    "max_visible": "Allerte mostrate in forma compatta",
+    "festivity": "Festività",
+    "festivity_help": "Decorazione stagionale. Automatica segue il calendario.",
+    "weather_effects": "Effetti meteo",
+    "section_festivities": "Festività",
+    "enabled": "Attiva",
+    "start": "Inizio",
+    "end": "Fine",
+    "start_offset": "Inizio (giorni da Pasqua)",
+    "end_offset": "Fine (giorni da Pasqua)",
+    "start_help": "Mese-giorno, es. 03-15. Può superare fine anno (12-27 a 01-01).",
+    "start_offset_help": "Giorni dalla domenica di Pasqua; negativo è prima.",
+    "festivity_dates_invalid": "Usa date MM-GG reali e numeri interi per Pasqua e Carnevale.",
+    "end_help": "Mese-giorno, es. 03-15. Può superare fine anno (12-27 a 01-01).",
+    "end_offset_help": "Giorni dalla domenica di Pasqua; negativo è prima."
   },
   "chart": {
     "label_hourly": "Temperatura oraria da {min}° a {max}°",

@@ -1,6 +1,8 @@
 import type { ActionConfig } from "./types/ha";
 import { isActionConfig } from "./utils/actions";
 import type { AlertsConfig } from "./utils/alerts";
+import type { FestivityRules } from "./festivities/calendar";
+import { festivityRulesValid, isFestivity } from "./festivities/calendar";
 import { parseAlertsConfig } from "./utils/alerts";
 
 export type ForecastView = "hourly" | "daily";
@@ -37,6 +39,15 @@ export interface ForecastCardConfig {
   alerts?: AlertsConfig;
   /** Language override; defaults to the Home Assistant UI language. */
   language?: string;
+  /**
+   * Seasonal decoration: `auto` follows the calendar, `none` disables it, a festivity name forces it, and an
+   * entity id (such as an `input_select`) takes one of those values from its state.
+   */
+  festivity?: string;
+  /** Animated weather effect behind the header (default true). */
+  weather_effects?: boolean;
+  /** Per-festivity rules for `festivity: auto`: turn one off, or correct its dates. */
+  festivities?: FestivityRules;
 }
 
 export const DEFAULT_CONFIG = {
@@ -44,6 +55,8 @@ export const DEFAULT_CONFIG = {
   default_view: "hourly",
   hours_to_show: 10,
   days_to_show: 7,
+  festivity: "auto",
+  weather_effects: true,
 } as const satisfies Partial<ForecastCardConfig>;
 
 export type ResolvedConfig = ForecastCardConfig &
@@ -100,6 +113,20 @@ export function parseConfig(raw: unknown): ResolvedConfig {
     if (value !== undefined && !isActionConfig(value)) {
       throw new Error(`\`${field}\` must be a valid action`);
     }
+  }
+
+  if (config.festivity !== undefined) {
+    const value = config.festivity;
+    if (typeof value !== "string" || !(["auto", "none"].includes(value) || isFestivity(value) || value.includes("."))) {
+      throw new Error("`festivity` must be 'auto', 'none', a festivity name or an entity id");
+    }
+  }
+
+  if (config.weather_effects !== undefined && typeof config.weather_effects !== "boolean") {
+    throw new Error("`weather_effects` must be true or false");
+  }
+  if (!festivityRulesValid(config.festivities)) {
+    throw new Error("`festivities` must map festivity names to { enabled, start, end } (MM-DD) or, for easter and carnival, { enabled, start_offset, end_offset }");
   }
 
   if (config.alerts !== undefined) parseAlertsConfig(config.alerts);
