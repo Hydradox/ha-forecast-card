@@ -90,4 +90,33 @@ describe("editor", () => {
     expect(events).toEqual([{ entity: "weather.a", cold_threshold: 5, hot_threshold: 30 }]);
     expect(editor.shadowRoot!.querySelector("ha-alert")).toBeNull();
   });
+
+  it("lists every festivity with its defaults and saves only the changes", async () => {
+    const editor = await mount({ entity: "weather.a", festivities: { halloween: { start: "10-20" } } });
+    const data = form(editor).data as { festivities: Record<string, Record<string, unknown>> };
+    expect(data.festivities.halloween).toEqual({ enabled: true, start: "10-20", end: "11-01" });
+    expect(data.festivities.fallas.enabled).toBe(false); // off by default
+    expect(data.festivities.easter).toEqual({ enabled: true, start_offset: -7, end_offset: 1 });
+
+    let emitted: Record<string, unknown> | undefined;
+    editor.addEventListener("config-changed", (e) => (emitted = (e as CustomEvent).detail.config));
+    const festivities = { ...data.festivities, christmas: { enabled: false, start: "12-01", end: "12-26" } };
+    form(editor).dispatchEvent(new CustomEvent("value-changed", { detail: { value: { ...form(editor).data, festivities, weather_effects: false } } }));
+    expect(emitted).toEqual({
+      entity: "weather.a",
+      weather_effects: false,
+      festivities: { halloween: { start: "10-20" }, christmas: { enabled: false } },
+    });
+  });
+
+  it("does not save impossible festivity dates", async () => {
+    const editor = await mount({ entity: "weather.a" });
+    let emitted: unknown;
+    editor.addEventListener("config-changed", (e) => (emitted = e));
+    const data = form(editor).data as { festivities: Record<string, unknown> };
+    form(editor).dispatchEvent(new CustomEvent("value-changed", { detail: { value: { ...form(editor).data, festivities: { ...data.festivities, fallas: { enabled: true, start: "02-30", end: "03-19" } } } } }));
+    await editor.updateComplete;
+    expect(emitted).toBeUndefined();
+    expect(editor.shadowRoot!.querySelector("ha-alert")).not.toBeNull();
+  });
 });

@@ -12,6 +12,35 @@
     "unavailable": "Utilgjengelig",
     "no_forecast": "Ingen værmelding tilgjengelig"
   },
+  "conditions": {
+    "clear-night": "Klart, natt",
+    "cloudy": "Overskyet",
+    "exceptional": "Eksepsjonelt",
+    "fog": "Tåke",
+    "hail": "Hagl",
+    "lightning": "Lyn",
+    "lightning-rainy": "Tordenvær med regn",
+    "partlycloudy": "Delvis skyet",
+    "pouring": "Øsregn",
+    "rainy": "Regn",
+    "snowy": "Snø",
+    "snowy-rainy": "Sludd",
+    "sunny": "Sol",
+    "windy": "Vind",
+    "windy-variant": "Vind og skyet"
+  },
+  "festivities": {
+    "auto": "Automatisk (etter dato)",
+    "none": "Ingen",
+    "halloween": "Halloween",
+    "christmas": "Jul",
+    "new_year": "Nyttårsaften",
+    "epiphany": "Helligtrekongersdag",
+    "valentine": "Valentinsdag",
+    "carnival": "Karneval",
+    "fallas": "Fallas (Valencia)",
+    "easter": "Påske"
+  },
   "attributes": {
     "humidity": "Luftfuktighet",
     "wind": "Vind",
@@ -68,7 +97,21 @@
     "entities_help": "Meteoalarm-, NWS- eller Environment Canada-entiteter. Egendefinerte sensorer krever YAML.",
     "min_level": "Laveste nivå",
     "min_level_help": "1 gul, 2 oransje, 3 rød, 4 ekstrem.",
-    "max_visible": "Farevarsler vist i sammenfoldet visning"
+    "max_visible": "Farevarsler vist i sammenfoldet visning",
+    "festivity": "Høytid",
+    "festivity_help": "Sesongdekorasjon. Automatisk følger kalenderen.",
+    "weather_effects": "Værefekter",
+    "section_festivities": "Høytider",
+    "enabled": "Aktivert",
+    "start": "Start",
+    "end": "Slutt",
+    "start_offset": "Start (dager fra påske)",
+    "end_offset": "Slutt (dager fra påske)",
+    "start_help": "Måned-dag, f.eks. 03-15. Årsskifte er greit (12-27 til 01-01).",
+    "start_offset_help": "Dager fra påskedag; negativ er før.",
+    "festivity_dates_invalid": "Bruk ekte MM-DD-datoer og heltall for påske og karneval.",
+    "end_help": "Måned-dag, f.eks. 03-15. Årsskifte er greit (12-27 til 01-01).",
+    "end_offset_help": "Dager fra påskedag; negativ er før."
   },
   "chart": {
     "label_hourly": "Temperatur per time fra {min}° til {max}°",

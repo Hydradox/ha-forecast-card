@@ -2,6 +2,18 @@ import type { TemplateResult } from "lit";
 import { LitElement, html, nothing } from "lit";
 import { DEFAULT_CONFIG, compactConfig, thresholdsInOrder } from "../config";
 import { EDITOR_TAG } from "../const";
+import type { Festivity, FestivityRule } from "../festivities/calendar";
+import {
+  FESTIVITIES,
+  FIXED_WINDOWS,
+  MOVABLE_WINDOWS,
+  compactFestivityRules,
+  easterSunday,
+  festivityRulesValid,
+  isEnabledByDefault,
+  isMovable,
+  parseMonthDay,
+} from "../festivities/calendar";
 import type { Translate } from "../localize";
 import { createTranslator } from "../localize";
 import type { HomeAssistant } from "../types/ha";
@@ -20,6 +32,24 @@ function hoistSections(config: Record<string, unknown>): Record<string, unknown>
   const sections = Object.entries(config).filter(([key]) => key.startsWith("section_"));
   const rest = Object.entries(config).filter(([key]) => !key.startsWith("section_"));
   return Object.assign({}, ...sections.map(([, value]) => (value && typeof value === "object" ? value : {})), Object.fromEntries(rest));
+}
+
+/** Default window of a festivity as a readable range ("24 Oct – 1 Nov"); movable ones are shown for this year. */
+function defaultWindow(id: Festivity, language: string | undefined): string {
+  const format = new Intl.DateTimeFormat(language, { day: "numeric", month: "short" });
+  let from: Date;
+  let to: Date;
+  if (isMovable(id)) {
+    const { month, day } = easterSunday(new Date().getFullYear());
+    const [a, b] = MOVABLE_WINDOWS[id];
+    from = new Date(new Date().getFullYear(), month - 1, day + a);
+    to = new Date(new Date().getFullYear(), month - 1, day + b);
+  } else {
+    const [a, b] = FIXED_WINDOWS[id as keyof typeof FIXED_WINDOWS].map((value) => parseMonthDay(value) as number);
+    from = new Date(2000, Math.floor(a / 100) - 1, a % 100);
+    to = new Date(2000, Math.floor(b / 100) - 1, b % 100);
+  }
+  return `${format.format(from)} – ${format.format(to)}`;
 }
 
 /** Visual editor built on `ha-form`; the card stays fully configurable through YAML. */
@@ -82,6 +112,7 @@ class HaForecastCardEditor extends LitElement {
           },
         },
       },
+      { name: "weather_effects", selector: { boolean: {} } },
       {
         type: "grid",
         name: "",
@@ -125,6 +156,44 @@ class HaForecastCardEditor extends LitElement {
         name: "section_thresholds",
         schema: [{ type: "grid", name: "", schema: [threshold("cold_threshold"), threshold("hot_threshold")] }],
       },
+      {
+        type: "expandable",
+        flatten: true, // `festivity` stays at the top level; the per-festivity rules nest under `festivities`
+        name: "section_festivities",
+        schema: [
+          {
+            name: "festivity",
+            selector: {
+              select: {
+                mode: "dropdown",
+                custom_value: true, // an entity id (e.g. an input_select) is also valid, edit it in YAML
+                options: ["auto", "none", ...FESTIVITIES].map((value) => ({ value, label: t(`festivities.${value}`) })),
+              },
+            },
+          },
+          {
+            type: "grid",
+            name: "festivities", // nested on purpose: the card reads `festivities.<name>.{enabled,start,end}`
+            schema: FESTIVITIES.map((id) => ({
+              type: "expandable",
+              name: id,
+              schema: [
+                { name: "enabled", selector: { boolean: {} } },
+                isMovable(id)
+                  ? {
+                      type: "grid",
+                      name: "",
+                      schema: [
+                        { name: "start_offset", selector: { number: { min: -120, max: 120, step: 1, mode: "box" } } },
+                        { name: "end_offset", selector: { number: { min: -120, max: 120, step: 1, mode: "box" } } },
+                      ],
+                    }
+                  : { type: "grid", name: "", schema: [{ name: "start", selector: { text: {} } }, { name: "end", selector: { text: {} } }] },
+              ],
+            })),
+          },
+        ],
+      },
     ];
   }
 
@@ -142,13 +211,26 @@ class HaForecastCardEditor extends LitElement {
       ...alerts,
       entities: (alerts.entities ?? []).filter((item): item is string => typeof item === "string"),
     };
+    // Every festivity is listed with its default window, overridden by what the user saved.
+    const rules = (data.festivities ?? {}) as Record<string, FestivityRule>;
+    data.festivities = Object.fromEntries(
+      FESTIVITIES.map((id) => {
+        const [start, end] = isMovable(id) ? MOVABLE_WINDOWS[id] : FIXED_WINDOWS[id as keyof typeof FIXED_WINDOWS];
+        const window = isMovable(id) ? { start_offset: start, end_offset: end } : { start, end };
+        return [id, { enabled: isEnabledByDefault(id), ...window, ...rules[id] }];
+      }),
+    );
     const invalid = !thresholdsInOrder(data.cold_threshold, data.hot_threshold);
+    const badDates = !festivityRulesValid(data.festivities);
     return html`
       <ha-form
         .hass=${this.hass}
         .data=${data}
         .schema=${this.schema(t)}
-        .computeLabel=${(item: { name: string }) => t(`editor.${item.name}`)}
+        .computeLabel=${(item: { name: string }) =>
+          (FESTIVITIES as readonly string[]).includes(item.name)
+            ? `${t(`festivities.${item.name}`)} · ${defaultWindow(item.name as Festivity, this._config?.language as string | undefined ?? this.hass?.language)}`
+            : t(`editor.${item.name}`)}
         .computeHelper=${(item: { name: string }) => {
           const key = `editor.${item.name}_help`;
           const text = t(key);
@@ -157,21 +239,23 @@ class HaForecastCardEditor extends LitElement {
         @value-changed=${this.onValueChanged}
       ></ha-form>
       ${invalid ? html`<ha-alert alert-type="error">${t("editor.threshold_order")}</ha-alert>` : nothing}
+      ${badDates ? html`<ha-alert alert-type="error">${t("editor.festivity_dates_invalid")}</ha-alert>` : nothing}
     `;
   }
 
   private onValueChanged(event: CustomEvent<{ value: Record<string, unknown> }>): void {
     event.stopPropagation();
-    const { alerts, ...rest } = event.detail.value;
+    const { alerts, festivities, ...rest } = event.detail.value;
     const yamlOnly = ((this._config?.alerts as Partial<AlertsConfig> | undefined)?.entities ?? []).filter(
       (item) => typeof item !== "string",
     );
     const picked = alerts as Partial<AlertsConfig> | undefined;
     const merged = compactAlerts(picked ? ({ ...picked, entities: [...(picked.entities ?? []), ...yamlOnly] } as AlertsConfig) : undefined);
-    const value: Record<string, unknown> = { ...rest, ...(merged ? { alerts: merged } : {}) };
+    const rules = compactFestivityRules(festivities as Parameters<typeof compactFestivityRules>[0]);
+    const value: Record<string, unknown> = { ...rest, ...(merged ? { alerts: merged } : {}), ...(rules ? { festivities: rules } : {}) };
     this._draft = { ...event.detail.value };
     // Invalid input stays in the form (with an error) and is not saved, so the card keeps its last valid config.
-    if (!thresholdsInOrder(value.cold_threshold, value.hot_threshold)) return;
+    if (!thresholdsInOrder(value.cold_threshold, value.hot_threshold) || !festivityRulesValid(festivities)) return;
     this.dispatchEvent(
       new CustomEvent("config-changed", {
         detail: { config: compactConfig(value, this.defaults()) },

@@ -12,6 +12,35 @@
     "unavailable": "Niedostępne",
     "no_forecast": "Brak dostępnej prognozy"
   },
+  "conditions": {
+    "clear-night": "Bezchmurnie, noc",
+    "cloudy": "Pochmurno",
+    "exceptional": "Wyjątkowe",
+    "fog": "Mgła",
+    "hail": "Grad",
+    "lightning": "Błyskawice",
+    "lightning-rainy": "Burza z deszczem",
+    "partlycloudy": "Częściowe zachmurzenie",
+    "pouring": "Ulewa",
+    "rainy": "Deszczowo",
+    "snowy": "Śnieg",
+    "snowy-rainy": "Deszcz ze śniegiem",
+    "sunny": "Słonecznie",
+    "windy": "Wietrznie",
+    "windy-variant": "Wietrznie i pochmurno"
+  },
+  "festivities": {
+    "auto": "Automatycznie (według daty)",
+    "none": "Brak",
+    "halloween": "Halloween",
+    "christmas": "Boże Narodzenie",
+    "new_year": "Sylwester",
+    "epiphany": "Trzech Króli",
+    "valentine": "Walentynki",
+    "carnival": "Karnawał",
+    "fallas": "Fallas (Walencja)",
+    "easter": "Wielkanoc"
+  },
   "attributes": {
     "humidity": "Wilgotność",
     "wind": "Wiatr",
@@ -68,7 +97,21 @@
     "entities_help": "Encje Meteoalarm, NWS lub Environment Canada. Niestandardowe czujniki wymagają YAML.",
     "min_level": "Minimalny poziom",
     "min_level_help": "1 żółty, 2 pomarańczowy, 3 czerwony, 4 ekstremalny.",
-    "max_visible": "Liczba ostrzeżeń w widoku zwiniętym"
+    "max_visible": "Liczba ostrzeżeń w widoku zwiniętym",
+    "festivity": "Święto",
+    "festivity_help": "Dekoracja sezonowa. Automatyczna działa według kalendarza.",
+    "weather_effects": "Efekty pogodowe",
+    "section_festivities": "Święta",
+    "enabled": "Włączone",
+    "start": "Początek",
+    "end": "Koniec",
+    "start_offset": "Początek (dni od Wielkanocy)",
+    "end_offset": "Koniec (dni od Wielkanocy)",
+    "start_help": "Miesiąc-dzień, np. 03-15. Przełom roku jest dozwolony (12-27 do 01-01).",
+    "start_offset_help": "Dni od Niedzieli Wielkanocnej; ujemne to przed.",
+    "festivity_dates_invalid": "Użyj prawdziwych dat MM-DD i liczb całkowitych dla Wielkanocy i Karnawału.",
+    "end_help": "Miesiąc-dzień, np. 03-15. Przełom roku jest dozwolony (12-27 do 01-01).",
+    "end_offset_help": "Dni od Niedzieli Wielkanocnej; ujemne to przed."
   },
   "chart": {
     "label_hourly": "Temperatura godzinowa od {min}° do {max}°",

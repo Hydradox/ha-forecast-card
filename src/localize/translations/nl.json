@@ -12,6 +12,35 @@
     "unavailable": "Niet beschikbaar",
     "no_forecast": "Geen verwachting beschikbaar"
   },
+  "conditions": {
+    "clear-night": "Helder, nacht",
+    "cloudy": "Bewolkt",
+    "exceptional": "Uitzonderlijk",
+    "fog": "Mist",
+    "hail": "Hagel",
+    "lightning": "Bliksem",
+    "lightning-rainy": "Onweer met regen",
+    "partlycloudy": "Half bewolkt",
+    "pouring": "Stortregen",
+    "rainy": "Regenachtig",
+    "snowy": "Sneeuw",
+    "snowy-rainy": "Natte sneeuw",
+    "sunny": "Zonnig",
+    "windy": "Winderig",
+    "windy-variant": "Winderig en bewolkt"
+  },
+  "festivities": {
+    "auto": "Automatisch (op datum)",
+    "none": "Geen",
+    "halloween": "Halloween",
+    "christmas": "Kerst",
+    "new_year": "Oudejaarsavond",
+    "epiphany": "Driekoningen",
+    "valentine": "Valentijnsdag",
+    "carnival": "Carnaval",
+    "fallas": "Fallas (Valencia)",
+    "easter": "Pasen"
+  },
   "attributes": {
     "humidity": "Luchtvochtigheid",
     "wind": "Wind",
@@ -68,7 +97,21 @@
     "entities_help": "Meteoalarm-, NWS- of Environment Canada-entiteiten. Eigen sensoren vereisen YAML.",
     "min_level": "Minimaal niveau",
     "min_level_help": "1 geel, 2 oranje, 3 rood, 4 extreem.",
-    "max_visible": "Waarschuwingen ingeklapt getoond"
+    "max_visible": "Waarschuwingen ingeklapt getoond",
+    "festivity": "Feestdag",
+    "festivity_help": "Seizoensdecoratie. Automatisch volgt de kalender.",
+    "weather_effects": "Weereffecten",
+    "section_festivities": "Feestdagen",
+    "enabled": "Ingeschakeld",
+    "start": "Begin",
+    "end": "Einde",
+    "start_offset": "Begin (dagen vanaf Pasen)",
+    "end_offset": "Einde (dagen vanaf Pasen)",
+    "start_help": "Maand-dag, bijv. 03-15. Jaarwisseling mag (12-27 tot 01-01).",
+    "start_offset_help": "Dagen vanaf eerste paasdag; negatief is ervoor.",
+    "festivity_dates_invalid": "Gebruik echte MM-DD-data en gehele getallen voor Pasen en Carnaval.",
+    "end_help": "Maand-dag, bijv. 03-15. Jaarwisseling mag (12-27 tot 01-01).",
+    "end_offset_help": "Dagen vanaf eerste paasdag; negatief is ervoor."
   },
   "chart": {
     "label_hourly": "Temperatuur per uur van {min}° tot {max}°",

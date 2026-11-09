@@ -8,6 +8,8 @@ homeassistant:
   time_zone: Europe/Madrid
   currency: EUR
   country: ES
+  packages:
+    gallery: !include gallery.yaml   # fixed-condition weather entities for the Gallery view
 
 frontend:
   themes: !include_dir_merge_named themes
@@ -42,6 +44,23 @@ input_select:
       - sunny
       - windy
       - windy-variant
+
+  # Seasonal decoration. Dashboard cards use `festivity: input_select.dev_festivity`, so this drives them all.
+  dev_festivity:
+    name: Festivity
+    icon: mdi:party-popper
+    initial: auto
+    options:
+      - auto
+      - none
+      - epiphany
+      - valentine
+      - carnival
+      - fallas
+      - easter
+      - halloween
+      - christmas
+      - new_year
 
 # Fake alerts: pick a severity per alert (or off). Several at once test the scrollable list.
   dev_alert_rain:

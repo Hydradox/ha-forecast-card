@@ -12,6 +12,35 @@
     "unavailable": "Indisponível",
     "no_forecast": "Sem previsão disponível"
   },
+  "conditions": {
+    "clear-night": "Limpo, noite",
+    "cloudy": "Nublado",
+    "exceptional": "Excecional",
+    "fog": "Nevoeiro",
+    "hail": "Granizo",
+    "lightning": "Relâmpagos",
+    "lightning-rainy": "Trovoada com chuva",
+    "partlycloudy": "Parcialmente nublado",
+    "pouring": "Chuva forte",
+    "rainy": "Chuvoso",
+    "snowy": "Neve",
+    "snowy-rainy": "Aguaneve",
+    "sunny": "Ensolarado",
+    "windy": "Ventoso",
+    "windy-variant": "Ventoso e nublado"
+  },
+  "festivities": {
+    "auto": "Automática (por data)",
+    "none": "Nenhuma",
+    "halloween": "Halloween",
+    "christmas": "Natal",
+    "new_year": "Passagem de ano",
+    "epiphany": "Dia de Reis",
+    "valentine": "Dia dos Namorados",
+    "carnival": "Carnaval",
+    "fallas": "Fallas (Valência)",
+    "easter": "Páscoa"
+  },
   "attributes": {
     "humidity": "Humidade",
     "wind": "Vento",
@@ -68,7 +97,21 @@
     "entities_help": "Entidades Meteoalarm, NWS ou Environment Canada. Os sensores personalizados requerem YAML.",
     "min_level": "Nível mínimo",
     "min_level_help": "1 amarelo, 2 laranja, 3 vermelho, 4 extremo.",
-    "max_visible": "Avisos mostrados em modo recolhido"
+    "max_visible": "Avisos mostrados em modo recolhido",
+    "festivity": "Festividade",
+    "festivity_help": "Decoração sazonal. Automática segue o calendário.",
+    "weather_effects": "Efeitos do tempo",
+    "section_festivities": "Festividades",
+    "enabled": "Ativada",
+    "start": "Início",
+    "end": "Fim",
+    "start_offset": "Início (dias desde a Páscoa)",
+    "end_offset": "Fim (dias desde a Páscoa)",
+    "start_help": "Mês-dia, ex.: 03-15. Pode passar o fim do ano (12-27 a 01-01).",
+    "start_offset_help": "Dias desde o Domingo de Páscoa; negativo é antes.",
+    "festivity_dates_invalid": "Use datas MM-DD reais e números inteiros na Páscoa e no Carnaval.",
+    "end_help": "Mês-dia, ex.: 03-15. Pode passar o fim do ano (12-27 a 01-01).",
+    "end_offset_help": "Dias desde o Domingo de Páscoa; negativo é antes."
   },
   "chart": {
     "label_hourly": "Temperatura por hora de {min}° a {max}°",

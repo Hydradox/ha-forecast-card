@@ -12,6 +12,35 @@
     "unavailable": "Unavailable",
     "no_forecast": "No forecast available"
   },
+  "conditions": {
+    "clear-night": "Clear, night",
+    "cloudy": "Cloudy",
+    "exceptional": "Exceptional",
+    "fog": "Fog",
+    "hail": "Hail",
+    "lightning": "Lightning",
+    "lightning-rainy": "Lightning, rainy",
+    "partlycloudy": "Partly cloudy",
+    "pouring": "Pouring",
+    "rainy": "Rainy",
+    "snowy": "Snowy",
+    "snowy-rainy": "Snowy, rainy",
+    "sunny": "Sunny",
+    "windy": "Windy",
+    "windy-variant": "Windy, cloudy"
+  },
+  "festivities": {
+    "auto": "Automatic (by date)",
+    "none": "None",
+    "halloween": "Halloween",
+    "christmas": "Christmas",
+    "new_year": "New Year's Eve",
+    "epiphany": "Epiphany (Three Kings)",
+    "valentine": "Valentine's Day",
+    "carnival": "Carnival",
+    "fallas": "Fallas (Valencia)",
+    "easter": "Easter"
+  },
   "attributes": {
     "humidity": "Humidity",
     "wind": "Wind",
@@ -68,7 +97,21 @@
     "entities_help": "Meteoalarm, NWS or Environment Canada entities. Custom sensors need YAML.",
     "min_level": "Minimum level",
     "min_level_help": "1 yellow, 2 orange, 3 red, 4 extreme.",
-    "max_visible": "Alerts shown collapsed"
+    "max_visible": "Alerts shown collapsed",
+    "festivity": "Festivity",
+    "festivity_help": "Seasonal decoration. Automatic follows the calendar.",
+    "weather_effects": "Weather effects",
+    "section_festivities": "Festivities",
+    "enabled": "Enabled",
+    "start": "Start",
+    "end": "End",
+    "start_offset": "Start (days from Easter)",
+    "end_offset": "End (days from Easter)",
+    "start_help": "Month-day, e.g. 03-15. Year-end wrap is fine (12-27 to 01-01).",
+    "start_offset_help": "Days from Easter Sunday; negative is before.",
+    "festivity_dates_invalid": "Use real MM-DD dates, and whole numbers for Easter and Carnival.",
+    "end_help": "Month-day, e.g. 03-15. Year-end wrap is fine (12-27 to 01-01).",
+    "end_offset_help": "Days from Easter Sunday; negative is before."
   },
   "chart": {
     "label_hourly": "Hourly temperature from {min}° to {max}°",

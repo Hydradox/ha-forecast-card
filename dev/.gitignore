@@ -1,6 +1,7 @@
 # HA runtime state; only the seed configuration and themes are tracked.
 config/*
 !config/configuration.yaml
+!config/gallery.yaml
 !config/themes/
 config/themes/*
 !config/themes/dev-themes.yaml

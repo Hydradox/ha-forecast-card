@@ -12,6 +12,35 @@
     "unavailable": "No disponible",
     "no_forecast": "Sin previsión disponible"
   },
+  "conditions": {
+    "clear-night": "Despejado, noche",
+    "cloudy": "Nublado",
+    "exceptional": "Excepcional",
+    "fog": "Niebla",
+    "hail": "Granizo",
+    "lightning": "Tormenta seca",
+    "lightning-rainy": "Tormenta con lluvia",
+    "partlycloudy": "Parcialmente nublado",
+    "pouring": "Lluvia fuerte",
+    "rainy": "Lluvia",
+    "snowy": "Nieve",
+    "snowy-rainy": "Aguanieve",
+    "sunny": "Soleado",
+    "windy": "Ventoso",
+    "windy-variant": "Ventoso y nublado"
+  },
+  "festivities": {
+    "auto": "Automática (por fecha)",
+    "none": "Ninguna",
+    "halloween": "Halloween",
+    "christmas": "Navidad",
+    "new_year": "Fin de año",
+    "epiphany": "Reyes Magos",
+    "valentine": "San Valentín",
+    "carnival": "Carnaval",
+    "fallas": "Fallas de Valencia",
+    "easter": "Pascua"
+  },
   "attributes": {
     "humidity": "Humedad",
     "wind": "Viento",
@@ -68,7 +97,21 @@
     "entities_help": "Entidades de Meteoalarm, NWS o Environment Canada. Los sensores propios requieren YAML.",
     "min_level": "Nivel mínimo",
     "min_level_help": "1 amarillo, 2 naranja, 3 rojo, 4 extremo.",
-    "max_visible": "Avisos mostrados plegados"
+    "max_visible": "Avisos mostrados plegados",
+    "festivity": "Festividad",
+    "festivity_help": "Decoración de temporada. Automática sigue el calendario.",
+    "weather_effects": "Efectos de clima",
+    "section_festivities": "Festividades",
+    "enabled": "Activada",
+    "start": "Inicio",
+    "end": "Fin",
+    "start_offset": "Inicio (días desde Pascua)",
+    "end_offset": "Fin (días desde Pascua)",
+    "start_help": "Mes-día, p. ej. 03-15. Puede cruzar el fin de año (12-27 a 01-01).",
+    "start_offset_help": "Días desde el Domingo de Pascua; negativo es antes.",
+    "festivity_dates_invalid": "Usa fechas MM-DD reales y números enteros en Pascua y Carnaval.",
+    "end_help": "Mes-día, p. ej. 03-15. Puede cruzar el fin de año (12-27 a 01-01).",
+    "end_offset_help": "Días desde el Domingo de Pascua; negativo es antes."
   },
   "chart": {
     "label_hourly": "Temperatura por horas de {min}° a {max}°",

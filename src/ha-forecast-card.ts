@@ -6,6 +6,12 @@ import { CARD_TAG, EDITOR_TAG } from "./const";
 import { ForecastSubscription, supportsForecast } from "./controllers/forecast-subscription";
 import type { Translate } from "./localize";
 import { createTranslator } from "./localize";
+import { effectStyles } from "./effects/effects.styles";
+import { resolveFestivity } from "./festivities/calendar";
+import type { Festivity } from "./festivities/calendar";
+import { renderFestivityBrand, renderFestivityLayers } from "./festivities/render";
+import { festivityStyles } from "./festivities/styles";
+import { renderWeatherEffect } from "./effects/render";
 import { cardStyles } from "./styles/card.styles";
 import { tokens } from "./styles/tokens";
 import type { ActionConfig, GridOptions, HassEntity, HomeAssistant } from "./types/ha";
@@ -16,8 +22,8 @@ import type { Formatters } from "./utils/format";
 import { createFormatters } from "./utils/format";
 import { cardinal, dailySlots, defined, hourlySlots } from "./utils/forecast-view";
 import { LEVEL_KEYS, getLevel } from "./utils/scales";
-import { resolveThresholds, temperatureColor } from "./utils/temperature";
-import { convertTemperature, toCelsius, toKmh } from "./utils/units";
+import { resolveThresholds } from "./utils/temperature";
+import { convertTemperature, toKmh } from "./utils/units";
 import { renderAlerts } from "./views/alerts";
 import type { MetricView } from "./views/attributes";
 import { renderAttributes } from "./views/attributes";
@@ -36,7 +42,7 @@ class HaForecastCard extends LitElement {
     _width: { state: true },
     _alertsOpen: { state: true },
   };
-  static override styles = [tokens, cardStyles];
+  static override styles = [tokens, cardStyles, effectStyles, festivityStyles];
 
   declare hass?: HomeAssistant;
   declare _config?: ResolvedConfig;
@@ -52,6 +58,7 @@ class HaForecastCard extends LitElement {
   private formatters: Formatters = createFormatters(undefined);
   private i18nKey: string | undefined;
   private activeAlerts: WeatherAlert[] = [];
+  private festivity?: Festivity;
   /** View drawn by the last render, and the one before it (to slide when the tab changes). */
   private renderedView?: View;
   private shownView?: View;
@@ -60,6 +67,7 @@ class HaForecastCard extends LitElement {
   private slides: Animation[] = [];
   private resizeObserver?: ResizeObserver;
   private observed?: Element;
+  private visibility?: IntersectionObserver;
 
   constructor() {
     super();
@@ -96,8 +104,18 @@ class HaForecastCard extends LitElement {
     return document.createElement(EDITOR_TAG);
   }
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    // Effects only animate while the card is on screen.
+    if (typeof IntersectionObserver !== "undefined") {
+      this.visibility ??= new IntersectionObserver(([entry]) => this.toggleAttribute("data-fx-paused", !entry.isIntersecting));
+      this.visibility.observe(this);
+    }
+  }
+
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    this.visibility?.disconnect();
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
     this.observed = undefined;
@@ -113,6 +131,7 @@ class HaForecastCard extends LitElement {
     const previous = changed.get("hass") as HomeAssistant | undefined;
     if (!previous || !this.hass) return true;
     if (previous.language !== this.hass.language) return true;
+    if (previous.themes?.darkMode !== this.hass.themes?.darkMode) return true;
     return this.watchedEntities().some((id) => previous.states[id] !== this.hass!.states[id]);
   }
 
@@ -126,6 +145,12 @@ class HaForecastCard extends LitElement {
       this.localize = createTranslator(language);
       this.formatters = createFormatters(language, this.hass?.locale, this.hass?.config.time_zone);
     }
+    // Seasonal decoration: palette tokens live on the host (see festivities/styles.ts).
+    const now = new Date();
+    this.festivity = resolveFestivity(config.festivity, (id) => this.hass?.states[id]?.state, now, config.festivities);
+    this.toggleAttribute("data-dark", !!this.hass?.themes?.darkMode);
+    if (this.festivity) this.setAttribute("data-festivity", this.festivity);
+    else this.removeAttribute("data-festivity");
     this.hourly.configure(this.hass, config.entity, "hourly");
     this.daily.configure(this.hass, config.entity, "daily");
   }
@@ -218,6 +243,7 @@ class HaForecastCard extends LitElement {
       c.humidity_entity,
       c.wind_speed_entity,
       c.uv_index_entity,
+      c.festivity?.includes(".") ? c.festivity : undefined,
       ...alertSources(c.alerts).map((source) => source.entity),
     ].filter((id): id is string => !!id);
   }
@@ -334,6 +360,7 @@ class HaForecastCard extends LitElement {
     const views = this.availableViews(weather);
     const view = views.includes(this._view) ? this._view : views[0];
     const metrics = this.metrics(weather);
+    const dark = !!this.hass.themes?.darkMode;
 
     return html`
       <ha-card
@@ -343,7 +370,7 @@ class HaForecastCard extends LitElement {
         @click=${this.onCardTap}
         @keydown=${this.onKeydown(this.onCardTap)}
       >
-        ${iconSprite} ${this.renderHeader(weather, current, thresholds, now)} ${this.renderAlertBanner(now)}
+        ${config.weather_effects ? renderWeatherEffect(weather.state, dark) : nothing} ${renderFestivityLayers(this.festivity, dark)} ${iconSprite} ${this.renderHeader(weather, current, now, dark)} ${this.renderAlertBanner(now)}
         ${view ? this.renderForecast(weather, view, views, current, thresholds, now) : nothing}
         ${metrics.length ? renderAttributes(metrics) : nothing}
       </ha-card>
@@ -380,6 +407,12 @@ class HaForecastCard extends LitElement {
 
   private conditionLabel(weather: HassEntity): string {
     const hass = this.hass!;
+    // An explicit card `language` wins over the HA profile language, so use our own condition names.
+    if (this._config?.language) {
+      const key = `conditions.${weather.state}`;
+      const own = this.localize(key);
+      if (own !== key) return own;
+    }
     return (
       hass.formatEntityState?.(weather) ||
       hass.localize?.(`component.weather.entity_component._.state.${weather.state}`) ||
@@ -390,17 +423,13 @@ class HaForecastCard extends LitElement {
   private renderHeader(
     weather: HassEntity,
     temperature: number | undefined,
-    thresholds: ReturnType<typeof resolveThresholds>,
     now: Date,
+    dark: boolean,
   ): TemplateResult {
     const config = this._config!;
     const fmt = this.formatters;
     const unit = this.temperatureUnit(weather);
     const name = config.name ?? (weather.attributes.friendly_name as string | undefined) ?? weather.entity_id;
-    const circle =
-      temperature === undefined
-        ? "transparent"
-        : `color-mix(in srgb, ${temperatureColor(toCelsius(temperature, unit), thresholds)} 20%, transparent)`;
     const interactive = isInteractive(this.temperatureAction());
     const today = dailySlots(this.daily.forecast, now, 1, fmt, "")[0];
     const range =
@@ -408,14 +437,9 @@ class HaForecastCard extends LitElement {
         ? `${this.localize("common.max")} ${fmt.number(today.temperature)}° · ${this.localize("common.min")} ${fmt.number(today.templow)}°`
         : undefined;
 
+    // Temperature on the left, name / condition / range right-aligned (design "C4 v2a").
     return html`
       <div class="header">
-        <div class="icon" style="--hfc-circle: ${circle}">${weatherIcon(weather.state, 38)}</div>
-        <div class="info">
-          ${config.show_name ? html`<span class="secondary">${name}</span>` : nothing}
-          <span class="state">${this.conditionLabel(weather)}</span>
-          ${range ? html`<span class="range">${range}</span>` : nothing}
-        </div>
         ${temperature === undefined
           ? nothing
           : html`<div
@@ -427,6 +451,15 @@ class HaForecastCard extends LitElement {
             >
               ${fmt.number(temperature, 1)}<span class="unit">${unit}</span>
             </div>`}
+        <div class="info">
+          ${config.show_name
+            ? this.festivity
+              ? html`<span class="secondary brand">${renderFestivityBrand(this.festivity, dark)}<span class="name">${name}</span></span>`
+              : html`<span class="secondary">${name}</span>`
+            : nothing}
+          <div class="condition">${weatherIcon(weather.state, 24)}<span class="state">${this.conditionLabel(weather)}</span></div>
+          ${range ? html`<span class="range">${range}</span>` : nothing}
+        </div>
       </div>
     `;
   }

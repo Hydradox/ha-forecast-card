@@ -12,6 +12,7 @@ export const tokens = css`
     --hfc-text-secondary: var(--secondary-text-color);
     --hfc-divider: var(--divider-color);
     --hfc-accent: var(--primary-color);
+    --hfc-accent-text: var(--hfc-accent); /* festivities use a darker/lighter shade for text */
     --hfc-radius: var(--ha-card-border-radius, 12px);
 
     --hfc-surface: var(--ha-card-background, var(--card-background-color, #fff));

@@ -12,6 +12,35 @@
     "unavailable": "Indisponible",
     "no_forecast": "Aucune prévision disponible"
   },
+  "conditions": {
+    "clear-night": "Dégagé, nuit",
+    "cloudy": "Nuageux",
+    "exceptional": "Exceptionnel",
+    "fog": "Brouillard",
+    "hail": "Grêle",
+    "lightning": "Éclairs",
+    "lightning-rainy": "Orageux avec pluie",
+    "partlycloudy": "Partiellement nuageux",
+    "pouring": "Pluie battante",
+    "rainy": "Pluvieux",
+    "snowy": "Neigeux",
+    "snowy-rainy": "Neige fondue",
+    "sunny": "Ensoleillé",
+    "windy": "Venteux",
+    "windy-variant": "Venteux et nuageux"
+  },
+  "festivities": {
+    "auto": "Automatique (selon la date)",
+    "none": "Aucune",
+    "halloween": "Halloween",
+    "christmas": "Noël",
+    "new_year": "Nouvel An",
+    "epiphany": "Épiphanie (Rois mages)",
+    "valentine": "Saint-Valentin",
+    "carnival": "Carnaval",
+    "fallas": "Fallas (Valence)",
+    "easter": "Pâques"
+  },
   "attributes": {
     "humidity": "Humidité",
     "wind": "Vent",
@@ -68,7 +97,21 @@
     "entities_help": "Entités Meteoalarm, NWS ou Environment Canada. Les capteurs personnalisés nécessitent du YAML.",
     "min_level": "Niveau minimal",
     "min_level_help": "1 jaune, 2 orange, 3 rouge, 4 extrême.",
-    "max_visible": "Alertes affichées en mode réduit"
+    "max_visible": "Alertes affichées en mode réduit",
+    "festivity": "Fête",
+    "festivity_help": "Décoration saisonnière. Automatique suit le calendrier.",
+    "weather_effects": "Effets météo",
+    "section_festivities": "Fêtes",
+    "enabled": "Activée",
+    "start": "Début",
+    "end": "Fin",
+    "start_offset": "Début (jours depuis Pâques)",
+    "end_offset": "Fin (jours depuis Pâques)",
+    "start_help": "Mois-jour, ex. 03-15. Le passage d'année est permis (12-27 à 01-01).",
+    "start_offset_help": "Jours depuis le dimanche de Pâques ; négatif = avant.",
+    "festivity_dates_invalid": "Utilisez de vraies dates MM-JJ et des entiers pour Pâques et le Carnaval.",
+    "end_help": "Mois-jour, ex. 03-15. Le passage d'année est permis (12-27 à 01-01).",
+    "end_offset_help": "Jours depuis le dimanche de Pâques ; négatif = avant."
   },
   "chart": {
     "label_hourly": "Température par heure de {min}° à {max}°",

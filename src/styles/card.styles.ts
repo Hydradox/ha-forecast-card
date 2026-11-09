@@ -6,6 +6,9 @@ export const cardStyles = css`
     container-type: inline-size; /* responsive to the card width, not the viewport */
   }
   ha-card {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate; /* the effect layer sits behind the content, inside the card */
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -24,42 +27,72 @@ export const cardStyles = css`
   .header {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
   }
-  .header .icon {
-    width: 56px;
-    height: 56px;
-    flex: none;
-    border-radius: 50%;
-    background: var(--hfc-circle, transparent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
   .header .info {
-    flex: 1;
+    flex: 1 1 0; /* takes what the temperature leaves and shrinks (never pushes it) */
     min-width: 0;
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
     gap: 2px;
+    text-align: right;
+  }
+  .header .info > * {
+    max-width: 100%;
+  }
+  .condition {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .condition svg {
+    flex: none;
   }
   .secondary {
     color: var(--hfc-text-secondary);
     font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
   .state {
     font-size: 16px;
     font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .temperature {
-    font-size: 34px;
-    font-weight: 500;
+    flex: none;
+    font-size: 56px;
+    font-weight: 400;
     line-height: 1;
   }
   .temperature .unit {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 400;
     color: var(--hfc-text-secondary);
+  }
+  /* Narrow card: temperature on top, details below, so nothing overlaps */
+  @container (max-width: 300px) {
+    .header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .header .info {
+      flex: none;
+      width: 100%;
+      align-items: flex-start;
+      text-align: left;
+    }
+    .temperature {
+      font-size: 44px;
+    }
   }
   .empty {
     color: var(--hfc-text-secondary);
@@ -82,29 +115,50 @@ export const cardStyles = css`
     font-size: 13px;
     color: var(--hfc-text-secondary);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Tabs */
   .tabs {
+    position: relative;
     display: flex;
     border-bottom: 1px solid var(--hfc-divider);
   }
   .tabs button {
     flex: 1;
     min-height: 44px;
-    margin-bottom: -1px;
     border: 0;
-    border-bottom: 3px solid transparent;
     background: transparent;
     color: var(--hfc-text-secondary);
     font: inherit;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
+    transition: color 0.25s;
   }
   .tabs button[aria-pressed="true"] {
-    color: var(--hfc-accent);
-    border-bottom-color: var(--hfc-accent);
+    color: var(--hfc-accent-text);
+  }
+  /* Sliding underline: one bar that moves under the selected tab (two tabs at most). */
+  .tabs::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 50%;
+    height: 3px;
+    background: var(--hfc-accent);
+    transition: transform 0.25s ease-out;
+  }
+  .tabs:has(button:last-child[aria-pressed="true"])::after {
+    transform: translateX(100%);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tabs::after,
+    .tabs button {
+      transition: none;
+    }
   }
   .tabs button:focus-visible {
     outline: 2px solid var(--hfc-accent);
@@ -168,7 +222,7 @@ export const cardStyles = css`
   }
   .row.labels .current {
     font-weight: 500;
-    color: var(--hfc-accent);
+    color: var(--hfc-accent-text);
   }
   .row.icons {
     padding: 4px 0;
