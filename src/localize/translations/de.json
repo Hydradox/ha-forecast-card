@@ -75,6 +75,8 @@
     "default_view": "Standardansicht",
     "hours_to_show": "Anzuzeigende Stunden",
     "days_to_show": "Anzuzeigende Tage",
+    "history_hours": "Vergangene Stunden",
+    "history_days": "Vergangene Tage",
     "show_name": "Namen anzeigen",
     "temperature_entity": "Temperatursensor",
     "humidity_entity": "Luftfeuchtigkeitssensor",

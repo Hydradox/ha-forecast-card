@@ -75,6 +75,8 @@
     "default_view": "Standardvisning",
     "hours_to_show": "Timer som vises",
     "days_to_show": "Dager som vises",
+    "history_hours": "Tidligere timer",
+    "history_days": "Tidligere dager",
     "show_name": "Vis navn",
     "temperature_entity": "Temperatursensor",
     "humidity_entity": "Luftfuktighetssensor",

@@ -20,6 +20,13 @@ export interface ForecastCardConfig {
   /** Number of hourly / daily slots to render. */
   hours_to_show?: number;
   days_to_show?: number;
+  /**
+   * Past hours reachable by scrolling back in the hourly view (0 disables). Values come from the recorder
+   * history of `temperature_entity`, or of the weather entity when there is none.
+   */
+  history_hours?: number;
+  /** Same for the daily view: past days (daily high and low) reachable by scrolling back (0 disables). */
+  history_days?: number;
   /** Optional overrides for attribute sources (sensor entities, realtime). */
   temperature_entity?: string;
   humidity_entity?: string;
@@ -55,6 +62,8 @@ export const DEFAULT_CONFIG = {
   default_view: "hourly",
   hours_to_show: 10,
   days_to_show: 7,
+  history_hours: 12,
+  history_days: 3,
   festivity: "auto",
   weather_effects: true,
 } as const satisfies Partial<ForecastCardConfig>;
@@ -93,6 +102,12 @@ export function parseConfig(raw: unknown): ResolvedConfig {
     const value = config[field];
     if (value !== undefined && (!Number.isInteger(value) || value < 1)) {
       throw new Error(`\`${field}\` must be a positive integer`);
+    }
+  }
+  for (const field of ["history_hours", "history_days"] as const) {
+    const value = config[field];
+    if (value !== undefined && (!Number.isInteger(value) || value < 0)) {
+      throw new Error(`\`${field}\` must be an integer ≥ 0`);
     }
   }
 

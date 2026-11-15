@@ -119,6 +119,8 @@ class HaForecastCardEditor extends LitElement {
         schema: [
           { name: "hours_to_show", selector: { number: { min: 1, max: 48, mode: "box" } } },
           { name: "days_to_show", selector: { number: { min: 1, max: 14, mode: "box" } } },
+          { name: "history_hours", selector: { number: { min: 0, max: 48, mode: "box" } } },
+          { name: "history_days", selector: { number: { min: 0, max: 10, mode: "box" } } },
         ],
       },
       {

@@ -75,6 +75,8 @@
     "default_view": "Vue par défaut",
     "hours_to_show": "Heures à afficher",
     "days_to_show": "Jours à afficher",
+    "history_hours": "Heures passées à afficher",
+    "history_days": "Jours passés à afficher",
     "show_name": "Afficher le nom",
     "temperature_entity": "Capteur de température",
     "humidity_entity": "Capteur d’humidité",
