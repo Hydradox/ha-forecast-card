@@ -84,6 +84,8 @@ tap_action:
 | `default_view` | `hourly` \| `daily` | `hourly` | Tab shown first. Falls back to the other one if the integration lacks it. |
 | `hours_to_show` | integer ≥ 1 | `10` | Hourly columns, counting the "Now" column. |
 | `days_to_show` | integer ≥ 1 | `7` | Daily columns. |
+| `history_hours` | integer ≥ 0 | `12` | Past hours reachable by scrolling back in the hourly view (the chart opens on "Now"). Read from the recorder history of `temperature_entity`, or of the weather entity if none is set. `0` disables it. |
+| `history_days` | integer ≥ 0 | `3` | Same for the daily view: past days, each with its recorded high and low. `0` disables it. |
 | `temperature_entity` | entity id | | Sensor used for the current temperature instead of the weather entity. |
 | `humidity_entity` | entity id | | Sensor used for humidity. |
 | `wind_speed_entity` | entity id | | Sensor used for wind speed (its unit is respected). |

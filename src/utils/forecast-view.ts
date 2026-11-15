@@ -6,6 +6,8 @@ export interface Slot {
   key: string;
   label: string;
   isCurrent: boolean;
+  /** Recorded (not forecast) hour, shown before the "Now" column. */
+  isPast?: boolean;
   condition?: string;
   temperature?: number;
   templow?: number;
@@ -29,13 +31,15 @@ export function hourlySlots(
   fmt: Formatters,
   current: CurrentConditions,
   nowLabel: string,
+  past: readonly Slot[] = [],
 ): Slot[] {
   const currentHour = Math.floor(now.getTime() / HOUR_MS) * HOUR_MS;
   const upcoming = (entries ?? [])
     .filter((entry) => new Date(entry.datetime).getTime() > currentHour)
     .slice(0, Math.max(count - 1, 0))
     .map<Slot>((entry) => toSlot(entry, fmt.hour(new Date(entry.datetime)), false));
-  return [{ key: "now", label: nowLabel, isCurrent: true, ...current }, ...upcoming].slice(0, count);
+  // `count` limits Now + forecast; recorded hours come on top, before them.
+  return [...past, ...[{ key: "now", label: nowLabel, isCurrent: true, ...current }, ...upcoming].slice(0, count)];
 }
 
 /** Today (labelled) and the following days. */
@@ -45,9 +49,10 @@ export function dailySlots(
   count: number,
   fmt: Formatters,
   todayLabel: string,
+  past: readonly Slot[] = [],
 ): Slot[] {
   const today = fmt.dayKey(now);
-  return (entries ?? [])
+  const upcoming = (entries ?? [])
     .filter((entry) => fmt.dayKey(new Date(entry.datetime)) >= today)
     .slice(0, count)
     .map((entry) => {
@@ -55,6 +60,7 @@ export function dailySlots(
       const isToday = fmt.dayKey(date) === today;
       return toSlot(entry, isToday ? todayLabel : fmt.weekday(date), isToday);
     });
+  return upcoming.length ? [...past, ...upcoming] : upcoming;
 }
 
 function toSlot(entry: ForecastEntry, label: string, isCurrent: boolean): Slot {

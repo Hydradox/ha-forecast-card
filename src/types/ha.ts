@@ -35,6 +35,7 @@ export interface HomeAssistant {
   language: string;
   locale: HassLocale;
   connection: HassConnection;
+  callWS<T>(message: Record<string, unknown>): Promise<T>;
   themes?: { darkMode?: boolean };
   /** Translate a HA frontend string key, e.g. `ui.card.weather.cardinal_direction.n`. */
   localize?(key: string, ...args: unknown[]): string;

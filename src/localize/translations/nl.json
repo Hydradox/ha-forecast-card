@@ -75,6 +75,8 @@
     "default_view": "Standaardweergave",
     "hours_to_show": "Aantal uren",
     "days_to_show": "Aantal dagen",
+    "history_hours": "Verstreken uren",
+    "history_days": "Verstreken dagen",
     "show_name": "Naam tonen",
     "temperature_entity": "Temperatuursensor",
     "humidity_entity": "Luchtvochtigheidssensor",

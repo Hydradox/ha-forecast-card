@@ -206,7 +206,18 @@ export const cardStyles = css`
   .scroller.scrollable:not([data-end]) {
     mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent);
   }
+  /* Recorded hours scroll in from the left: fade that edge too once the chart is scrolled back. */
+  .scroller[data-past]:not([data-start]) {
+    mask-image: linear-gradient(90deg, transparent, #000 32px);
+  }
+  .scroller[data-past]:not([data-start]):not([data-end]) {
+    mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+  }
+  .row.labels .past {
+    opacity: 0.75;
+  }
   .grid {
+    box-sizing: content-box;
     display: flex;
     flex-direction: column;
   }

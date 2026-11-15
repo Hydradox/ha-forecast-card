@@ -4,6 +4,7 @@ import type { ResolvedConfig } from "./config";
 import { parseConfig } from "./config";
 import { CARD_TAG, EDITOR_TAG } from "./const";
 import { ForecastSubscription, supportsForecast } from "./controllers/forecast-subscription";
+import { HistoryController } from "./controllers/history";
 import type { Translate } from "./localize";
 import { createTranslator } from "./localize";
 import { effectStyles } from "./effects/effects.styles";
@@ -21,13 +22,14 @@ import { ALERT_DEFAULTS, alertSources, collectAlerts, formatWindow } from "./uti
 import type { Formatters } from "./utils/format";
 import { createFormatters } from "./utils/format";
 import { cardinal, dailySlots, defined, hourlySlots } from "./utils/forecast-view";
+import { pastDailySlots, pastSlots as pastHourlySlots, toPoints } from "./utils/history";
 import { LEVEL_KEYS, getLevel } from "./utils/scales";
 import { resolveThresholds } from "./utils/temperature";
 import { convertTemperature, toKmh } from "./utils/units";
 import { renderAlerts } from "./views/alerts";
 import type { MetricView } from "./views/attributes";
 import { renderAttributes } from "./views/attributes";
-import { minChartWidth, renderChart } from "./views/chart";
+import { isScrollable, pastCount, renderChart } from "./views/chart";
 import { iconSprite, weatherIcon } from "./views/icons";
 
 import "./editor/ha-forecast-card-editor";
@@ -54,6 +56,9 @@ class HaForecastCard extends LitElement {
 
   private readonly hourly = new ForecastSubscription(this);
   private readonly daily = new ForecastSubscription(this);
+  private readonly history = new HistoryController(this);
+  /** What the hourly scroller was last positioned for (see `alignToNow`). */
+  private alignedKey?: string;
   private localize: Translate = createTranslator(undefined);
   private formatters: Formatters = createFormatters(undefined);
   private i18nKey: string | undefined;
@@ -153,6 +158,13 @@ class HaForecastCard extends LitElement {
     else this.removeAttribute("data-festivity");
     this.hourly.configure(this.hass, config.entity, "hourly");
     this.daily.configure(this.hass, config.entity, "daily");
+    this.history.configure(
+      this.hass,
+      [config.entity, config.temperature_entity].filter((id): id is string => !!id),
+      // Window covering both views: the hours back, and whole days (plus today, for the day boundary).
+      Math.max(config.history_hours, config.history_days > 0 ? (config.history_days + 1) * 24 : 0),
+      now,
+    );
   }
 
   /**
@@ -220,7 +232,25 @@ class HaForecastCard extends LitElement {
     }
   }
 
+  /**
+   * Recorded hours sit to the left of "Now": open the hourly chart scrolled so "Now" is the first visible
+   * column. Only when the layout changes, so a user who scrolled back is not pulled forward again.
+   */
+  private alignToNow(): void {
+    const scroller = this.renderRoot.querySelector<HTMLElement>(".scroller:not(.ghost)");
+    const grid = scroller?.querySelector<HTMLElement>(".grid");
+    if (!scroller || !grid) return;
+    const past = Number(scroller.dataset.past ?? 0);
+    const column = parseFloat(grid.style.getPropertyValue("--col")) || 0;
+    const key = `${this.renderedView}|${past}|${Math.round(this._width)}`;
+    if (key === this.alignedKey) return;
+    this.alignedKey = key;
+    scroller.scrollLeft = past ? column * past : 0;
+    this.syncEdges(scroller);
+  }
+
   protected override updated(): void {
+    this.alignToNow();
     this.slideForecast();
     // Observe the forecast area (it only exists once data is available).
     const target = this.renderRoot.querySelector(".forecast");
@@ -339,7 +369,11 @@ class HaForecastCard extends LitElement {
   };
 
   private onScroll(event: Event): void {
-    const el = event.currentTarget as HTMLElement;
+    this.syncEdges(event.currentTarget as HTMLElement);
+  }
+
+  private syncEdges(el: HTMLElement): void {
+    el.toggleAttribute("data-start", el.scrollLeft <= 2);
     el.toggleAttribute("data-end", el.scrollLeft + el.clientWidth >= el.scrollWidth - 2);
   }
 
@@ -500,6 +534,10 @@ class HaForecastCard extends LitElement {
       (attrs.precipitation_unit as string | undefined) ?? this.hass!.config.unit_system.precipitation ?? "mm";
     const data = view === "hourly" ? this.hourly.forecast : this.daily.forecast;
 
+    const past =
+      this.history.data && (view === "hourly" ? config.history_hours : config.history_days) > 0
+        ? this.pastSlots(view, weather, forecastUnit, now)
+        : [];
     const slots =
       view === "hourly"
         ? hourlySlots(
@@ -513,12 +551,14 @@ class HaForecastCard extends LitElement {
                 current === undefined ? undefined : convertTemperature(current, this.temperatureUnit(weather), forecastUnit),
             },
             this.localize("common.now"),
+            past,
           )
-        : dailySlots(data, now, config.days_to_show, this.formatters, this.localize("common.today"));
+        : dailySlots(data, now, config.days_to_show, this.formatters, this.localize("common.today"), past);
 
     this.renderedView = view;
     const width = this._width;
-    const scrollable = width > 0 && width < minChartWidth(view, slots.length);
+    const pastColumns = pastCount(slots);
+    const scrollable = isScrollable(view, width, slots.length, pastColumns);
 
     return html`
       ${views.length > 1
@@ -537,6 +577,7 @@ class HaForecastCard extends LitElement {
               class="scroller ${scrollable ? "scrollable" : ""}"
               tabindex=${scrollable ? 0 : nothing}
               role=${scrollable ? "region" : nothing}
+              data-past=${pastColumns || nothing}
               aria-label=${scrollable ? this.localize(view === "hourly" ? "chart.scroll" : "chart.days") : nothing}
               @scroll=${this.onScroll}
               @pointerdown=${this.onPointerDown}
@@ -557,6 +598,21 @@ class HaForecastCard extends LitElement {
             </div>`}
       </div>
     `;
+  }
+
+  /** Recorded hours before "Now": the temperature sensor when configured, else the weather entity itself. */
+  private pastSlots(view: View, weather: HassEntity, forecastUnit: string, now: Date) {
+    const config = this._config!;
+    const data = this.history.data!;
+    const sensor = config.temperature_entity;
+    const weatherStates = data[config.entity];
+    const useSensor = !!sensor && !!data[sensor]?.length;
+    const points = useSensor ? toPoints(data[sensor], "state") : toPoints(weatherStates, "attribute");
+    const from = useSensor ? this.temperatureUnit(weather) : forecastUnit;
+    const converted = points.map((p) => ({ ...p, value: convertTemperature(p.value, from, forecastUnit) }));
+    return view === "hourly"
+      ? pastHourlySlots(converted, weatherStates, now, config.history_hours, this.formatters)
+      : pastDailySlots(converted, weatherStates, now, config.history_days, this.formatters);
   }
 
   private metrics(weather: HassEntity): MetricView[] {

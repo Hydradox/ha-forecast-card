@@ -75,6 +75,8 @@
     "default_view": "Standardvy",
     "hours_to_show": "Timmar att visa",
     "days_to_show": "Dagar att visa",
+    "history_hours": "Tidigare timmar",
+    "history_days": "Tidigare dagar",
     "show_name": "Visa namn",
     "temperature_entity": "Temperatursensor",
     "humidity_entity": "Luftfuktighetssensor",

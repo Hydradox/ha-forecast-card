@@ -75,6 +75,8 @@
     "default_view": "Widok domyślny",
     "hours_to_show": "Liczba godzin",
     "days_to_show": "Liczba dni",
+    "history_hours": "Liczba godzin wstecz",
+    "history_days": "Liczba dni wstecz",
     "show_name": "Pokaż nazwę",
     "temperature_entity": "Czujnik temperatury",
     "humidity_entity": "Czujnik wilgotności",

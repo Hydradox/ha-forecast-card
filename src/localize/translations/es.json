@@ -75,6 +75,8 @@
     "default_view": "Vista por defecto",
     "hours_to_show": "Horas a mostrar",
     "days_to_show": "Días a mostrar",
+    "history_hours": "Horas pasadas a mostrar",
+    "history_days": "Días pasados a mostrar",
     "show_name": "Mostrar nombre",
     "temperature_entity": "Sensor de temperatura",
     "humidity_entity": "Sensor de humedad",

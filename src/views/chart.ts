@@ -23,10 +23,29 @@ export interface ChartInput {
   localize: Translate;
 }
 
+interface ColumnRules {
+  minColumn: number;
+  minVisible: number;
+  /** Most columns shown at once; wider charts scroll instead of squeezing more in. */
+  maxVisible?: number;
+}
+
+/**
+ * Column sizing shared by both views (tune here, not per view): no column gets narrower than `minColumn`,
+ * and with history the visible area is divided into at least `minVisible` columns.
+ */
+const COLUMNS: ColumnRules = { minColumn: 54, minVisible: 4 };
+
+/** Per-view overrides of `COLUMNS`: the daily view never squeezes in more than 7 days at once. */
+const COLUMNS_BY_KIND: Record<ChartKind, ColumnRules> = {
+  hourly: COLUMNS,
+  daily: { ...COLUMNS, maxVisible: 7 },
+};
+
 /** Layout per kind, matching the design boards (E1 hourly, E3 daily). */
 const LAYOUT = {
-  hourly: { minColumn: 54, height: 98, top: 20, bottom: 60, bars: 70, icon: 30, radius: 4, line: 2.5 },
-  daily: { minColumn: 40, height: 100, top: 20, bottom: 80, bars: 80, icon: 28, radius: 3.5, line: 2.5 },
+  hourly: { minColumn: COLUMNS.minColumn, height: 98, top: 20, bottom: 60, bars: 70, icon: 30, radius: 4, line: 2.5 },
+  daily: { minColumn: COLUMNS.minColumn, height: 100, top: 20, bottom: 80, bars: 80, icon: 28, radius: 3.5, line: 2.5 },
 } as const;
 
 /** Without rain there are no bars, so the temperature line takes the space and the rain row is dropped. */
@@ -35,16 +54,38 @@ const DRY = {
   daily: { height: 112, bottom: 88 },
 } as const;
 
-/** Minimum width a chart needs; used by the card to decide whether the scroller shows its fade. */
-export const minChartWidth = (kind: ChartKind, columns: number): number => LAYOUT[kind].minColumn * columns;
+/** Whether the chart (with its `past` recorded columns) is wider than `available`, so the card shows it as a scroller. */
+export function isScrollable(kind: ChartKind, available: number, columns: number, past: number): boolean {
+  if (available <= 0) return false;
+  if (past > 0) return true;
+  return columnWidth(available, columns, false, COLUMNS_BY_KIND[kind]) * columns > available + 0.5;
+}
+
+/**
+ * Width of one column. The visible columns stretch to fill `available`; with history, a handful of columns
+ * (or just one) must not balloon to the full width, so fewer than `minVisible` are sized as if that many
+ * were shown.
+ */
+export function columnWidth(available: number, visible: number, hasPast: boolean, { minColumn, minVisible, maxVisible }: ColumnRules = COLUMNS): number {
+  const shown = hasPast ? Math.max(visible, minVisible) : visible;
+  return Math.max(available / shown, minColumn, maxVisible ? available / maxVisible : 0);
+}
+
+/** Number of leading recorded (past) slots; they sit off-screen to the left of "Now". */
+export const pastCount = (slots: readonly Slot[]): number => slots.filter((slot) => slot.isPast).length;
 
 export function renderChart(input: ChartInput): TemplateResult | typeof nothing {
   const { kind, slots, fmt, localize } = input;
   if (!slots.length) return html`<div class="empty">${localize("common.no_forecast")}</div>`;
 
   const columns = slots.length;
-  const width = Math.max(input.width, minChartWidth(kind, columns));
-  const column = width / columns;
+  // Past slots extend the chart to the left, off-screen; trailing padding lets "Now" scroll all the way
+  // to the left edge.
+  const past = pastCount(slots);
+  const visible = columns - past;
+  const column = columnWidth(input.width, visible, past > 0, COLUMNS_BY_KIND[kind]);
+  const width = column * columns;
+  const pad = past ? Math.max(input.width - column * visible, 0) : 0;
   const x = (index: number) => (index + 0.5) * column;
 
   const maxSeries = slots.map((slot) => slot.temperature);
@@ -68,9 +109,9 @@ export function renderChart(input: ChartInput): TemplateResult | typeof nothing 
   const minPoints = slots.flatMap((slot, i) => (defined(slot.templow) ? [{ x: x(i), y: y(slot.templow), v: slot.templow }] : []));
 
   return html`
-    <div class="grid" style="width:${width}px; --cols:${columns}">
+    <div class="grid" style="width:${width}px; padding-right:${pad}px; --cols:${columns}; --col:${column}px">
       <div class="row labels">
-        ${slots.map((slot) => html`<span class=${slot.isCurrent ? "current" : ""}>${slot.label}</span>`)}
+        ${slots.map((slot) => html`<span class=${slot.isCurrent ? "current" : slot.isPast ? "past" : ""}>${slot.label}</span>`)}
       </div>
       <div class="row icons">
         ${slots.map((slot) => weatherIcon(slot.condition, layout.icon, slot.isDaytime))}
