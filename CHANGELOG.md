@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.3.0...v1.4.0) (2026-11-15)
+
+### Features
+
+* past days-hours forecast ([e7f9fb4](https://github.com/Hydradox/ha-forecast-card/commit/e7f9fb44bca79a9639082a9ce0e764d5c72cd2f2))
+
 ## [1.3.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.2.0...v1.3.0) (2026-11-09)
 
 ### Features
