@@ -20,12 +20,16 @@ describe("camera utils", () => {
     expect(withStamp("/api/camera_proxy/camera.yard?token=t", 5)).toBe("/api/camera_proxy/camera.yard?token=t&_hfc=5");
     expect(withStamp("https://x.test/a.jpg#f", 5)).toBe("https://x.test/a.jpg?_hfc=5#f");
   });
-  it("uses the entity picture, and nothing when unavailable", () => {
+  it("uses the entity picture, and nothing without entity or picture", () => {
     const entity = state({ entity_picture: "/api/camera_proxy/camera.yard?token=t", friendly_name: "Yard" });
     const config = { camera_entity: "camera.yard" };
     expect(cameraFrame(config, entity, 1)).toEqual({ url: "/api/camera_proxy/camera.yard?token=t&_hfc=1", name: "Yard", entity: "camera.yard" });
-    expect(cameraFrame(config, state({ entity_picture: "/x" }, "unavailable"), 1).url).toBeUndefined();
+    expect(cameraFrame(config, state({}), 1).url).toBeUndefined();
     expect(cameraFrame({ camera_entity: "camera.yard" }, undefined, 1).url).toBeUndefined();
+  });
+  it("still tries the picture when the entity is unavailable (HA's proxy can serve a frame)", () => {
+    const frame = cameraFrame({ camera_entity: "camera.yard" }, state({ entity_picture: "/x" }, "unavailable"), 1);
+    expect(frame.url).toBe("/x?_hfc=1");
   });
   it("uses camera_name over the friendly name and resolves server paths", () => {
     const entity = state({ entity_picture: "/api/p", friendly_name: "Yard" });
