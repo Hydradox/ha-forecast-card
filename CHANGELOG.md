@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.1](https://github.com/Hydradox/ha-forecast-card/compare/v1.5.0...v1.5.1) (2026-11-16)
+
+### Bug fixes
+
+* unavailable stream ([8e7c7dd](https://github.com/Hydradox/ha-forecast-card/commit/8e7c7dd08cee4a5aaa5a7fb8c9e82544160bc490))
+
 ## [1.5.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.4.0...v1.5.0) (2026-11-16)
 
 ### Features
