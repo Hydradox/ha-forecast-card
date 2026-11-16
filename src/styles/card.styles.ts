@@ -146,13 +146,13 @@ export const cardStyles = css`
     position: absolute;
     left: 0;
     bottom: -1px;
-    width: 50%;
+    width: calc(100% / var(--tabs, 2));
     height: 3px;
     background: var(--hfc-accent);
     transition: transform 0.25s ease-out;
   }
-  .tabs:has(button:last-child[aria-pressed="true"])::after {
-    transform: translateX(100%);
+  .tabs::after {
+    transform: translateX(calc(var(--tab, 0) * 100%));
   }
   @media (prefers-reduced-motion: reduce) {
     .tabs::after,
@@ -165,6 +165,137 @@ export const cardStyles = css`
     outline-offset: -2px;
   }
 
+  /* Camera: still image refreshed every few seconds, as a tab panel or an expandable strip */
+  .cam {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 1px solid var(--hfc-divider);
+    border-radius: 10px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--hfc-text) 8%, var(--hfc-surface));
+    color: #fff;
+    font: inherit;
+    flex: none;
+  }
+  button.cam {
+    cursor: pointer;
+  }
+  .cam:focus-visible {
+    outline: 2px solid var(--hfc-accent);
+    outline-offset: 2px;
+  }
+  .cam img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 60%;
+  }
+  /* The HA player keeps the video's own ratio: centre it and let the panel crop it. */
+  .cam-live {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    background: #000;
+    pointer-events: none; /* taps go to the button underneath */
+  }
+  .cam-live ha-camera-stream {
+    width: 100%;
+    --video-max-height: none;
+  }
+  .cam-panel {
+    height: 180px;
+  }
+  .cam-strip {
+    height: 64px;
+    transition: height 0.28s ease;
+  }
+  .cam-strip[data-open] {
+    height: 190px;
+  }
+  .cam-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--hfc-text-secondary);
+    font-size: 13px;
+  }
+  /* Photo overlays stay light-on-dark whatever the theme. */
+  .cam-shade {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 52px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0));
+  }
+  .cam-label {
+    position: absolute;
+    left: 10px;
+    bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: calc(100% - 44px);
+    font-size: 12px;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 8px rgba(0, 0, 0, 0.6);
+  }
+  .cam-label svg {
+    flex: none;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85));
+  }
+  .cam-label span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cam-hit {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+  .cam-hit:focus-visible,
+  .cam-chevron:focus-visible {
+    outline: 2px solid var(--hfc-accent);
+    outline-offset: -2px;
+  }
+  .cam-chevron {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0 8px 7px 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  .cam-chevron svg {
+    transition: transform 0.28s ease;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85));
+  }
+  .cam-strip[data-open] .cam-chevron svg {
+    transform: rotate(180deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cam-strip,
+    .cam-chevron svg {
+      transition: none;
+    }
+  }
+
   /* Forecast */
   .forecast {
     position: relative;
@@ -175,7 +306,7 @@ export const cardStyles = css`
     overflow: clip;
   }
   /* The chart being replaced, drawn over the new one while it slides out. */
-  .scroller.ghost {
+  .forecast > .ghost {
     position: absolute;
     inset: 0 0 auto 0;
     pointer-events: none;

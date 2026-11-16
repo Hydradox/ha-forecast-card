@@ -2,7 +2,8 @@
   "tabs": {
     "hourly": "Stündlich",
     "daily": "Täglich",
-    "label": "Vorhersageansicht"
+    "label": "Vorhersageansicht",
+    "camera": "Kamera"
   },
   "common": {
     "now": "Jetzt",
@@ -113,7 +114,20 @@
     "start_offset_help": "Tage ab Ostersonntag; negativ ist davor.",
     "festivity_dates_invalid": "Gültige MM-DD-Daten verwenden, bei Ostern und Karneval ganze Zahlen.",
     "end_help": "Monat-Tag, z. B. 03-15. Jahreswechsel ist erlaubt (12-27 bis 01-01).",
-    "end_offset_help": "Tage ab Ostersonntag; negativ ist davor."
+    "end_offset_help": "Tage ab Ostersonntag; negativ ist davor.",
+    "section_camera": "Kamera",
+    "camera_entity": "Kamera-Entität",
+    "camera_name": "Kameraname",
+    "camera_layout_tab": "Tab",
+    "camera_layout_strip": "Ausklappbarer Streifen",
+    "camera_refresh": "Aktualisierung (Sekunden)",
+    "camera_layout_help": "Tab fügt einen dritten Tab hinzu; Streifen zeigt ein Band unter dem Kopf.",
+    "camera_layout": "Darstellung",
+    "camera_tap_action": "Tipp-Aktion der Kamera",
+    "camera_tap_action_help": "Standard: öffnet die Live-Ansicht der Kamera.",
+    "section_forecast": "Vorhersage",
+    "section_history": "Vergangenheit",
+    "section_header": "Kopfzeile"
   },
   "chart": {
     "label_hourly": "Stündliche Temperatur von {min}° bis {max}°",
@@ -134,5 +148,12 @@
     "show_details": "Warndetails anzeigen",
     "list": "Wetterwarnungen, scrollen für mehr",
     "until": "Bis"
+  },
+  "camera": {
+    "label": "Kamera",
+    "unavailable": "Kamera nicht verfügbar",
+    "open": "{name} öffnen",
+    "expand": "{name} vergrößern",
+    "collapse": "{name} verkleinern"
   }
 }

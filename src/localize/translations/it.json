@@ -2,7 +2,8 @@
   "tabs": {
     "hourly": "Orario",
     "daily": "Giornaliero",
-    "label": "Vista delle previsioni"
+    "label": "Vista delle previsioni",
+    "camera": "Telecamera"
   },
   "common": {
     "now": "Ora",
@@ -113,7 +114,20 @@
     "start_offset_help": "Giorni dalla domenica di Pasqua; negativo è prima.",
     "festivity_dates_invalid": "Usa date MM-GG reali e numeri interi per Pasqua e Carnevale.",
     "end_help": "Mese-giorno, es. 03-15. Può superare fine anno (12-27 a 01-01).",
-    "end_offset_help": "Giorni dalla domenica di Pasqua; negativo è prima."
+    "end_offset_help": "Giorni dalla domenica di Pasqua; negativo è prima.",
+    "section_camera": "Telecamera",
+    "camera_entity": "Entità telecamera",
+    "camera_name": "Nome telecamera",
+    "camera_layout_tab": "Scheda",
+    "camera_layout_strip": "Fascia espandibile",
+    "camera_refresh": "Aggiornamento (secondi)",
+    "camera_layout_help": "Scheda aggiunge una terza scheda; fascia mostra una banda sotto l'intestazione.",
+    "camera_layout": "Disposizione",
+    "camera_tap_action": "Azione al tocco della telecamera",
+    "camera_tap_action_help": "Predefinita: apre la vista dal vivo della telecamera.",
+    "section_forecast": "Previsioni",
+    "section_history": "Passato",
+    "section_header": "Intestazione"
   },
   "chart": {
     "label_hourly": "Temperatura oraria da {min}° a {max}°",
@@ -134,5 +148,12 @@
     "show_details": "Mostra dettagli dell’allerta",
     "list": "Allerte meteo, scorri per vedere altro",
     "until": "Fino a"
+  },
+  "camera": {
+    "label": "Telecamera",
+    "unavailable": "Telecamera non disponibile",
+    "open": "Apri {name}",
+    "expand": "Espandi {name}",
+    "collapse": "Comprimi {name}"
   }
 }

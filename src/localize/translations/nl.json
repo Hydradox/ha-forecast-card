@@ -2,7 +2,8 @@
   "tabs": {
     "hourly": "Per uur",
     "daily": "Per dag",
-    "label": "Verwachtingsweergave"
+    "label": "Verwachtingsweergave",
+    "camera": "Camera"
   },
   "common": {
     "now": "Nu",
@@ -113,7 +114,20 @@
     "start_offset_help": "Dagen vanaf eerste paasdag; negatief is ervoor.",
     "festivity_dates_invalid": "Gebruik echte MM-DD-data en gehele getallen voor Pasen en Carnaval.",
     "end_help": "Maand-dag, bijv. 03-15. Jaarwisseling mag (12-27 tot 01-01).",
-    "end_offset_help": "Dagen vanaf eerste paasdag; negatief is ervoor."
+    "end_offset_help": "Dagen vanaf eerste paasdag; negatief is ervoor.",
+    "section_camera": "Camera",
+    "camera_entity": "Camera-entiteit",
+    "camera_name": "Cameranaam",
+    "camera_layout_tab": "Tabblad",
+    "camera_layout_strip": "Uitklapbare strook",
+    "camera_refresh": "Verversen (seconden)",
+    "camera_layout_help": "Tabblad voegt een derde tabblad toe; strook toont een band onder de kop.",
+    "camera_layout": "Weergave",
+    "camera_tap_action": "Tikactie van de camera",
+    "camera_tap_action_help": "Standaard: opent het live beeld van de camera.",
+    "section_forecast": "Voorspelling",
+    "section_history": "Verleden",
+    "section_header": "Koptekst"
   },
   "chart": {
     "label_hourly": "Temperatuur per uur van {min}° tot {max}°",
@@ -134,5 +148,12 @@
     "show_details": "Details van waarschuwing tonen",
     "list": "Weerwaarschuwingen, scroll voor meer",
     "until": "Tot"
+  },
+  "camera": {
+    "label": "Camera",
+    "unavailable": "Camera niet beschikbaar",
+    "open": "{name} openen",
+    "expand": "{name} uitvouwen",
+    "collapse": "{name} invouwen"
   }
 }

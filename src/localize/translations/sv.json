@@ -2,7 +2,8 @@
   "tabs": {
     "hourly": "Per timme",
     "daily": "Per dag",
-    "label": "Prognosvy"
+    "label": "Prognosvy",
+    "camera": "Kamera"
   },
   "common": {
     "now": "Nu",
@@ -113,7 +114,20 @@
     "start_offset_help": "Dagar från påskdagen; negativt är före.",
     "festivity_dates_invalid": "Använd riktiga MM-DD-datum och heltal för påsk och karneval.",
     "end_help": "Månad-dag, t.ex. 03-15. Årsskifte går bra (12-27 till 01-01).",
-    "end_offset_help": "Dagar från påskdagen; negativt är före."
+    "end_offset_help": "Dagar från påskdagen; negativt är före.",
+    "section_camera": "Kamera",
+    "camera_entity": "Kameraentitet",
+    "camera_name": "Kameranamn",
+    "camera_layout_tab": "Flik",
+    "camera_layout_strip": "Utfällbart fält",
+    "camera_refresh": "Uppdatera (sekunder)",
+    "camera_layout_help": "Flik lägger till en tredje flik; fält visar ett band under rubriken.",
+    "camera_layout": "Layout",
+    "camera_tap_action": "Tryckåtgärd för kameran",
+    "camera_tap_action_help": "Standard: öppnar kamerans livevy.",
+    "section_forecast": "Prognos",
+    "section_history": "Historik",
+    "section_header": "Rubrik"
   },
   "chart": {
     "label_hourly": "Temperatur per timme från {min}° till {max}°",
@@ -134,5 +148,12 @@
     "show_details": "Visa varningsdetaljer",
     "list": "Vädervarningar, rulla för att se mer",
     "until": "Till"
+  },
+  "camera": {
+    "label": "Kamera",
+    "unavailable": "Kameran är inte tillgänglig",
+    "open": "Öppna {name}",
+    "expand": "Expandera {name}",
+    "collapse": "Dölj {name}"
   }
 }

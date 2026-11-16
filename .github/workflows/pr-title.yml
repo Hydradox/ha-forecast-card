@@ -1,18 +1,49 @@
 name: PR title
 
-# Squash-merge uses the PR title as the commit message, and it drives the version bump.
+# The version bump is derived from Conventional Commits on main. A squash-merge uses the PR title;
+# a merge or rebase uses every commit of the branch. Both are validated, so either way is safe.
+# Mark both jobs as required status checks in the branch protection / ruleset of `main`.
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
 
 permissions:
+  contents: read
   pull-requests: read
 
 jobs:
   conventional-commit:
+    name: PR title
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: amannn/action-semantic-pull-request@v6
+        with:
+          # Same types as .releaserc.json
+          types: |
+            feat
+            fix
+            perf
+            refactor
+            docs
+            build
+            chore
+            ci
+            style
+            test
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  commits:
+    name: PR commits
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: wagoid/commitlint-github-action@v6
+        with:
+          failOnWarnings: true
+          helpURL: https://www.conventionalcommits.org

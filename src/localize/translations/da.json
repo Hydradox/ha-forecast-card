@@ -2,7 +2,8 @@
   "tabs": {
     "hourly": "Pr. time",
     "daily": "Pr. dag",
-    "label": "Prognosevisning"
+    "label": "Prognosevisning",
+    "camera": "Kamera"
   },
   "common": {
     "now": "Nu",
@@ -113,7 +114,20 @@
     "start_offset_help": "Dage fra påskedag; negativ er før.",
     "festivity_dates_invalid": "Brug rigtige MM-DD-datoer og hele tal for påske og karneval.",
     "end_help": "Måned-dag, f.eks. 03-15. Årsskifte er tilladt (12-27 til 01-01).",
-    "end_offset_help": "Dage fra påskedag; negativ er før."
+    "end_offset_help": "Dage fra påskedag; negativ er før.",
+    "section_camera": "Kamera",
+    "camera_entity": "Kameraentitet",
+    "camera_name": "Kameranavn",
+    "camera_layout_tab": "Fane",
+    "camera_layout_strip": "Udvidelig bjælke",
+    "camera_refresh": "Opdater (sekunder)",
+    "camera_layout_help": "Fane tilføjer en tredje fane; bjælke viser et bånd under overskriften.",
+    "camera_layout": "Layout",
+    "camera_tap_action": "Tryk-handling for kameraet",
+    "camera_tap_action_help": "Standard: åbner kameraets live-visning.",
+    "section_forecast": "Prognose",
+    "section_history": "Fortid",
+    "section_header": "Overskrift"
   },
   "chart": {
     "label_hourly": "Temperatur pr. time fra {min}° til {max}°",
@@ -134,5 +148,12 @@
     "show_details": "Vis advarselsdetaljer",
     "list": "Vejradvarsler, rul for at se mere",
     "until": "Indtil"
+  },
+  "camera": {
+    "label": "Kamera",
+    "unavailable": "Kamera ikke tilgængeligt",
+    "open": "Åbn {name}",
+    "expand": "Udvid {name}",
+    "collapse": "Skjul {name}"
   }
 }

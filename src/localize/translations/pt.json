@@ -2,7 +2,8 @@
   "tabs": {
     "hourly": "Por hora",
     "daily": "Por dia",
-    "label": "Vista da previsão"
+    "label": "Vista da previsão",
+    "camera": "Câmara"
   },
   "common": {
     "now": "Agora",
@@ -113,7 +114,20 @@
     "start_offset_help": "Dias desde o Domingo de Páscoa; negativo é antes.",
     "festivity_dates_invalid": "Use datas MM-DD reais e números inteiros na Páscoa e no Carnaval.",
     "end_help": "Mês-dia, ex.: 03-15. Pode passar o fim do ano (12-27 a 01-01).",
-    "end_offset_help": "Dias desde o Domingo de Páscoa; negativo é antes."
+    "end_offset_help": "Dias desde o Domingo de Páscoa; negativo é antes.",
+    "section_camera": "Câmara",
+    "camera_entity": "Entidade de câmara",
+    "camera_name": "Nome da câmara",
+    "camera_layout_tab": "Separador",
+    "camera_layout_strip": "Faixa expansível",
+    "camera_refresh": "Atualização (segundos)",
+    "camera_layout_help": "Separador adiciona um terceiro separador; faixa mostra uma banda sob o cabeçalho.",
+    "camera_layout": "Disposição",
+    "camera_tap_action": "Ação ao tocar na câmara",
+    "camera_tap_action_help": "Por defeito: abre a vista em direto da câmara.",
+    "section_forecast": "Previsão",
+    "section_history": "Passado",
+    "section_header": "Cabeçalho"
   },
   "chart": {
     "label_hourly": "Temperatura por hora de {min}° a {max}°",
@@ -134,5 +148,12 @@
     "show_details": "Mostrar detalhes do aviso",
     "list": "Avisos meteorológicos, desloque para ver mais",
     "until": "Até"
+  },
+  "camera": {
+    "label": "Câmara",
+    "unavailable": "Câmara indisponível",
+    "open": "Abrir {name}",
+    "expand": "Expandir {name}",
+    "collapse": "Recolher {name}"
   }
 }

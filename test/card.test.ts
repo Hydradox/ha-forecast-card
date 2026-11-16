@@ -319,3 +319,128 @@ describe("drag to scroll", () => {
     expect(scroller.hasAttribute("data-dragging")).toBe(false);
   });
 });
+
+const image = "/api/camera_proxy/camera.yard?token=t";
+const withCamera = () => {
+  const { hass } = makeHass({ hourly: nextHours(), daily: [] });
+  (hass.states as Record<string, unknown>)["camera.yard"] = { entity_id: "camera.yard", state: "idle", last_changed: "", last_updated: "", attributes: { friendly_name: "Yard", entity_picture: image } };
+  return hass;
+};
+
+describe("camera", () => {
+  const tabs = (card: HTMLElement) => [...card.shadowRoot!.querySelectorAll(".tabs button")].map((b) => b.textContent!.trim());
+
+  it("draws nothing camera-related without a camera", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: [] });
+    const card = await mount(hass);
+    expect(card.shadowRoot!.querySelector(".cam")).toBeNull();
+    expect(tabs(card)).not.toContain("Camera");
+  });
+
+  it("adds a Camera tab (layout tab) that shows the image", async () => {
+    const hass = withCamera();
+    const card = await mount(hass, { camera_entity: "camera.yard" });
+    expect(tabs(card)).toContain("Camera");
+    expect(card.shadowRoot!.querySelector(".cam")).toBeNull();
+    [...card.shadowRoot!.querySelectorAll<HTMLButtonElement>(".tabs button")].find((b) => b.textContent!.includes("Camera"))!.click();
+    await card.updateComplete;
+    const img = card.shadowRoot!.querySelector<HTMLImageElement>(".cam img");
+    expect(img?.src).toContain(image);
+  });
+
+  it("shows an expandable strip (layout strip) without an extra tab", async () => {
+    const hass = withCamera();
+    const card = await mount(hass, { camera_entity: "camera.yard", camera_layout: "strip" });
+    expect(tabs(card)).not.toContain("Camera");
+    const chevron = () => card.shadowRoot!.querySelector<HTMLButtonElement>(".cam-chevron")!;
+    expect(chevron().getAttribute("aria-expanded")).toBe("false");
+    chevron().click();
+    await card.updateComplete;
+    expect(chevron().getAttribute("aria-expanded")).toBe("true");
+  });
+});
+
+describe("camera tap", () => {
+  const open = async (config: Record<string, unknown>) => {
+    const hass = withCamera();
+    const card = await mount(hass, { camera_entity: "camera.yard", ...config });
+    [...card.shadowRoot!.querySelectorAll<HTMLButtonElement>(".tabs button")].find((b) => b.textContent!.includes("Camera"))!.click();
+    await card.updateComplete;
+    return card;
+  };
+
+  it("opens the entity live view by default", async () => {
+    const card = await open({});
+    const seen: unknown[] = [];
+    card.addEventListener("hass-more-info", (e) => seen.push((e as CustomEvent).detail));
+    card.shadowRoot!.querySelector<HTMLButtonElement>(".cam-panel")!.click();
+    expect(seen).toEqual([{ entityId: "camera.yard" }]);
+  });
+
+  it("is not a button when the tap action is none", async () => {
+    const card = await open({ camera_tap_action: { action: "none" } });
+    expect(card.shadowRoot!.querySelector("button.cam-panel")).toBeNull();
+  });
+
+  it("strip: tap expands, then opens; the chevron collapses", async () => {
+    const hass = withCamera();
+    const card = await mount(hass, { camera_entity: "camera.yard", camera_layout: "strip" });
+    const spy = vi.fn();
+    card.addEventListener("hass-more-info", spy);
+    const q = (s: string) => card.shadowRoot!.querySelector<HTMLButtonElement>(s)!;
+    q(".cam-hit").click();
+    await card.updateComplete;
+    expect(spy).not.toHaveBeenCalled();
+    expect(q(".cam-chevron").getAttribute("aria-expanded")).toBe("true");
+    q(".cam-hit").click();
+    expect(spy).toHaveBeenCalledOnce();
+    q(".cam-chevron").click();
+    await card.updateComplete;
+    expect(q(".cam-chevron").getAttribute("aria-expanded")).toBe("false");
+  });
+});
+
+describe("camera live", () => {
+  const streamHass = (features: number) => {
+    const hass = withCamera();
+    const state = (hass.states as Record<string, { attributes: Record<string, unknown> }>)["camera.yard"];
+    state.attributes.supported_features = features;
+    return hass;
+  };
+  const flush = async (card: Card) => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await card.updateComplete;
+  };
+
+  it("plays the HA stream player when the camera supports streaming", async () => {
+    if (!customElements.get("ha-camera-stream")) customElements.define("ha-camera-stream", class extends HTMLElement {});
+    const card = await mount(streamHass(2), { camera_entity: "camera.yard" });
+    [...card.shadowRoot!.querySelectorAll<HTMLButtonElement>(".tabs button")].find((b) => b.textContent!.includes("Camera"))!.click();
+    await flush(card);
+    expect(card.shadowRoot!.querySelector(".cam-live ha-camera-stream")).not.toBeNull();
+    expect(card.shadowRoot!.querySelector(".cam img")).toBeNull();
+  });
+
+  it("keeps the still image when the camera has no stream support", async () => {
+    for (const features of [0, 1]) {
+      const card = await mount(streamHass(features), { camera_entity: "camera.yard" });
+      [...card.shadowRoot!.querySelectorAll<HTMLButtonElement>(".tabs button")].find((b) => b.textContent!.includes("Camera"))!.click();
+      await flush(card);
+      expect(card.shadowRoot!.querySelector(".cam img")).not.toBeNull();
+      expect(card.shadowRoot!.querySelector("ha-camera-stream")).toBeNull();
+      document.body.innerHTML = "";
+    }
+  });
+});
+
+describe("camera as default view", () => {
+  it("opens on the camera tab when it exists, and falls back to the forecast when it does not", async () => {
+    const withIt = await mount(withCamera(), { camera_entity: "camera.yard", default_view: "camera" });
+    expect(withIt.shadowRoot!.querySelector(".cam-panel")).not.toBeNull();
+    document.body.innerHTML = "";
+    const { hass } = makeHass({ hourly: nextHours(), daily: [] });
+    const without = await mount(hass, { default_view: "camera" });
+    expect(without.shadowRoot!.querySelector(".cam-panel")).toBeNull();
+    expect(without.shadowRoot!.querySelector(".scroller")).not.toBeNull();
+  });
+});

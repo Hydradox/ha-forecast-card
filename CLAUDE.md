@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `ha-forecast-card` is a Home Assistant Lovelace custom card that previews weather forecasts and key weather attributes. It is distributed through GitHub and HACS (Dashboard/"plugin" category). The card renders the header (condition icon, name, state, max/min, temperature), Hourly/Daily tabs, the temperature line over precipitation bars, and the humidity/wind/UV strip. Not yet verified visually inside a real Home Assistant (dev environment is planned for the end).
 
-**Design source of truth:** the Claude artifact "Tarjeta de tiempo y clima", page "C4 v2a · Estados" (boards E1–E6): header with icon circle tinted by temperature, Hourly/Daily tabs, temperature line over rain bars, and a humidity/wind/UV strip where each metric shows a 5-level scale bar. Defaults to English (US); Spanish is also shipped.
+**Design:** header with icon circle tinted by temperature, Hourly/Daily tabs, temperature line over rain bars, and a humidity/wind/UV strip where each metric shows a 5-level scale bar. Defaults to English (US); other languages are also shipped.
 
 ## Stack and commands
 
@@ -20,9 +20,10 @@ TypeScript + Lit (no decorators: `static properties` + `declare` fields), Vite l
 
 - `src/ha-forecast-card.ts`: card element, `shouldUpdate` filtering, `customCards` registration
 - `src/editor/`: `ha-form` visual editor
-- `src/views/`: render functions (no extra custom elements): `icons.ts` (SVG sprite + condition→icon), `chart.ts` (hourly/daily SVG chart), `attributes.ts` (humidity/wind/UV strip), `alerts.ts` (alert banner and scrollable list)
+- `src/views/`: render functions (no extra custom elements): `icons.ts` (SVG sprite + condition→icon), `chart.ts` (hourly/daily SVG chart), `attributes.ts` (humidity/wind/UV strip), `alerts.ts` (alert banner and scrollable list), `camera.ts` (camera tab panel and expandable strip)
 - `src/utils/forecast-view.ts` (slot selection, scales, rain bars) and `format.ts` (Intl formatters, cached): pure and tested
-- `src/controllers/forecast-subscription.ts`: `weather/subscribe_forecast` lifecycle (ReactiveController)
+- `src/controllers/`: `forecast-subscription.ts` (`weather/subscribe_forecast` lifecycle), `history.ts` (recorder history), `camera-refresh.ts` (still-image reload timer); all ReactiveControllers
+- Camera: `utils/camera.ts` (frame/URL logic) and `utils/camera-stream.ts` (stream support detection and lazy load of HA's `ha-camera-stream`). Live stream is automatic when the entity supports it; no URL option (use the Generic Camera integration)
 - `src/config.ts`: config types, defaults, `parseConfig` validation
 - `src/festivities/`: festivity calendar, art and palettes. Keep `FESTIVITIES` (and every list of festivities: editor, docs, dev helper options) in calendar order, by start date in the year
 - `src/localize/`: `createTranslator`; add a language by adding `translations/<lang>.json` and registering it in `index.ts`
@@ -59,7 +60,7 @@ Naming gotcha: do not name a field `translate` on the element, since it shadows 
 ## CI/CD and releases
 
 Separate workflows in `.github/workflows/`, with shared setup in `.github/actions/setup`:
-- `pr-title.yml`: enforces a Conventional Commit PR title.
+- `pr-title.yml`: enforces a Conventional Commit PR title (job `PR title`) and every commit of the PR (job `PR commits`), because a merge or rebase puts the branch commits on `main`, not the title. Both jobs must be marked as required checks in the `main` ruleset (a repo setting, not in code).
 - `quality.yml`: parallel `typecheck`, `lint`, `test`, `build` jobs. Runs on PRs and is reused (`workflow_call`) by release.
 - `hacs.yml`: `hacs/action` validation. Runs on PRs, manual dispatch, and is reused by release. No scheduled run (not needed).
 - `release.yml`: on push to `main`, calls `quality`, then `publish` runs semantic-release (`.releaserc.json`) after `quality`, and `hacs` validates the resulting release.

@@ -214,6 +214,16 @@ const dashboard = {
       ),
     ]),
 
+    view("Camera", "camera", "mdi:cctv", [
+      section(heading("Controls", "mdi:tune"), ...weatherControls),
+      section(
+        heading("Camera (Generic Camera integration)", "mdi:cctv"),
+        card({ name: "Tab layout", camera_entity: "camera.garcimolina_net", camera_name: "Garcimolina", camera_refresh: 30 }),
+        card({ name: "Strip layout", camera_entity: "camera.garcimolina_net", camera_layout: "strip" }),
+        card({ entity: "weather.dev_weather_daily_only", name: "Daily only + camera tab", camera_entity: "camera.garcimolina_net" }),
+      ),
+    ]),
+
     view("Data", "data", "mdi:database-cog", [
       section(heading("Controls", "mdi:tune"), ...weatherControls),
       section(
