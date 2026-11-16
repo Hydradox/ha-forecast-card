@@ -2,7 +2,8 @@
   "tabs": {
     "hourly": "Par heure",
     "daily": "Par jour",
-    "label": "Vue des prévisions"
+    "label": "Vue des prévisions",
+    "camera": "Caméra"
   },
   "common": {
     "now": "Maintenant",
@@ -113,7 +114,20 @@
     "start_offset_help": "Jours depuis le dimanche de Pâques ; négatif = avant.",
     "festivity_dates_invalid": "Utilisez de vraies dates MM-JJ et des entiers pour Pâques et le Carnaval.",
     "end_help": "Mois-jour, ex. 03-15. Le passage d'année est permis (12-27 à 01-01).",
-    "end_offset_help": "Jours depuis le dimanche de Pâques ; négatif = avant."
+    "end_offset_help": "Jours depuis le dimanche de Pâques ; négatif = avant.",
+    "section_camera": "Caméra",
+    "camera_entity": "Entité caméra",
+    "camera_name": "Nom de la caméra",
+    "camera_layout_tab": "Onglet",
+    "camera_layout_strip": "Bandeau extensible",
+    "camera_refresh": "Actualisation (secondes)",
+    "camera_layout_help": "Onglet ajoute un troisième onglet ; bandeau affiche une bande sous l'en-tête.",
+    "camera_layout": "Disposition",
+    "camera_tap_action": "Action au toucher de la caméra",
+    "camera_tap_action_help": "Par défaut : vue en direct de l'entité, ou l'image dans un nouvel onglet.",
+    "section_forecast": "Prévisions",
+    "section_history": "Passé",
+    "section_header": "En-tête"
   },
   "chart": {
     "label_hourly": "Température par heure de {min}° à {max}°",
@@ -134,5 +148,12 @@
     "show_details": "Afficher les détails de l’alerte",
     "list": "Alertes météo, faites défiler pour en voir plus",
     "until": "Jusqu’à"
+  },
+  "camera": {
+    "label": "Caméra",
+    "unavailable": "Caméra indisponible",
+    "open": "Ouvrir {name}",
+    "expand": "Agrandir {name}",
+    "collapse": "Réduire {name}"
   }
 }

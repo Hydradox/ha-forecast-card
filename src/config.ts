@@ -4,6 +4,8 @@ import type { AlertsConfig } from "./utils/alerts";
 import type { FestivityRules } from "./festivities/calendar";
 import { festivityRulesValid, isFestivity } from "./festivities/calendar";
 import { parseAlertsConfig } from "./utils/alerts";
+import type { CameraLayout } from "./utils/camera";
+import { CAMERA_LAYOUTS } from "./utils/camera";
 
 export type ForecastView = "hourly" | "daily";
 
@@ -15,8 +17,8 @@ export interface ForecastCardConfig {
   name?: string;
   /** Show the name line (default true). */
   show_name?: boolean;
-  /** Tab shown first. */
-  default_view?: ForecastView;
+  /** Tab shown first. `camera` needs `camera_entity` with the `tab` layout, else the first forecast tab is used. */
+  default_view?: ForecastView | "camera";
   /** Number of hourly / daily slots to render. */
   hours_to_show?: number;
   days_to_show?: number;
@@ -44,6 +46,17 @@ export interface ForecastCardConfig {
   temperature_tap_action?: ActionConfig;
   /** Weather alerts from provider entities (Meteoalarm, NWS, Environment Canada or a custom sensor). */
   alerts?: AlertsConfig;
+  /** Camera shown in the card (`camera.*`). Nothing camera-related is drawn unless it is set. For a webcam URL, add it with the Generic Camera integration. */
+  camera_entity?: string;
+  /** Label over the image (defaults to the entity name). */
+  camera_name?: string;
+  /** `tab`: a third tab next to Hourly/Daily. `strip`: an expandable band under the header. */
+  camera_layout?: CameraLayout;
+  /** Live stream is used automatically when the camera entity supports it; otherwise a still reloaded every `camera_refresh`. */
+  /** Tap on the camera image. Default: live view (more-info) of the entity, or the image URL in a new tab. */
+  camera_tap_action?: ActionConfig;
+  /** Seconds between image reloads while the camera is visible. */
+  camera_refresh?: number;
   /** Language override; defaults to the Home Assistant UI language. */
   language?: string;
   /**
@@ -66,6 +79,8 @@ export const DEFAULT_CONFIG = {
   history_days: 3,
   festivity: "auto",
   weather_effects: true,
+  camera_layout: "tab",
+  camera_refresh: 300,
 } as const satisfies Partial<ForecastCardConfig>;
 
 export type ResolvedConfig = ForecastCardConfig &
@@ -95,8 +110,8 @@ export function parseConfig(raw: unknown): ResolvedConfig {
       throw new Error(`\`${field}\` must be an entity id`);
     }
   }
-  if (config.default_view !== undefined && !["hourly", "daily"].includes(config.default_view)) {
-    throw new Error("`default_view` must be 'hourly' or 'daily'");
+  if (config.default_view !== undefined && !["hourly", "daily", "camera"].includes(config.default_view)) {
+    throw new Error("`default_view` must be 'hourly', 'daily' or 'camera'");
   }
   for (const field of ["hours_to_show", "days_to_show"] as const) {
     const value = config[field];
@@ -123,7 +138,7 @@ export function parseConfig(raw: unknown): ResolvedConfig {
   if (config.cold_threshold !== undefined && config.hot_threshold !== undefined && config.hot_threshold <= config.cold_threshold) {
     throw new Error("`hot_threshold` must be greater than `cold_threshold`");
   }
-  for (const field of ["tap_action", "temperature_tap_action"] as const) {
+  for (const field of ["tap_action", "temperature_tap_action", "camera_tap_action"] as const) {
     const value = config[field];
     if (value !== undefined && !isActionConfig(value)) {
       throw new Error(`\`${field}\` must be a valid action`);
@@ -142,6 +157,19 @@ export function parseConfig(raw: unknown): ResolvedConfig {
   }
   if (!festivityRulesValid(config.festivities)) {
     throw new Error("`festivities` must map festivity names to { enabled, start, end } (MM-DD) or, for easter and carnival, { enabled, start_offset, end_offset }");
+  }
+
+  if (config.camera_entity !== undefined && (typeof config.camera_entity !== "string" || !config.camera_entity.startsWith("camera."))) {
+    throw new Error("`camera_entity` must be a camera.* entity");
+  }
+  if (config.camera_name !== undefined && typeof config.camera_name !== "string") {
+    throw new Error("`camera_name` must be text");
+  }
+  if (config.camera_layout !== undefined && !CAMERA_LAYOUTS.includes(config.camera_layout)) {
+    throw new Error("`camera_layout` must be 'tab' or 'strip'");
+  }
+  if (config.camera_refresh !== undefined && !(Number.isFinite(config.camera_refresh) && config.camera_refresh >= 1)) {
+    throw new Error("`camera_refresh` must be a number of seconds ≥ 1");
   }
 
   if (config.alerts !== undefined) parseAlertsConfig(config.alerts);

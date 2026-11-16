@@ -82,6 +82,9 @@ class HaForecastCardEditor extends LitElement {
 
   private schema(t: Translate): Schema[] {
     const unit = this.unit;
+    // The camera is a tab only with a camera entity and the tab layout.
+    const form = this._draft ?? this._config;
+    const cameraTab = !!form?.camera_entity && form.camera_layout !== "strip";
     const range = (celsius: number) => Math.round(convertTemperature(celsius, "°C", unit));
     const threshold = (name: string): Schema => ({
       name,
@@ -96,11 +99,6 @@ class HaForecastCardEditor extends LitElement {
     return [
       { name: "entity", required: true, selector: { entity: { domain: "weather" } } },
       {
-        type: "grid",
-        name: "",
-        schema: [{ name: "name", selector: { text: {} } }, { name: "show_name", selector: { boolean: {} } }],
-      },
-      {
         name: "default_view",
         selector: {
           select: {
@@ -108,19 +106,51 @@ class HaForecastCardEditor extends LitElement {
             options: [
               { value: "hourly", label: t("tabs.hourly") },
               { value: "daily", label: t("tabs.daily") },
+              ...(cameraTab ? [{ value: "camera", label: t("tabs.camera") }] : []),
             ],
           },
         },
       },
       { name: "weather_effects", selector: { boolean: {} } },
       {
-        type: "grid",
-        name: "",
+        type: "expandable",
+        flatten: true, // keep the fields at the top level of the config (not under `section_*`)
+        expanded: true,
+        name: "section_forecast",
         schema: [
-          { name: "hours_to_show", selector: { number: { min: 1, max: 48, mode: "box" } } },
-          { name: "days_to_show", selector: { number: { min: 1, max: 14, mode: "box" } } },
-          { name: "history_hours", selector: { number: { min: 0, max: 48, mode: "box" } } },
-          { name: "history_days", selector: { number: { min: 0, max: 10, mode: "box" } } },
+          {
+            type: "grid",
+            name: "",
+            schema: [
+              { name: "hours_to_show", selector: { number: { min: 1, max: 48, mode: "box" } } },
+              { name: "days_to_show", selector: { number: { min: 1, max: 14, mode: "box" } } },
+            ],
+          },
+        ],
+      },
+      {
+        type: "expandable",
+        flatten: true,
+        expanded: true,
+        name: "section_history",
+        schema: [
+          {
+            type: "grid",
+            name: "",
+            schema: [
+              { name: "history_hours", selector: { number: { min: 0, max: 48, mode: "box" } } },
+              { name: "history_days", selector: { number: { min: 0, max: 10, mode: "box" } } },
+            ],
+          },
+        ],
+      },
+      {
+        type: "expandable",
+        flatten: true,
+        name: "section_header",
+        schema: [
+          { name: "name", selector: { text: {} } },
+          { name: "show_name", selector: { boolean: {} } },
         ],
       },
       {
@@ -146,17 +176,28 @@ class HaForecastCardEditor extends LitElement {
       {
         type: "expandable",
         flatten: true, // keep the fields at the top level of the config (not under `section_*`)
-        name: "section_actions",
+        name: "section_camera",
         schema: [
-          { name: "tap_action", selector: { ui_action: { default_action: "more-info" } } },
-          { name: "temperature_tap_action", selector: { ui_action: { default_action: "more-info" } } },
+          { name: "camera_entity", selector: { entity: { domain: "camera" } } },
+          {
+            type: "grid",
+            name: "",
+            schema: [{ name: "camera_name", selector: { text: {} } }, { name: "camera_refresh", selector: { number: { min: 1, max: 3600, mode: "box", unit_of_measurement: "s" } } }],
+          },
+          { name: "camera_tap_action", selector: { ui_action: { default_action: "more-info" } } },
+          {
+            name: "camera_layout",
+            selector: {
+              select: {
+                mode: "box",
+                options: [
+                  { value: "tab", label: t("editor.camera_layout_tab") },
+                  { value: "strip", label: t("editor.camera_layout_strip") },
+                ],
+              },
+            },
+          },
         ],
-      },
-      {
-        type: "expandable",
-        flatten: true, // keep the fields at the top level of the config (not under `section_*`)
-        name: "section_thresholds",
-        schema: [{ type: "grid", name: "", schema: [threshold("cold_threshold"), threshold("hot_threshold")] }],
       },
       {
         type: "expandable",
@@ -194,6 +235,21 @@ class HaForecastCardEditor extends LitElement {
               ],
             })),
           },
+        ],
+      },
+      {
+        type: "expandable",
+        flatten: true, // keep the fields at the top level of the config (not under `section_*`)
+        name: "section_thresholds",
+        schema: [{ type: "grid", name: "", schema: [threshold("cold_threshold"), threshold("hot_threshold")] }],
+      },
+      {
+        type: "expandable",
+        flatten: true, // keep the fields at the top level of the config (not under `section_*`)
+        name: "section_actions",
+        schema: [
+          { name: "tap_action", selector: { ui_action: { default_action: "more-info" } } },
+          { name: "temperature_tap_action", selector: { ui_action: { default_action: "more-info" } } },
         ],
       },
     ];

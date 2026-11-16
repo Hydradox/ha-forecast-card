@@ -1,9 +1,11 @@
 import type { PropertyValues, TemplateResult } from "lit";
 import { LitElement, html, nothing } from "lit";
 import type { ResolvedConfig } from "./config";
+import type { ForecastView } from "./config";
 import { parseConfig } from "./config";
 import { CARD_TAG, EDITOR_TAG } from "./const";
 import { ForecastSubscription, supportsForecast } from "./controllers/forecast-subscription";
+import { CameraRefresh } from "./controllers/camera-refresh";
 import { HistoryController } from "./controllers/history";
 import type { Translate } from "./localize";
 import { createTranslator } from "./localize";
@@ -23,10 +25,13 @@ import type { Formatters } from "./utils/format";
 import { createFormatters } from "./utils/format";
 import { cardinal, dailySlots, defined, hourlySlots } from "./utils/forecast-view";
 import { pastDailySlots, pastSlots as pastHourlySlots, toPoints } from "./utils/history";
+import { cameraFrame, hasCamera } from "./utils/camera";
+import { ensureCameraStream, supportsStream } from "./utils/camera-stream";
 import { LEVEL_KEYS, getLevel } from "./utils/scales";
 import { resolveThresholds } from "./utils/temperature";
 import { convertTemperature, toKmh } from "./utils/units";
 import { renderAlerts } from "./views/alerts";
+import { renderCameraPanel, renderCameraStrip } from "./views/camera";
 import type { MetricView } from "./views/attributes";
 import { renderAttributes } from "./views/attributes";
 import { isScrollable, pastCount, renderChart } from "./views/chart";
@@ -34,7 +39,11 @@ import { iconSprite, weatherIcon } from "./views/icons";
 
 import "./editor/ha-forecast-card-editor";
 
-type View = ResolvedConfig["default_view"];
+type View = ForecastView;
+/** Forecast views plus the camera tab (layout `tab`). */
+type Tab = View | "camera";
+/** The chart or camera panel that slides when the tab changes (the ghost copy is excluded). */
+const SLIDE_CONTENT = ".scroller:not(.ghost), .cam-panel:not(.ghost)";
 
 class HaForecastCard extends LitElement {
   static override properties = {
@@ -43,20 +52,31 @@ class HaForecastCard extends LitElement {
     _view: { state: true },
     _width: { state: true },
     _alertsOpen: { state: true },
+    _cameraOpen: { state: true },
+    _cameraFailed: { state: true },
+    _streamReady: { state: true },
   };
   static override styles = [tokens, cardStyles, effectStyles, festivityStyles];
 
   declare hass?: HomeAssistant;
   declare _config?: ResolvedConfig;
-  declare _view: View;
+  declare _view: Tab;
   /** Width available to the forecast area, from a ResizeObserver. */
   declare _width: number;
   /** Alert list expanded (all alerts with descriptions) or collapsed (the most severe ones). */
   declare _alertsOpen: boolean;
+  /** Camera strip expanded (layout `strip`). */
+  declare _cameraOpen: boolean;
+  /** URL of the camera image that failed to load; a new refresh gives a new URL and retries. */
+  declare _cameraFailed?: string;
+  /** `ha-camera-stream` (the HA player) is available. */
+  declare _streamReady: boolean;
+  private streamRequested = false;
 
   private readonly hourly = new ForecastSubscription(this);
   private readonly daily = new ForecastSubscription(this);
   private readonly history = new HistoryController(this);
+  private readonly cameraRefresh = new CameraRefresh(this);
   /** What the hourly scroller was last positioned for (see `alignToNow`). */
   private alignedKey?: string;
   private localize: Translate = createTranslator(undefined);
@@ -65,8 +85,8 @@ class HaForecastCard extends LitElement {
   private activeAlerts: WeatherAlert[] = [];
   private festivity?: Festivity;
   /** View drawn by the last render, and the one before it (to slide when the tab changes). */
-  private renderedView?: View;
-  private shownView?: View;
+  private renderedView?: Tab;
+  private shownView?: Tab;
   /** Copy of the chart being replaced, kept to slide it out. */
   private outgoing?: { node: HTMLElement; height: number; scrollLeft: number };
   private slides: Animation[] = [];
@@ -79,6 +99,8 @@ class HaForecastCard extends LitElement {
     this._view = "hourly";
     this._width = 0;
     this._alertsOpen = false;
+    this._cameraOpen = false;
+    this._streamReady = false;
   }
 
   // ── Card contract ──────────────────────────────────────────────────────────
@@ -156,6 +178,20 @@ class HaForecastCard extends LitElement {
     this.toggleAttribute("data-dark", !!this.hass?.themes?.darkMode);
     if (this.festivity) this.setAttribute("data-festivity", this.festivity);
     else this.removeAttribute("data-festivity");
+    // Live stream while the camera is on screen (the strip only when expanded); otherwise a reloaded still.
+    const onScreen = config.camera_layout === "strip" ? this._cameraOpen : this._view === "camera";
+    const live = this.cameraLive();
+    if (live === "pending" && !this.streamRequested && config.camera_entity) {
+      this.streamRequested = true;
+      void ensureCameraStream(config.camera_entity).then((ready) => {
+        this._streamReady = ready;
+        if (!ready) this.streamRequested = false; // retry on a later render
+      });
+    }
+    this.cameraRefresh.configure(
+      hasCamera(config) && (config.camera_layout === "strip" || this._view === "camera") && !(onScreen && live === true),
+      config.camera_refresh,
+    );
     this.hourly.configure(this.hass, config.entity, "hourly");
     this.daily.configure(this.hass, config.entity, "daily");
     this.history.configure(
@@ -178,7 +214,7 @@ class HaForecastCard extends LitElement {
     this.outgoing = undefined;
     if (!previous || !this.renderedView || previous === this.renderedView) return;
     const forecast = this.renderRoot.querySelector<HTMLElement>(".forecast");
-    const scroller = forecast?.querySelector<HTMLElement>(".scroller:not(.ghost)");
+    const scroller = forecast?.querySelector<HTMLElement>(SLIDE_CONTENT);
     if (!forecast || !scroller || typeof scroller.animate !== "function") return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -186,7 +222,7 @@ class HaForecastCard extends LitElement {
     const batch: Animation[] = (this.slides = []);
     forecast.querySelectorAll(".ghost").forEach((node) => node.remove());
 
-    const order: View[] = ["hourly", "daily"];
+    const order: Tab[] = ["hourly", "daily", "camera"];
     const offset = order.indexOf(this.renderedView) > order.indexOf(previous) ? 32 : -32;
     const timing = { duration: 250, easing: "ease-out" } as const;
     const finishers: (() => void)[] = [];
@@ -273,6 +309,7 @@ class HaForecastCard extends LitElement {
       c.humidity_entity,
       c.wind_speed_entity,
       c.uv_index_entity,
+      c.camera_entity,
       c.festivity?.includes(".") ? c.festivity : undefined,
       ...alertSources(c.alerts).map((source) => source.entity),
     ].filter((id): id is string => !!id);
@@ -315,15 +352,70 @@ class HaForecastCard extends LitElement {
     this._alertsOpen = !this._alertsOpen;
   };
 
-  private selectView(view: View): void {
+  private selectView(view: Tab): void {
     if (view !== this._view) this.captureOutgoing();
     this._view = view;
+  }
+
+  private toggleCamera = (): void => {
+    this._cameraOpen = !this._cameraOpen;
+  };
+
+  /** Default: the live view of the camera entity (more-info). */
+  private cameraAction(): ActionConfig {
+    const config = this._config!;
+    if (config.camera_tap_action) return config.camera_tap_action;
+    return { action: "more-info", entity: config.camera_entity };
+  }
+
+  private cameraOpener(): (() => void) | undefined {
+    return isInteractive(this.cameraAction()) ? this.openCamera : undefined;
+  }
+
+  private openCamera = (): void => {
+    if (this._config && this.hass) runAction(this, this.hass, this.cameraAction(), this._config.camera_entity ?? this._config.entity);
+  };
+
+  private onCameraError = (url: string): void => {
+    this._cameraFailed = url;
+  };
+
+  private onCameraLoad = (): void => {
+    if (this._cameraFailed !== undefined) this._cameraFailed = undefined;
+  };
+
+  /** Whether the live player applies: true, "pending" while it loads, false (still image). */
+  private cameraLive(): boolean | "pending" {
+    const config = this._config;
+    if (!config?.camera_entity) return false;
+    if (!supportsStream(this.hass?.states[config.camera_entity]?.attributes)) return false;
+    return this._streamReady ? true : "pending";
+  }
+
+  /** What the camera currently shows, shared by both layouts. */
+  private cameraView() {
+    const config = this._config!;
+    const hass = this.hass!;
+    const state = config.camera_entity ? hass.states[config.camera_entity] : undefined;
+    const live = this.cameraLive() === true && (config.camera_layout === "strip" ? this._cameraOpen : true);
+    const frame = cameraFrame(config, state, this.cameraRefresh.stamp, (path) =>
+      hass.hassUrl ? hass.hassUrl(path) : path,
+    );
+    return {
+      frame,
+      label: frame.name ?? this.localize("camera.label"),
+      failed: frame.url !== undefined && frame.url === this._cameraFailed,
+      onLoad: this.onCameraLoad,
+      onError: this.onCameraError,
+      localize: this.localize,
+      stream: live && state && state.state !== "unavailable" ? { hass, stateObj: state } : undefined,
+    };
   }
 
   /** Called right before the view changes, while the old chart is still in the DOM. */
   private captureOutgoing(): void {
     const forecast = this.renderRoot.querySelector<HTMLElement>(".forecast");
-    const scroller = forecast?.querySelector<HTMLElement>(".scroller:not(.ghost)");
+    const scroller = forecast?.querySelector<HTMLElement>(SLIDE_CONTENT);
     if (!forecast || !scroller) {
       this.outgoing = undefined;
       return;
@@ -392,7 +484,9 @@ class HaForecastCard extends LitElement {
     const current = this.currentTemperature(weather);
     const thresholds = resolveThresholds(config, this.hass.config.unit_system.temperature);
     const views = this.availableViews(weather);
-    const view = views.includes(this._view) ? this._view : views[0];
+    const camera = hasCamera(config);
+    const tabs: Tab[] = [...views, ...(camera && config.camera_layout === "tab" ? (["camera"] as const) : [])];
+    const view: Tab | undefined = tabs.includes(this._view) ? this._view : tabs[0];
     const metrics = this.metrics(weather);
     const dark = !!this.hass.themes?.darkMode;
 
@@ -405,7 +499,13 @@ class HaForecastCard extends LitElement {
         @keydown=${this.onKeydown(this.onCardTap)}
       >
         ${config.weather_effects ? renderWeatherEffect(weather.state, dark) : nothing} ${renderFestivityLayers(this.festivity, dark)} ${iconSprite} ${this.renderHeader(weather, current, now, dark)} ${this.renderAlertBanner(now)}
-        ${view ? this.renderForecast(weather, view, views, current, thresholds, now) : nothing}
+        ${camera && config.camera_layout === "strip" ? this.renderCameraStrip() : nothing}
+        ${this.renderTabs(tabs, view)}
+        ${view === "camera"
+          ? this.renderCameraTab()
+          : view
+            ? this.renderForecast(weather, view, current, thresholds, now)
+            : nothing}
         ${metrics.length ? renderAttributes(metrics) : nothing}
       </ha-card>
     `;
@@ -519,10 +619,41 @@ class HaForecastCard extends LitElement {
     </div>`;
   }
 
+  private renderCameraStrip(): TemplateResult {
+    // Clicks stay inside the strip: the card's own tap action must not fire.
+    return html`<div @click=${this.stop} @keydown=${this.stop}>
+      ${renderCameraStrip({ ...this.cameraView(), open: this._cameraOpen, onToggle: this.toggleCamera, onOpen: this.cameraOpener() })}
+    </div>`;
+  }
+
+  private renderCameraTab(): TemplateResult {
+    this.renderedView = "camera";
+    return html`<div class="forecast camera-tab" @click=${this.stop} @keydown=${this.stop}>
+      ${renderCameraPanel({ ...this.cameraView(), onOpen: this.cameraOpener() })}
+    </div>`;
+  }
+
+  private renderTabs(tabs: Tab[], view: Tab | undefined): TemplateResult | typeof nothing {
+    if (tabs.length < 2 || !view) return nothing;
+    return html`<div
+      class="tabs"
+      role="group"
+      aria-label=${this.localize("tabs.label")}
+      style="--tabs: ${tabs.length}; --tab: ${tabs.indexOf(view)}"
+      @click=${this.stop}
+      @keydown=${this.stop}
+    >
+      ${tabs.map(
+        (tab) => html`<button type="button" aria-pressed=${tab === view} @click=${() => this.selectView(tab)}>
+          ${this.localize(`tabs.${tab}`)}
+        </button>`,
+      )}
+    </div>`;
+  }
+
   private renderForecast(
     weather: HassEntity,
     view: View,
-    views: View[],
     current: number | undefined,
     thresholds: ReturnType<typeof resolveThresholds>,
     now: Date,
@@ -561,15 +692,6 @@ class HaForecastCard extends LitElement {
     const scrollable = isScrollable(view, width, slots.length, pastColumns);
 
     return html`
-      ${views.length > 1
-        ? html`<div class="tabs" role="group" aria-label=${this.localize("tabs.label")} @click=${this.stop} @keydown=${this.stop}>
-            ${views.map(
-              (v) => html`<button type="button" aria-pressed=${v === view} @click=${() => this.selectView(v)}>
-                ${this.localize(`tabs.${v}`)}
-              </button>`,
-            )}
-          </div>`
-        : nothing}
       <div class="forecast" @click=${this.stop} @keydown=${this.stop}>
         ${data === undefined
           ? nothing

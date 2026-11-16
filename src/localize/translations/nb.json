@@ -2,7 +2,8 @@
   "tabs": {
     "hourly": "Per time",
     "daily": "Per dag",
-    "label": "Værmeldingsvisning"
+    "label": "Værmeldingsvisning",
+    "camera": "Kamera"
   },
   "common": {
     "now": "Nå",
@@ -113,7 +114,20 @@
     "start_offset_help": "Dager fra påskedag; negativ er før.",
     "festivity_dates_invalid": "Bruk ekte MM-DD-datoer og heltall for påske og karneval.",
     "end_help": "Måned-dag, f.eks. 03-15. Årsskifte er greit (12-27 til 01-01).",
-    "end_offset_help": "Dager fra påskedag; negativ er før."
+    "end_offset_help": "Dager fra påskedag; negativ er før.",
+    "section_camera": "Kamera",
+    "camera_entity": "Kameraentitet",
+    "camera_name": "Kameranavn",
+    "camera_layout_tab": "Fane",
+    "camera_layout_strip": "Utvidbart felt",
+    "camera_refresh": "Oppdater (sekunder)",
+    "camera_layout_help": "Fane legger til en tredje fane; felt viser et bånd under overskriften.",
+    "camera_layout": "Oppsett",
+    "camera_tap_action": "Trykkhandling for kameraet",
+    "camera_tap_action_help": "Standard: direktevisning av entiteten, eller bildet i en ny fane.",
+    "section_forecast": "Prognose",
+    "section_history": "Fortid",
+    "section_header": "Overskrift"
   },
   "chart": {
     "label_hourly": "Temperatur per time fra {min}° til {max}°",
@@ -134,5 +148,12 @@
     "show_details": "Vis detaljer om farevarselet",
     "list": "Farevarsler for været, rull for å se mer",
     "until": "Til"
+  },
+  "camera": {
+    "label": "Kamera",
+    "unavailable": "Kamera utilgjengelig",
+    "open": "Åpne {name}",
+    "expand": "Utvid {name}",
+    "collapse": "Skjul {name}"
   }
 }

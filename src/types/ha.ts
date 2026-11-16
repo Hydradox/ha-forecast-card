@@ -37,6 +37,8 @@ export interface HomeAssistant {
   connection: HassConnection;
   callWS<T>(message: Record<string, unknown>): Promise<T>;
   themes?: { darkMode?: boolean };
+  /** Prefixes a server path with the HA base URL (needed in the companion apps). */
+  hassUrl?(path?: string): string;
   /** Translate a HA frontend string key, e.g. `ui.card.weather.cardinal_direction.n`. */
   localize?(key: string, ...args: unknown[]): string;
   /** Localised, human readable entity state (newer HA versions). */

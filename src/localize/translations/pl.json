@@ -2,7 +2,8 @@
   "tabs": {
     "hourly": "Godzinowa",
     "daily": "Dzienna",
-    "label": "Widok prognozy"
+    "label": "Widok prognozy",
+    "camera": "Kamera"
   },
   "common": {
     "now": "Teraz",
@@ -113,7 +114,20 @@
     "start_offset_help": "Dni od Niedzieli Wielkanocnej; ujemne to przed.",
     "festivity_dates_invalid": "Użyj prawdziwych dat MM-DD i liczb całkowitych dla Wielkanocy i Karnawału.",
     "end_help": "Miesiąc-dzień, np. 03-15. Przełom roku jest dozwolony (12-27 do 01-01).",
-    "end_offset_help": "Dni od Niedzieli Wielkanocnej; ujemne to przed."
+    "end_offset_help": "Dni od Niedzieli Wielkanocnej; ujemne to przed.",
+    "section_camera": "Kamera",
+    "camera_entity": "Encja kamery",
+    "camera_name": "Nazwa kamery",
+    "camera_layout_tab": "Karta",
+    "camera_layout_strip": "Rozwijany pasek",
+    "camera_refresh": "Odświeżanie (sekundy)",
+    "camera_layout_help": "Karta dodaje trzecią kartę; pasek pokazuje pas pod nagłówkiem.",
+    "camera_layout": "Układ",
+    "camera_tap_action": "Akcja po dotknięciu kamery",
+    "camera_tap_action_help": "Domyślnie: podgląd na żywo encji lub obraz w nowej karcie.",
+    "section_forecast": "Prognoza",
+    "section_history": "Przeszłość",
+    "section_header": "Nagłówek"
   },
   "chart": {
     "label_hourly": "Temperatura godzinowa od {min}° do {max}°",
@@ -134,5 +148,12 @@
     "show_details": "Pokaż szczegóły ostrzeżenia",
     "list": "Ostrzeżenia pogodowe, przewiń, aby zobaczyć więcej",
     "until": "Do"
+  },
+  "camera": {
+    "label": "Kamera",
+    "unavailable": "Kamera niedostępna",
+    "open": "Otwórz {name}",
+    "expand": "Rozwiń {name}",
+    "collapse": "Zwiń {name}"
   }
 }
