@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.5.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.4.0...v1.5.0) (2026-11-16)
+
+### Features
+
+* camera ([2d64498](https://github.com/Hydradox/ha-forecast-card/commit/2d644985657331ff593ec77543a92dc24cf7f627))
+
+### Bug fixes
+
+* references ([3b239a9](https://github.com/Hydradox/ha-forecast-card/commit/3b239a9f5c82e634ce7864c8bb51e1ac370f8935))
+
+### Documentation
+
+* updated readme ([4dd2382](https://github.com/Hydradox/ha-forecast-card/commit/4dd2382f4accbfca96c42cbbca4380edc4f9e367))
+
 ## [1.4.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.3.0...v1.4.0) (2026-11-15)
 
 ### Features
