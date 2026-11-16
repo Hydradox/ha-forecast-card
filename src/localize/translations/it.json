@@ -124,7 +124,7 @@
     "camera_layout_help": "Scheda aggiunge una terza scheda; fascia mostra una banda sotto l'intestazione.",
     "camera_layout": "Disposizione",
     "camera_tap_action": "Azione al tocco della telecamera",
-    "camera_tap_action_help": "Predefinita: vista dal vivo dell'entità, o l'immagine in una nuova scheda.",
+    "camera_tap_action_help": "Predefinita: apre la vista dal vivo della telecamera.",
     "section_forecast": "Previsioni",
     "section_history": "Passato",
     "section_header": "Intestazione"

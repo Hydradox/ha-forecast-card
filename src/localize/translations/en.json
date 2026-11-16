@@ -124,7 +124,7 @@
     "camera_layout_help": "Tab adds a third tab; strip shows a band under the header.",
     "camera_layout": "Layout",
     "camera_tap_action": "Camera tap action",
-    "camera_tap_action_help": "Default: live view of the entity, or the image in a new tab.",
+    "camera_tap_action_help": "Default: opens the camera's live view.",
     "section_forecast": "Forecast",
     "section_history": "Past",
     "section_header": "Header"

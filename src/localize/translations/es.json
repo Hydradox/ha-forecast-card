@@ -124,7 +124,7 @@
     "camera_layout_help": "Pestaña añade una tercera pestaña; franja muestra una banda bajo la cabecera.",
     "camera_layout": "Disposición",
     "camera_tap_action": "Acción al pulsar la cámara",
-    "camera_tap_action_help": "Por defecto: vista en directo de la entidad, o la imagen en una pestaña nueva.",
+    "camera_tap_action_help": "Por defecto: abre la vista en directo de la cámara.",
     "section_forecast": "Previsión",
     "section_history": "Pasado",
     "section_header": "Cabecera"

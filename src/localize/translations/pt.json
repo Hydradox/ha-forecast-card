@@ -124,7 +124,7 @@
     "camera_layout_help": "Separador adiciona um terceiro separador; faixa mostra uma banda sob o cabeçalho.",
     "camera_layout": "Disposição",
     "camera_tap_action": "Ação ao tocar na câmara",
-    "camera_tap_action_help": "Por defeito: vista em direto da entidade, ou a imagem num novo separador.",
+    "camera_tap_action_help": "Por defeito: abre a vista em direto da câmara.",
     "section_forecast": "Previsão",
     "section_history": "Passado",
     "section_header": "Cabeçalho"

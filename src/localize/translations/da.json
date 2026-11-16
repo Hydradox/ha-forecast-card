@@ -124,7 +124,7 @@
     "camera_layout_help": "Fane tilføjer en tredje fane; bjælke viser et bånd under overskriften.",
     "camera_layout": "Layout",
     "camera_tap_action": "Tryk-handling for kameraet",
-    "camera_tap_action_help": "Standard: live-visning af entiteten, eller billedet i en ny fane.",
+    "camera_tap_action_help": "Standard: åbner kameraets live-visning.",
     "section_forecast": "Prognose",
     "section_history": "Fortid",
     "section_header": "Overskrift"

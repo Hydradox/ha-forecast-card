@@ -124,7 +124,7 @@
     "camera_layout_help": "Fane legger til en tredje fane; felt viser et bånd under overskriften.",
     "camera_layout": "Oppsett",
     "camera_tap_action": "Trykkhandling for kameraet",
-    "camera_tap_action_help": "Standard: direktevisning av entiteten, eller bildet i en ny fane.",
+    "camera_tap_action_help": "Standard: åpner kameraets direktevisning.",
     "section_forecast": "Prognose",
     "section_history": "Fortid",
     "section_header": "Overskrift"

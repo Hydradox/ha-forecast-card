@@ -124,7 +124,7 @@
     "camera_layout_help": "Flik lägger till en tredje flik; fält visar ett band under rubriken.",
     "camera_layout": "Layout",
     "camera_tap_action": "Tryckåtgärd för kameran",
-    "camera_tap_action_help": "Standard: livevy av entiteten, eller bilden i en ny flik.",
+    "camera_tap_action_help": "Standard: öppnar kamerans livevy.",
     "section_forecast": "Prognos",
     "section_history": "Historik",
     "section_header": "Rubrik"

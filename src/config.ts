@@ -46,14 +46,17 @@ export interface ForecastCardConfig {
   temperature_tap_action?: ActionConfig;
   /** Weather alerts from provider entities (Meteoalarm, NWS, Environment Canada or a custom sensor). */
   alerts?: AlertsConfig;
-  /** Camera shown in the card (`camera.*`). Nothing camera-related is drawn unless it is set. For a webcam URL, add it with the Generic Camera integration. */
+  /**
+   * Camera shown in the card (`camera.*`). Nothing camera-related is drawn unless it is set. Plays the live stream when
+   * the entity supports it, otherwise a still reloaded every `camera_refresh`. For a webcam URL, add it with the
+   * Generic Camera integration.
+   */
   camera_entity?: string;
   /** Label over the image (defaults to the entity name). */
   camera_name?: string;
   /** `tab`: a third tab next to Hourly/Daily. `strip`: an expandable band under the header. */
   camera_layout?: CameraLayout;
-  /** Live stream is used automatically when the camera entity supports it; otherwise a still reloaded every `camera_refresh`. */
-  /** Tap on the camera image. Default: live view (more-info) of the entity, or the image URL in a new tab. */
+  /** Tap on the camera image. Default: more-info (live view) of the camera entity. */
   camera_tap_action?: ActionConfig;
   /** Seconds between image reloads while the camera is visible. */
   camera_refresh?: number;

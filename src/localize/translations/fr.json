@@ -124,7 +124,7 @@
     "camera_layout_help": "Onglet ajoute un troisième onglet ; bandeau affiche une bande sous l'en-tête.",
     "camera_layout": "Disposition",
     "camera_tap_action": "Action au toucher de la caméra",
-    "camera_tap_action_help": "Par défaut : vue en direct de l'entité, ou l'image dans un nouvel onglet.",
+    "camera_tap_action_help": "Par défaut : ouvre la vue en direct de la caméra.",
     "section_forecast": "Prévisions",
     "section_history": "Passé",
     "section_header": "En-tête"

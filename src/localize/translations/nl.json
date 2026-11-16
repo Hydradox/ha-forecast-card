@@ -124,7 +124,7 @@
     "camera_layout_help": "Tabblad voegt een derde tabblad toe; strook toont een band onder de kop.",
     "camera_layout": "Weergave",
     "camera_tap_action": "Tikactie van de camera",
-    "camera_tap_action_help": "Standaard: live beeld van de entiteit, of de afbeelding in een nieuw tabblad.",
+    "camera_tap_action_help": "Standaard: opent het live beeld van de camera.",
     "section_forecast": "Voorspelling",
     "section_history": "Verleden",
     "section_header": "Koptekst"

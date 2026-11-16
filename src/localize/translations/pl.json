@@ -124,7 +124,7 @@
     "camera_layout_help": "Karta dodaje trzecią kartę; pasek pokazuje pas pod nagłówkiem.",
     "camera_layout": "Układ",
     "camera_tap_action": "Akcja po dotknięciu kamery",
-    "camera_tap_action_help": "Domyślnie: podgląd na żywo encji lub obraz w nowej karcie.",
+    "camera_tap_action_help": "Domyślnie: otwiera podgląd kamery na żywo.",
     "section_forecast": "Prognoza",
     "section_history": "Przeszłość",
     "section_header": "Nagłówek"
