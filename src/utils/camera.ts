@@ -29,7 +29,10 @@ export interface CameraFrame {
   entity?: string;
 }
 
-/** The camera entity's still (`entity_picture`, which carries an access token HA rotates), if it is available. */
+/**
+ * The camera entity's still (`entity_picture`, which carries an access token HA rotates).
+ * An `unavailable` entity is not discarded: HA's proxy can still serve a frame, and a failed load falls back to the empty state.
+ */
 export function cameraFrame(
   config: CameraSourceConfig & { camera_name?: string },
   state: HassEntity | undefined,
@@ -39,7 +42,7 @@ export function cameraFrame(
   const name = config.camera_name || (state?.attributes.friendly_name as string | undefined);
   const entity = config.camera_entity;
   const picture = state?.attributes.entity_picture;
-  if (entity && state && state.state !== "unavailable" && typeof picture === "string" && picture) {
+  if (entity && state && typeof picture === "string" && picture) {
     return { url: withStamp(resolve(picture), stamp), name, entity };
   }
   return { name, entity };
