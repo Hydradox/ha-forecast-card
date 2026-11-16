@@ -60,7 +60,7 @@ Naming gotcha: do not name a field `translate` on the element, since it shadows 
 ## CI/CD and releases
 
 Separate workflows in `.github/workflows/`, with shared setup in `.github/actions/setup`:
-- `pr-title.yml`: enforces a Conventional Commit PR title.
+- `pr-title.yml`: enforces a Conventional Commit PR title (job `PR title`) and every commit of the PR (job `PR commits`), because a merge or rebase puts the branch commits on `main`, not the title. Both jobs must be marked as required checks in the `main` ruleset (a repo setting, not in code).
 - `quality.yml`: parallel `typecheck`, `lint`, `test`, `build` jobs. Runs on PRs and is reused (`workflow_call`) by release.
 - `hacs.yml`: `hacs/action` validation. Runs on PRs, manual dispatch, and is reused by release. No scheduled run (not needed).
 - `release.yml`: on push to `main`, calls `quality`, then `publish` runs semantic-release (`.releaserc.json`) after `quality`, and `hacs` validates the resulting release.
