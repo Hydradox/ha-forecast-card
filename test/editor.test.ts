@@ -119,6 +119,30 @@ describe("editor", () => {
     expect(emitted).toBeUndefined();
     expect(editor.shadowRoot!.querySelector("ha-alert")).not.toBeNull();
   });
+
+  it("hands ha-form the same schema, data and labels when only hass changes", async () => {
+    const editor = await mount({ entity: "weather.a" });
+    const before = form(editor) as ReturnType<typeof form> & { computeLabel: unknown; computeHelper: unknown };
+    const { schema, data, computeLabel, computeHelper } = before;
+    editor.hass = { ...hass, states: { "sensor.other": {} } } as unknown as HomeAssistant; // any state change in HA
+    await editor.updateComplete;
+    const after = form(editor) as typeof before;
+    expect(after.schema).toBe(schema);
+    expect(after.data).toBe(data);
+    expect(after.computeLabel).toBe(computeLabel);
+    expect(after.computeHelper).toBe(computeHelper);
+  });
+
+  it("rebuilds the schema when an input changes (camera tab offered)", async () => {
+    const editor = await mount({ entity: "weather.a" });
+    const options = () =>
+      ((form(editor).schema.find((item) => item.name === "default_view") as unknown as { selector: { select: { options: { value: string }[] } } })
+        .selector.select.options.map((option) => option.value));
+    expect(options()).not.toContain("camera");
+    editor.setConfig({ entity: "weather.a", camera_entity: "camera.yard" });
+    await editor.updateComplete;
+    expect(options()).toContain("camera");
+  });
 });
 
 describe("editor with several locations", () => {

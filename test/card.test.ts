@@ -179,6 +179,17 @@ describe("ha-forecast-card", () => {
     expect(seen).toEqual(["sensor.h"]);
   });
 
+  it("activates a metric with Enter or Space, not with other keys", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    hass.states["sensor.h"] = { entity_id: "sensor.h", state: "55", attributes: { unit_of_measurement: "%" }, last_changed: "", last_updated: "" };
+    const card = await mount(hass, { humidity_entity: "sensor.h" });
+    const seen: string[] = [];
+    card.addEventListener("hass-more-info", (e) => seen.push((e as CustomEvent).detail.entityId));
+    const metric = card.shadowRoot!.querySelector<HTMLElement>(".metric.interactive")!;
+    for (const key of ["a", "Enter", " "]) metric.dispatchEvent(new KeyboardEvent("keydown", { key, cancelable: true }));
+    expect(seen).toEqual(["sensor.h", "sensor.h"]);
+  });
+
   it("honours show_name: false", async () => {
     const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
     const card = await mount(hass, { show_name: false });
@@ -461,10 +472,18 @@ describe("preview following the editor", () => {
   const announce = (index: number, signature: string) =>
     window.dispatchEvent(new CustomEvent("ha-forecast-card:preview-location", { detail: { index, signature } }));
   const shown = (card: Card) => (card as unknown as { _config: { entity: string } })._config.entity;
+  /** The card next to the editor: inside the edit dialog, with `preview` set by Home Assistant. */
+  const previewCard = () => {
+    const card = document.createElement("ha-forecast-card") as Card & { preview?: boolean };
+    card.preview = true;
+    const dialog = document.createElement("ha-dialog");
+    document.body.append(dialog);
+    dialog.attachShadow({ mode: "open" }).append(card);
+    return card;
+  };
 
   it("shows the place the editor selected, and ignores other cards' places", async () => {
-    const card = document.createElement("ha-forecast-card") as Card;
-    document.body.append(card);
+    const card = previewCard();
     card.setConfig({ locations: [{ entity: "weather.a" }, { entity: "weather.b" }] });
     announce(1, "weather.a|weather.b");
     expect(shown(card)).toBe("weather.b");
@@ -474,12 +493,21 @@ describe("preview following the editor", () => {
   });
 
   it("applies a selection announced before its config arrives (reorder)", () => {
-    const card = document.createElement("ha-forecast-card") as Card;
-    document.body.append(card);
+    const card = previewCard();
     card.setConfig({ locations: [{ entity: "weather.a" }, { entity: "weather.b" }] });
     announce(0, "weather.b|weather.a");
     card.setConfig({ locations: [{ entity: "weather.b" }, { entity: "weather.a" }] });
     expect(shown(card)).toBe("weather.b");
+    card.remove();
+  });
+
+  it("leaves dashboard cards on their own place, also in edit mode (where HA marks them all as preview)", () => {
+    const card = document.createElement("ha-forecast-card") as Card & { preview?: boolean };
+    card.preview = true;
+    document.body.append(card);
+    card.setConfig({ locations: [{ entity: "weather.a" }, { entity: "weather.b" }] });
+    announce(1, "weather.a|weather.b");
+    expect(shown(card)).toBe("weather.a");
     card.remove();
   });
 });

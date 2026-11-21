@@ -9,6 +9,7 @@ export interface AlertsViewOptions {
   /** Alerts shown while collapsed. */
   maxVisible: number;
   expanded: boolean;
+  /** Click on an expandable row (the toggle button inside bubbles to it). */
   onToggle: () => void;
   /** Pre-formatted time window per alert id. */
   windows: ReadonlyMap<string, string>;
@@ -81,12 +82,9 @@ function renderAlert(
   const timeWindow = windows.get(alert.id);
   const meta = [timeWindow, alert.source].filter(Boolean).join(" · ");
   // The whole row toggles (mouse convenience); the chevron button stays the keyboard and screen-reader control.
-  const onRowClick = () => {
-    if (!window.getSelection?.()?.toString()) onToggle(); // selecting text must not collapse the row
-  };
   return html`<div
     class="alert ${expandable ? "expandable" : ""}"
-    @click=${expandable ? onRowClick : nothing}
+    @click=${expandable ? onToggle : nothing}
     style="--level: var(--hfc-alert-${alert.level}); --on: var(--hfc-alert-${alert.level}-on)">
     <div class="alert-icon">${alertIcon(alert.kind)}</div>
     <div class="alert-body">
