@@ -22,7 +22,7 @@ TypeScript + Lit (no decorators: `static properties` + `declare` fields), Vite l
 - `src/editor/`: `ha-form` visual editor
 - `src/views/`: render functions (no extra custom elements): `icons.ts` (SVG sprite + condition→icon), `chart.ts` (hourly/daily SVG chart), `attributes.ts` (humidity/wind/UV strip), `alerts.ts` (alert banner and scrollable list), `camera.ts` (camera tab panel and expandable strip)
 - `src/utils/forecast-view.ts` (slot selection, scales, rain bars) and `format.ts` (Intl formatters, cached): pure and tested
-- `src/controllers/`: `forecast-subscription.ts` (`weather/subscribe_forecast` lifecycle), `history.ts` (recorder history), `camera-refresh.ts` (still-image reload timer); all ReactiveControllers
+- `src/controllers/`: `forecast-subscription.ts` (`weather/subscribe_forecast` lifecycle), `history.ts` (recorder history), `camera-refresh.ts` (still-image reload timer), `clock.ts` (quarter-hour re-render for time-based content); all ReactiveControllers
 - Camera: `utils/camera.ts` (frame/URL logic) and `utils/camera-stream.ts` (stream support detection and lazy load of HA's `ha-camera-stream`). Live stream is automatic when the entity supports it; no URL option (use the Generic Camera integration)
 - `src/config.ts`: config types, defaults, `parseConfig` validation
 - `src/festivities/`: festivity calendar, art and palettes. Keep `FESTIVITIES` (and every list of festivities: editor, docs, dev helper options) in calendar order, by start date in the year

@@ -129,7 +129,8 @@
     "section_history": "Fortid",
     "section_header": "Overskrift",
     "add_location": "Tilføj sted",
-    "remove_location": "Fjern sted"
+    "remove_location": "Fjern sted",
+    "reorder_location": "Træk for at ændre rækkefølge (eller brug piletasterne)"
   },
   "chart": {
     "label_hourly": "Temperatur pr. time fra {min}° til {max}°",

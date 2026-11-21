@@ -129,7 +129,8 @@
     "section_history": "Passado",
     "section_header": "Cabeçalho",
     "add_location": "Adicionar localização",
-    "remove_location": "Remover localização"
+    "remove_location": "Remover localização",
+    "reorder_location": "Arraste para reordenar (ou use as setas do teclado)"
   },
   "chart": {
     "label_hourly": "Temperatura por hora de {min}° a {max}°",

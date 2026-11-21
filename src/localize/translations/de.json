@@ -129,7 +129,8 @@
     "section_history": "Vergangenheit",
     "section_header": "Kopfzeile",
     "add_location": "Standort hinzufügen",
-    "remove_location": "Standort entfernen"
+    "remove_location": "Standort entfernen",
+    "reorder_location": "Ziehen zum Umsortieren (oder Pfeiltasten benutzen)"
   },
   "chart": {
     "label_hourly": "Stündliche Temperatur von {min}° bis {max}°",

@@ -129,7 +129,8 @@
     "section_history": "Historik",
     "section_header": "Rubrik",
     "add_location": "Lägg till plats",
-    "remove_location": "Ta bort plats"
+    "remove_location": "Ta bort plats",
+    "reorder_location": "Dra för att ändra ordning (eller använd piltangenterna)"
   },
   "chart": {
     "label_hourly": "Temperatur per timme från {min}° till {max}°",

@@ -119,6 +119,30 @@ describe("editor", () => {
     expect(emitted).toBeUndefined();
     expect(editor.shadowRoot!.querySelector("ha-alert")).not.toBeNull();
   });
+
+  it("hands ha-form the same schema, data and labels when only hass changes", async () => {
+    const editor = await mount({ entity: "weather.a" });
+    const before = form(editor) as ReturnType<typeof form> & { computeLabel: unknown; computeHelper: unknown };
+    const { schema, data, computeLabel, computeHelper } = before;
+    editor.hass = { ...hass, states: { "sensor.other": {} } } as unknown as HomeAssistant; // any state change in HA
+    await editor.updateComplete;
+    const after = form(editor) as typeof before;
+    expect(after.schema).toBe(schema);
+    expect(after.data).toBe(data);
+    expect(after.computeLabel).toBe(computeLabel);
+    expect(after.computeHelper).toBe(computeHelper);
+  });
+
+  it("rebuilds the schema when an input changes (camera tab offered)", async () => {
+    const editor = await mount({ entity: "weather.a" });
+    const options = () =>
+      ((form(editor).schema.find((item) => item.name === "default_view") as unknown as { selector: { select: { options: { value: string }[] } } })
+        .selector.select.options.map((option) => option.value));
+    expect(options()).not.toContain("camera");
+    editor.setConfig({ entity: "weather.a", camera_entity: "camera.yard" });
+    await editor.updateComplete;
+    expect(options()).toContain("camera");
+  });
 });
 
 describe("editor with several locations", () => {
@@ -157,6 +181,29 @@ describe("editor with several locations", () => {
 
     form(editor).dispatchEvent(new CustomEvent("value-changed", { detail: { value: { ...form(editor).data, name: "Beach" } } }));
     expect(out.config).toEqual({ type: "x", locations: [{ entity: "weather.a" }, { entity: "weather.b", days_to_show: 2, name: "Beach" }] });
+  });
+
+  it("reorders a location with the keyboard on its handle", async () => {
+    const editor = await mount({ type: "x", locations: [{ entity: "weather.a" }, { entity: "weather.b" }, { entity: "weather.c" }] });
+    const out = emitted(editor);
+    const handle = editor.shadowRoot!.querySelector<HTMLElement>('.chip[data-index="1"] button')!;
+    handle.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+    expect(out.config).toEqual({ type: "x", locations: [{ entity: "weather.b" }, { entity: "weather.a" }, { entity: "weather.c" }] });
+  });
+
+  it("can still select another location after reordering", async () => {
+    const editor = await mount({ type: "x", locations: [{ entity: "weather.a" }, { entity: "weather.b" }, { entity: "weather.c" }] });
+    editor.shadowRoot!.querySelector<HTMLElement>('.chip[data-index="0"] button')!.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    editor.setConfig({ type: "x", locations: [{ entity: "weather.b" }, { entity: "weather.a" }, { entity: "weather.c" }] });
+    await editor.updateComplete;
+    click(editor, /weather\.c/);
+    await editor.updateComplete;
+    expect(form(editor).data.entity).toBe("weather.c");
+  });
+
+  it("shows no grip with a single location", async () => {
+    const editor = await mount({ type: "x", locations: [{ entity: "weather.a" }] });
+    expect(editor.shadowRoot!.querySelector(".grip")).toBeNull();
   });
 
   it("goes back to a flat config when one location is left", async () => {

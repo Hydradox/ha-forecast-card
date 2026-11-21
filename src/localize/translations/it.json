@@ -129,7 +129,8 @@
     "section_history": "Passato",
     "section_header": "Intestazione",
     "add_location": "Aggiungi posizione",
-    "remove_location": "Rimuovi posizione"
+    "remove_location": "Rimuovi posizione",
+    "reorder_location": "Trascina per riordinare (o usa le frecce)"
   },
   "chart": {
     "label_hourly": "Temperatura oraria da {min}° a {max}°",

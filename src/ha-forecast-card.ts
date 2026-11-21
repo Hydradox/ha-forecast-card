@@ -3,9 +3,11 @@ import { LitElement, html, nothing } from "lit";
 import type { ResolvedConfig } from "./config";
 import type { ForecastView } from "./config";
 import { parseLocations } from "./config";
-import { CARD_TAG, EDITOR_TAG } from "./const";
+import type { PreviewLocationDetail } from "./const";
+import { CARD_TAG, EDITOR_TAG, PREVIEW_EVENT, placesSignature } from "./const";
 import { ForecastSubscription, supportsForecast } from "./controllers/forecast-subscription";
 import { CameraRefresh } from "./controllers/camera-refresh";
+import { ClockController } from "./controllers/clock";
 import { HistoryController } from "./controllers/history";
 import type { Translate } from "./localize";
 import { createTranslator } from "./localize";
@@ -26,6 +28,7 @@ import { createFormatters } from "./utils/format";
 import { cardinal, dailySlots, defined, hourlySlots } from "./utils/forecast-view";
 import { pastDailySlots, pastSlots as pastHourlySlots, toPoints } from "./utils/history";
 import { cameraFrame, hasCamera } from "./utils/camera";
+import { dialogOf } from "./utils/dom";
 import { ensureCameraStream, supportsStream } from "./utils/camera-stream";
 import { LEVEL_KEYS, getLevel } from "./utils/scales";
 import { resolveThresholds } from "./utils/temperature";
@@ -34,6 +37,7 @@ import { renderAlerts } from "./views/alerts";
 import { renderCameraPanel, renderCameraStrip } from "./views/camera";
 import type { MetricView } from "./views/attributes";
 import { renderAttributes } from "./views/attributes";
+import { isActivation } from "./views/keyboard";
 import { isScrollable, pastCount, renderChart } from "./views/chart";
 import { iconSprite, weatherIcon } from "./views/icons";
 
@@ -50,6 +54,7 @@ const SLIDE_CONTENT = ".scroller:not(.ghost), .cam-panel:not(.ghost)";
 class HaForecastCard extends LitElement {
   static override properties = {
     hass: { attribute: false },
+    preview: { attribute: false },
     _config: { state: true },
     _index: { state: true },
     _pickerOpen: { state: true },
@@ -64,6 +69,8 @@ class HaForecastCard extends LitElement {
   static override styles = [tokens, cardStyles, effectStyles, festivityStyles];
 
   declare hass?: HomeAssistant;
+  /** Set by Home Assistant on the card shown next to the editor (and in the card picker). */
+  declare preview?: boolean;
   /** The place being shown (one of `locations`); the others stay idle: no subscriptions, history or camera. */
   declare _config?: ResolvedConfig;
   declare _index: number;
@@ -97,7 +104,9 @@ class HaForecastCard extends LitElement {
   private i18nKey: string | undefined;
   private activeAlerts: WeatherAlert[] = [];
   private festivity?: Festivity;
-  /** View drawn by the last render, and the one before it (to slide when the tab changes). */
+  /** Clock reading shared by everything drawn in one update. */
+  private now = new Date();
+  /** View drawn by the current update (worked out in `willUpdate`), and the one before it (to slide when the tab changes). */
   private renderedView?: Tab;
   private shownView?: Tab;
   /** Copy of the chart being replaced, kept to slide it out. */
@@ -109,6 +118,7 @@ class HaForecastCard extends LitElement {
 
   constructor() {
     super();
+    new ClockController(this); // time-based content follows the clock, not only entity changes
     this._view = "hourly";
     this._index = 0;
     this._pickerOpen = false;
@@ -124,6 +134,11 @@ class HaForecastCard extends LitElement {
   setConfig(config: unknown): void {
     this.locations = parseLocations(config);
     this._index = Math.min(this._index, this.locations.length - 1); // the editor re-sends the config on every edit
+    // A selection the editor announced before this config (reorder, add, remove) arrives with it.
+    if (this.pendingPreview && this.pendingPreview.signature === this.signature()) {
+      this._index = Math.min(this.pendingPreview.index, this.locations.length - 1);
+      this.pendingPreview = undefined;
+    }
     this._config = this.locations[this._index];
     this._view = this._config.default_view;
   }
@@ -149,8 +164,33 @@ class HaForecastCard extends LitElement {
     return document.createElement(EDITOR_TAG);
   }
 
+  private pendingPreview?: PreviewLocationDetail;
+
+  private signature(): string {
+    return placesSignature(this.locations.map((place) => place.entity));
+  }
+
+  /**
+   * The editor selected a place: show it here when this card is the editor's preview and has the same places.
+   * HA sets `preview` on every card while the dashboard is in edit mode, so the card must also sit in the
+   * editor's dialog: dashboard cards (also the one behind the dialog) keep their own selection.
+   */
+  private onPreviewLocation = (event: Event): void => {
+    const detail = (event as CustomEvent<PreviewLocationDetail>).detail;
+    if (!this.preview) return;
+    const dialog = dialogOf(this);
+    if (!dialog || (detail.source && dialogOf(detail.source) !== dialog)) return;
+    if (!this.locations || detail.signature !== this.signature()) {
+      this.pendingPreview = detail; // the matching config may still be on its way
+      return;
+    }
+    this.pendingPreview = undefined;
+    this.selectLocation(detail.index);
+  };
+
   override connectedCallback(): void {
     super.connectedCallback();
+    window.addEventListener(PREVIEW_EVENT, this.onPreviewLocation);
     // Effects only animate while the card is on screen.
     if (typeof IntersectionObserver !== "undefined") {
       this.visibility ??= new IntersectionObserver(([entry]) => this.toggleAttribute("data-fx-paused", !entry.isIntersecting));
@@ -160,6 +200,7 @@ class HaForecastCard extends LitElement {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    window.removeEventListener(PREVIEW_EVENT, this.onPreviewLocation);
     this.visibility?.disconnect();
     this.closePicker();
     clearTimeout(this.pickerTimer);
@@ -193,8 +234,11 @@ class HaForecastCard extends LitElement {
       this.localize = createTranslator(language);
       this.formatters = createFormatters(language, this.hass?.locale, this.hass?.config.time_zone);
     }
+    // Everything time-based in this update reads the same clock.
+    const now = (this.now = new Date());
+    this.activeAlerts = this.hass ? collectAlerts(this.hass.states, config.alerts, now) : [];
+    this.renderedView = this.visibleTab();
     // Seasonal decoration: palette tokens live on the host (see festivities/styles.ts).
-    const now = new Date();
     this.festivity = resolveFestivity(config.festivity, (id) => this.hass?.states[id]?.state, now, config.festivities);
     this.toggleAttribute("data-dark", !!this.hass?.themes?.darkMode);
     if (this.festivity) this.setAttribute("data-festivity", this.festivity);
@@ -353,33 +397,39 @@ class HaForecastCard extends LitElement {
     return config.temperature_tap_action ?? { action: "more-info", entity: config.temperature_entity };
   }
 
-  private onCardTap = (): void => {
+  // Handlers are fields (stable references), so re-renders do not swap listeners. Clicks and keys share them.
+
+  private onCardTap = (event: Event): void => {
+    if (!isActivation(event)) return;
     if (this._config && this.hass) runAction(this, this.hass, this.cardAction(), this._config.entity);
   };
 
   private onTemperatureTap = (event: Event): void => {
+    if (!isActivation(event)) return;
     event.stopPropagation(); // do not also trigger the card action
     if (this._config && this.hass) runAction(this, this.hass, this.temperatureAction(), this._config.entity);
   };
 
-  /** More-info (history) of a custom sensor shown in the strip. */
-  private openEntity = (entity: string): void => {
-    if (this.hass) runAction(this, this.hass, { action: "more-info", entity }, entity);
+  /** More-info (history) of a custom sensor shown in the strip; the sensor is the metric's `data-entity`. */
+  private onMetric = (event: Event): void => {
+    if (!isActivation(event)) return;
+    const entity = (event.currentTarget as HTMLElement).dataset.entity;
+    if (entity && this.hass) runAction(this, this.hass, { action: "more-info", entity }, entity);
   };
 
-  private onKeydown(handler: (event: Event) => void) {
-    return (event: KeyboardEvent): void => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        handler(event);
-      }
-    };
-  }
+  private onTab = (event: Event): void => {
+    this.selectView((event.currentTarget as HTMLElement).dataset.tab as Tab);
+  };
+
+  private onPickerOption = (event: Event): void => {
+    this.selectLocation(Number((event.currentTarget as HTMLElement).dataset.index));
+  };
 
   /** Tabs/scroller live inside the card, so their events must not trigger the card action. */
   private stop = (event: Event): void => event.stopPropagation();
 
   private toggleAlerts = (): void => {
+    if (window.getSelection?.()?.toString()) return; // selecting text in a row must not collapse it
     this._alertsOpen = !this._alertsOpen;
   };
 
@@ -555,13 +605,12 @@ class HaForecastCard extends LitElement {
     if (!weather || weather.state === "unavailable" || weather.state === "unknown") {
       return html`<ha-card><div class="empty">${this.localize("common.unavailable")}</div></ha-card>`;
     }
-    const now = new Date();
+    const now = this.now;
     const current = this.currentTemperature(weather);
     const thresholds = resolveThresholds(config, this.hass.config.unit_system.temperature);
-    const views = this.availableViews(weather);
     const camera = hasCamera(config);
-    const tabs: Tab[] = [...views, ...(camera && config.camera_layout === "tab" ? (["camera"] as const) : [])];
-    const view: Tab | undefined = tabs.includes(this._view) ? this._view : tabs[0];
+    const tabs = this.tabs(weather);
+    const view = this.renderedView;
     const metrics = this.metrics(weather);
     const dark = !!this.hass.themes?.darkMode;
 
@@ -575,7 +624,7 @@ class HaForecastCard extends LitElement {
           : view
             ? this.renderForecast(weather, view, current, thresholds, now)
             : nothing}
-        ${metrics.length ? renderAttributes(metrics, this.openEntity) : nothing}
+        ${metrics.length ? renderAttributes(metrics, this.onMetric) : nothing}
       </ha-card>
     `;
   }
@@ -598,6 +647,21 @@ class HaForecastCard extends LitElement {
     const raw = override ? override.state : weather.attributes.temperature;
     const value = raw === null || raw === undefined || raw === "" ? NaN : Number(raw);
     return Number.isFinite(value) ? value : undefined;
+  }
+
+  /** Forecast views the entity supports, plus the camera tab (layout `tab`). */
+  private tabs(weather: HassEntity): Tab[] {
+    const config = this._config!;
+    const camera = hasCamera(config) && config.camera_layout === "tab";
+    return [...this.availableViews(weather), ...(camera ? (["camera"] as const) : [])];
+  }
+
+  /** The tab this update shows: the chosen one when available, else the first; none while the entity is unavailable. */
+  private visibleTab(): Tab | undefined {
+    const weather = this._config && this.hass?.states[this._config.entity];
+    if (!weather || weather.state === "unavailable" || weather.state === "unknown") return undefined;
+    const tabs = this.tabs(weather);
+    return tabs.includes(this._view) ? this._view : tabs[0];
   }
 
   private availableViews(weather: HassEntity): View[] {
@@ -652,7 +716,7 @@ class HaForecastCard extends LitElement {
               role=${interactive ? "button" : nothing}
               tabindex=${interactive ? 0 : nothing}
               @click=${this.onTemperatureTap}
-              @keydown=${this.onKeydown(this.onTemperatureTap)}
+              @keydown=${this.onTemperatureTap}
             >
               ${fmt.number(temperature, 1)}<span class="unit">${unit}</span>
             </div>`}
@@ -671,7 +735,7 @@ class HaForecastCard extends LitElement {
             role=${cardInteractive ? "button" : nothing}
             tabindex=${cardInteractive ? 0 : nothing}
             @click=${this.onCardTap}
-            @keydown=${this.onKeydown(this.onCardTap)}
+            @keydown=${this.onCardTap}
           >
             <div class="condition">${weatherIcon(weather.state, 24)}<span class="state">${this.conditionLabel(weather)}</span></div>
             ${range ? html`<span class="range">${range}</span>` : nothing}
@@ -721,7 +785,8 @@ class HaForecastCard extends LitElement {
       role="option"
       class="picker-option"
       aria-selected=${selected}
-      @click=${() => this.selectLocation(index)}
+      data-index=${index}
+      @click=${this.onPickerOption}
     >
       ${weather ? weatherIcon(weather.state, 22) : nothing}
       <span class="picker-text">
@@ -735,7 +800,6 @@ class HaForecastCard extends LitElement {
 
   private renderAlertBanner(now: Date): TemplateResult | typeof nothing {
     const config = this._config!;
-    this.activeAlerts = collectAlerts(this.hass!.states, config.alerts, now);
     if (!this.activeAlerts.length) return nothing;
     const labels = { today: this.localize("common.today"), until: this.localize("alerts.until") };
     const windows = new Map(
@@ -762,7 +826,6 @@ class HaForecastCard extends LitElement {
   }
 
   private renderCameraTab(): TemplateResult {
-    this.renderedView = "camera";
     return html`<div class="forecast camera-tab" @click=${this.stop} @keydown=${this.stop}>
       ${renderCameraPanel({ ...this.cameraView(), onOpen: this.cameraOpener() })}
     </div>`;
@@ -779,7 +842,7 @@ class HaForecastCard extends LitElement {
       @keydown=${this.stop}
     >
       ${tabs.map(
-        (tab) => html`<button type="button" aria-pressed=${tab === view} @click=${() => this.selectView(tab)}>
+        (tab) => html`<button type="button" aria-pressed=${tab === view} data-tab=${tab} @click=${this.onTab}>
           ${this.localize(`tabs.${tab}`)}
         </button>`,
       )}
@@ -821,7 +884,6 @@ class HaForecastCard extends LitElement {
           )
         : dailySlots(data, now, config.days_to_show, this.formatters, this.localize("common.today"), past);
 
-    this.renderedView = view;
     const width = this._width;
     const pastColumns = pastCount(slots);
     const scrollable = isScrollable(view, width, slots.length, pastColumns);

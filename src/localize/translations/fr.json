@@ -129,7 +129,8 @@
     "section_history": "Passé",
     "section_header": "En-tête",
     "add_location": "Ajouter un lieu",
-    "remove_location": "Supprimer le lieu"
+    "remove_location": "Supprimer le lieu",
+    "reorder_location": "Glisser pour réorganiser (ou utiliser les flèches)"
   },
   "chart": {
     "label_hourly": "Température par heure de {min}° à {max}°",
