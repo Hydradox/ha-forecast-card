@@ -127,7 +127,9 @@
     "camera_tap_action_help": "Default: opens the camera's live view.",
     "section_forecast": "Forecast",
     "section_history": "Past",
-    "section_header": "Header"
+    "section_header": "Header",
+    "add_location": "Add location",
+    "remove_location": "Remove location"
   },
   "chart": {
     "label_hourly": "Hourly temperature from {min}° to {max}°",
@@ -155,5 +157,9 @@
     "open": "Open {name}",
     "expand": "Expand {name}",
     "collapse": "Collapse {name}"
+  },
+  "location": {
+    "label": "Location",
+    "change": "Change location"
   }
 }

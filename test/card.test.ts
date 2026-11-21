@@ -167,6 +167,18 @@ describe("ha-forecast-card", () => {
     expect(seen).toEqual(["sensor.t"]);
   });
 
+  it("opens the sensor history when tapping a metric with a custom sensor, and is inert otherwise", async () => {
+    const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
+    hass.states["sensor.h"] = { entity_id: "sensor.h", state: "55", attributes: { unit_of_measurement: "%" }, last_changed: "", last_updated: "" };
+    const card = await mount(hass, { humidity_entity: "sensor.h" });
+    const seen: string[] = [];
+    card.addEventListener("hass-more-info", (e) => seen.push((e as CustomEvent).detail.entityId));
+    const metrics = [...card.shadowRoot!.querySelectorAll<HTMLElement>(".metric")];
+    expect(metrics.filter((m) => m.classList.contains("interactive"))).toHaveLength(1);
+    metrics.forEach((m) => m.click());
+    expect(seen).toEqual(["sensor.h"]);
+  });
+
   it("honours show_name: false", async () => {
     const { hass } = makeHass({ hourly: nextHours(), daily: nextDays() });
     const card = await mount(hass, { show_name: false });

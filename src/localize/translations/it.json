@@ -127,7 +127,9 @@
     "camera_tap_action_help": "Predefinita: apre la vista dal vivo della telecamera.",
     "section_forecast": "Previsioni",
     "section_history": "Passato",
-    "section_header": "Intestazione"
+    "section_header": "Intestazione",
+    "add_location": "Aggiungi posizione",
+    "remove_location": "Rimuovi posizione"
   },
   "chart": {
     "label_hourly": "Temperatura oraria da {min}° a {max}°",
@@ -155,5 +157,9 @@
     "open": "Apri {name}",
     "expand": "Espandi {name}",
     "collapse": "Comprimi {name}"
+  },
+  "location": {
+    "label": "Posizione",
+    "change": "Cambia posizione"
   }
 }

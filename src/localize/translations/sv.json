@@ -127,7 +127,9 @@
     "camera_tap_action_help": "Standard: öppnar kamerans livevy.",
     "section_forecast": "Prognos",
     "section_history": "Historik",
-    "section_header": "Rubrik"
+    "section_header": "Rubrik",
+    "add_location": "Lägg till plats",
+    "remove_location": "Ta bort plats"
   },
   "chart": {
     "label_hourly": "Temperatur per timme från {min}° till {max}°",
@@ -155,5 +157,9 @@
     "open": "Öppna {name}",
     "expand": "Expandera {name}",
     "collapse": "Dölj {name}"
+  },
+  "location": {
+    "label": "Plats",
+    "change": "Byt plats"
   }
 }

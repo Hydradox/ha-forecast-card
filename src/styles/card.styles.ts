@@ -15,11 +15,11 @@ export const cardStyles = css`
     gap: 14px;
     color: var(--hfc-text);
   }
-  ha-card.interactive,
+  .summary.interactive,
   .temperature.interactive {
     cursor: pointer;
   }
-  ha-card:focus-visible,
+  .summary:focus-visible,
   .temperature:focus-visible {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
@@ -41,6 +41,173 @@ export const cardStyles = css`
   }
   .header .info > * {
     max-width: 100%;
+  }
+  /* Condition + range: only as wide as its content, so the pointer is not shown on the empty space */
+  .summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  /* Location selector (several places): the name line as a button, the list floats over the card */
+  .picker {
+    position: relative;
+    max-width: 100%;
+    margin-right: -4px; /* the chevron lines up with the right edge of the texts below */
+    display: flex;
+    justify-content: flex-end;
+  }
+  .picker-brand {
+    font-size: 12px;
+    color: var(--hfc-text-secondary);
+  }
+  .picker-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    min-height: 32px;
+    margin: -6px 0; /* the row keeps its height; a negative side margin would shrink the container below the button */
+    padding: 0 4px 0 8px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    color: var(--hfc-text-secondary);
+    cursor: pointer;
+    transition: background-color 0.25s ease-out;
+  }
+  .picker-button:hover {
+    background: color-mix(in srgb, var(--hfc-text) 8%, transparent);
+  }
+  .picker-button:focus-visible,
+  .picker-option:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+  }
+  .picker-button svg {
+    flex: none;
+  }
+  .picker-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .picker-button .chevron {
+    transition: transform 0.25s ease-out;
+  }
+  .picker-button[aria-expanded="true"] .chevron {
+    transform: rotate(180deg);
+  }
+  .picker-list {
+    position: absolute;
+    z-index: 5;
+    top: 100%;
+    right: 0;
+    width: 300px;
+    max-width: calc(100cqw - 32px);
+    margin-top: 8px;
+    padding: 6px 0;
+    overflow: hidden auto;
+    text-align: left;
+    background: var(--card-background-color, var(--ha-card-background, #fff));
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    animation: picker-in 0.25s ease-out;
+  }
+  @keyframes picker-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+  /* Closing: fades out (the card unmounts the list after the same 0.25 s) */
+  .picker-list.leaving {
+    animation: picker-out 0.25s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes picker-out {
+    to {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+  .picker-title {
+    padding: 6px 12px 2px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--hfc-text-secondary);
+  }
+  .picker-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    text-align: left;
+    color: var(--hfc-text);
+    cursor: pointer;
+  }
+  .picker-option {
+    transition: background-color 0.25s ease-out;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .picker-button,
+    .picker-button .chevron,
+    .picker-option {
+      transition: none;
+    }
+    .picker-list,
+    .picker-list.leaving {
+      animation: none;
+    }
+  }
+  .picker-option:hover,
+  .picker-option[aria-selected="true"] {
+    background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  }
+  .picker-option svg {
+    flex: none;
+  }
+  .picker-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 16px;
+  }
+  .picker-place {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .picker-condition {
+    font-size: 12px;
+    color: var(--hfc-text-secondary);
+  }
+  .picker-place,
+  .picker-condition {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .picker-temperature {
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .picker-option .check {
+    color: var(--primary-color);
+    visibility: hidden;
+  }
+  .picker-option[aria-selected="true"] .check {
+    visibility: visible;
   }
   .condition {
     display: flex;
@@ -590,6 +757,13 @@ export const cardStyles = css`
     min-width: 0;
     padding: 0 10px;
     border-left: 1px solid var(--hfc-divider);
+  }
+  .metric.interactive {
+    cursor: pointer;
+  }
+  .metric:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
   }
   .metric:first-child {
     padding-left: 0;

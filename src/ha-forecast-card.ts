@@ -2,7 +2,7 @@ import type { PropertyValues, TemplateResult } from "lit";
 import { LitElement, html, nothing } from "lit";
 import type { ResolvedConfig } from "./config";
 import type { ForecastView } from "./config";
-import { parseConfig } from "./config";
+import { parseLocations } from "./config";
 import { CARD_TAG, EDITOR_TAG } from "./const";
 import { ForecastSubscription, supportsForecast } from "./controllers/forecast-subscription";
 import { CameraRefresh } from "./controllers/camera-refresh";
@@ -43,12 +43,17 @@ type View = ForecastView;
 /** Forecast views plus the camera tab (layout `tab`). */
 type Tab = View | "camera";
 /** The chart or camera panel that slides when the tab changes (the ghost copy is excluded). */
+/** Fade of the location list; keep in sync with `picker-out` in `card.styles.ts`. */
+const PICKER_FADE_MS = 250;
 const SLIDE_CONTENT = ".scroller:not(.ghost), .cam-panel:not(.ghost)";
 
 class HaForecastCard extends LitElement {
   static override properties = {
     hass: { attribute: false },
     _config: { state: true },
+    _index: { state: true },
+    _pickerOpen: { state: true },
+    _pickerLeaving: { state: true },
     _view: { state: true },
     _width: { state: true },
     _alertsOpen: { state: true },
@@ -59,7 +64,15 @@ class HaForecastCard extends LitElement {
   static override styles = [tokens, cardStyles, effectStyles, festivityStyles];
 
   declare hass?: HomeAssistant;
+  /** The place being shown (one of `locations`); the others stay idle: no subscriptions, history or camera. */
   declare _config?: ResolvedConfig;
+  declare _index: number;
+  /** Location selector open. */
+  declare _pickerOpen: boolean;
+  /** The list stays mounted while it fades out. */
+  declare _pickerLeaving: boolean;
+  private pickerTimer?: ReturnType<typeof setTimeout>;
+  private locations: ResolvedConfig[] = [];
   declare _view: Tab;
   /** Width available to the forecast area, from a ResizeObserver. */
   declare _width: number;
@@ -97,6 +110,9 @@ class HaForecastCard extends LitElement {
   constructor() {
     super();
     this._view = "hourly";
+    this._index = 0;
+    this._pickerOpen = false;
+    this._pickerLeaving = false;
     this._width = 0;
     this._alertsOpen = false;
     this._cameraOpen = false;
@@ -106,7 +122,9 @@ class HaForecastCard extends LitElement {
   // ── Card contract ──────────────────────────────────────────────────────────
 
   setConfig(config: unknown): void {
-    this._config = parseConfig(config);
+    this.locations = parseLocations(config);
+    this._index = Math.min(this._index, this.locations.length - 1); // the editor re-sends the config on every edit
+    this._config = this.locations[this._index];
     this._view = this._config.default_view;
   }
 
@@ -143,6 +161,9 @@ class HaForecastCard extends LitElement {
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.visibility?.disconnect();
+    this.closePicker();
+    clearTimeout(this.pickerTimer);
+    this._pickerLeaving = false; // no fade while detached
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
     this.observed = undefined;
@@ -303,7 +324,12 @@ class HaForecastCard extends LitElement {
   private watchedEntities(): string[] {
     const c = this._config;
     if (!c) return [];
+    // The other places are only read (condition and temperature) while the selector is open.
+    const others = this._pickerOpen
+      ? this.locations.flatMap((location, index) => (index === this._index ? [] : [location.entity, location.temperature_entity]))
+      : [];
     return [
+      ...others,
       c.entity,
       c.temperature_entity,
       c.humidity_entity,
@@ -336,6 +362,11 @@ class HaForecastCard extends LitElement {
     if (this._config && this.hass) runAction(this, this.hass, this.temperatureAction(), this._config.entity);
   };
 
+  /** More-info (history) of a custom sensor shown in the strip. */
+  private openEntity = (entity: string): void => {
+    if (this.hass) runAction(this, this.hass, { action: "more-info", entity }, entity);
+  };
+
   private onKeydown(handler: (event: Event) => void) {
     return (event: KeyboardEvent): void => {
       if (event.key === "Enter" || event.key === " ") {
@@ -350,6 +381,51 @@ class HaForecastCard extends LitElement {
 
   private toggleAlerts = (): void => {
     this._alertsOpen = !this._alertsOpen;
+  };
+
+  private selectLocation(index: number): void {
+    this.closePicker();
+    if (index === this._index || !this.locations[index]) return;
+    this._index = index;
+    this._config = this.locations[index];
+    this._view = this._config.default_view;
+    // Nothing of the previous place carries over: the subscriptions follow the new entity in `willUpdate`.
+    this.outgoing = undefined;
+    this.alignedKey = undefined;
+    this._alertsOpen = false;
+    this._cameraOpen = false;
+    this._cameraFailed = undefined;
+  }
+
+  private togglePicker = (): void => {
+    if (this._pickerOpen) return this.closePicker();
+    clearTimeout(this.pickerTimer);
+    this._pickerLeaving = false;
+    this._pickerOpen = true;
+    // Capture phase: runs before the card's own tap action; outside clicks and Escape close the list.
+    document.addEventListener("pointerdown", this.onOutside, true);
+    document.addEventListener("keydown", this.onPickerKey, true);
+  };
+
+  private closePicker(): void {
+    document.removeEventListener("pointerdown", this.onOutside, true);
+    document.removeEventListener("keydown", this.onPickerKey, true);
+    if (!this._pickerOpen) return;
+    this._pickerOpen = false;
+    // Fade out (same duration as the CSS), unless the user prefers no motion.
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    this._pickerLeaving = true;
+    this.pickerTimer = setTimeout(() => (this._pickerLeaving = false), PICKER_FADE_MS);
+  }
+
+  private onOutside = (event: Event): void => {
+    if (!event.composedPath().some((node) => node instanceof HTMLElement && node.classList.contains("picker"))) this.closePicker();
+  };
+
+  private onPickerKey = (event: KeyboardEvent): void => {
+    if (event.key !== "Escape") return;
+    this.closePicker();
+    this.renderRoot.querySelector<HTMLElement>(".picker-button")?.focus();
   };
 
   private selectView(view: Tab): void {
@@ -479,7 +555,6 @@ class HaForecastCard extends LitElement {
     if (!weather || weather.state === "unavailable" || weather.state === "unknown") {
       return html`<ha-card><div class="empty">${this.localize("common.unavailable")}</div></ha-card>`;
     }
-    const interactive = isInteractive(this.cardAction());
     const now = new Date();
     const current = this.currentTemperature(weather);
     const thresholds = resolveThresholds(config, this.hass.config.unit_system.temperature);
@@ -491,13 +566,7 @@ class HaForecastCard extends LitElement {
     const dark = !!this.hass.themes?.darkMode;
 
     return html`
-      <ha-card
-        class=${interactive ? "interactive" : ""}
-        role=${interactive ? "button" : nothing}
-        tabindex=${interactive ? 0 : nothing}
-        @click=${this.onCardTap}
-        @keydown=${this.onKeydown(this.onCardTap)}
-      >
+      <ha-card>
         ${config.weather_effects ? renderWeatherEffect(weather.state, dark) : nothing} ${renderFestivityLayers(this.festivity, dark)} ${iconSprite} ${this.renderHeader(weather, current, now, dark)} ${this.renderAlertBanner(now)}
         ${camera && config.camera_layout === "strip" ? this.renderCameraStrip() : nothing}
         ${this.renderTabs(tabs, view)}
@@ -506,14 +575,14 @@ class HaForecastCard extends LitElement {
           : view
             ? this.renderForecast(weather, view, current, thresholds, now)
             : nothing}
-        ${metrics.length ? renderAttributes(metrics) : nothing}
+        ${metrics.length ? renderAttributes(metrics, this.openEntity) : nothing}
       </ha-card>
     `;
   }
 
   /** The unit the *displayed* current temperature is in (override sensor wins). */
-  private temperatureUnit(weather: HassEntity): string {
-    const override = this.overrideEntity(this._config?.temperature_entity);
+  private temperatureUnit(weather: HassEntity, config: ResolvedConfig | undefined = this._config): string {
+    const override = this.overrideEntity(config?.temperature_entity);
     return (
       ((override ? override.attributes.unit_of_measurement : weather.attributes.temperature_unit) as string | undefined) ??
       this.hass!.config.unit_system.temperature
@@ -524,8 +593,8 @@ class HaForecastCard extends LitElement {
     return id ? this.hass!.states[id] : undefined;
   }
 
-  private currentTemperature(weather: HassEntity): number | undefined {
-    const override = this.overrideEntity(this._config?.temperature_entity);
+  private currentTemperature(weather: HassEntity, config: ResolvedConfig | undefined = this._config): number | undefined {
+    const override = this.overrideEntity(config?.temperature_entity);
     const raw = override ? override.state : weather.attributes.temperature;
     const value = raw === null || raw === undefined || raw === "" ? NaN : Number(raw);
     return Number.isFinite(value) ? value : undefined;
@@ -563,8 +632,10 @@ class HaForecastCard extends LitElement {
     const config = this._config!;
     const fmt = this.formatters;
     const unit = this.temperatureUnit(weather);
-    const name = config.name ?? (weather.attributes.friendly_name as string | undefined) ?? weather.entity_id;
+    const name = this.locationName(config, weather);
+    const picker = this.locations.length > 1;
     const interactive = isInteractive(this.temperatureAction());
+    const cardInteractive = isInteractive(this.cardAction());
     const today = dailySlots(this.daily.forecast, now, 1, fmt, "")[0];
     const range =
       today?.isCurrent && defined(today.temperature) && defined(today.templow)
@@ -588,14 +659,78 @@ class HaForecastCard extends LitElement {
         <div class="info">
           ${config.show_name
             ? this.festivity
-              ? html`<span class="secondary brand">${renderFestivityBrand(this.festivity, dark)}<span class="name">${name}</span></span>`
-              : html`<span class="secondary">${name}</span>`
+              ? picker
+                ? html`<span class="brand picker-brand">${renderFestivityBrand(this.festivity, dark)}${this.renderPicker(name)}</span>`
+                : html`<span class="secondary brand">${renderFestivityBrand(this.festivity, dark)}<span class="name">${name}</span></span>`
+              : picker
+                ? this.renderPicker(name)
+                : html`<span class="secondary">${name}</span>`
             : nothing}
-          <div class="condition">${weatherIcon(weather.state, 24)}<span class="state">${this.conditionLabel(weather)}</span></div>
-          ${range ? html`<span class="range">${range}</span>` : nothing}
+          <div
+            class="summary ${cardInteractive ? "interactive" : ""}"
+            role=${cardInteractive ? "button" : nothing}
+            tabindex=${cardInteractive ? 0 : nothing}
+            @click=${this.onCardTap}
+            @keydown=${this.onKeydown(this.onCardTap)}
+          >
+            <div class="condition">${weatherIcon(weather.state, 24)}<span class="state">${this.conditionLabel(weather)}</span></div>
+            ${range ? html`<span class="range">${range}</span>` : nothing}
+          </div>
         </div>
       </div>
     `;
+  }
+
+  private locationName(config: ResolvedConfig, weather: HassEntity | undefined): string {
+    return config.name ?? (weather?.attributes.friendly_name as string | undefined) ?? config.entity;
+  }
+
+  /** Name line as a selector (several places). The list is only rendered, and its entities only read, while open. */
+  private renderPicker(name: string): TemplateResult {
+    const label = this.localize("location.label");
+    // Clicks stay inside: the card's own tap action must not fire.
+    return html`<div class="picker" @click=${this.stop} @keydown=${this.stop}>
+      <button
+        type="button"
+        class="picker-button"
+        aria-haspopup="listbox"
+        aria-expanded=${this._pickerOpen}
+        aria-label=${this.localize("location.change")}
+        @click=${this.togglePicker}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span class="picker-name">${name}</span>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      ${this._pickerOpen || this._pickerLeaving
+        ? html`<div class="picker-list ${this._pickerOpen ? "" : "leaving"}" role="listbox" aria-label=${label}>
+            <div class="picker-title">${label}</div>
+            ${this.locations.map((location, index) => this.renderPickerOption(location, index))}
+          </div>`
+        : nothing}
+    </div>`;
+  }
+
+  private renderPickerOption(location: ResolvedConfig, index: number): TemplateResult {
+    const state = this.hass!.states[location.entity];
+    const weather = state && state.state !== "unavailable" && state.state !== "unknown" ? state : undefined;
+    const temperature = weather ? this.currentTemperature(weather, location) : undefined;
+    const selected = index === this._index;
+    return html`<button
+      type="button"
+      role="option"
+      class="picker-option"
+      aria-selected=${selected}
+      @click=${() => this.selectLocation(index)}
+    >
+      ${weather ? weatherIcon(weather.state, 22) : nothing}
+      <span class="picker-text">
+        <span class="picker-place">${this.locationName(location, state)}</span>
+        <span class="picker-condition">${weather ? this.conditionLabel(weather) : this.localize("common.unavailable")}</span>
+      </span>
+      ${temperature === undefined ? nothing : html`<span class="picker-temperature">${this.formatters.number(temperature)}°</span>`}
+      <svg class="check" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>`;
   }
 
   private renderAlertBanner(now: Date): TemplateResult | typeof nothing {
@@ -749,7 +884,13 @@ class HaForecastCard extends LitElement {
       return { value, unit: override?.attributes.unit_of_measurement as string | undefined };
     };
     const out: MetricView[] = [];
-    const push = (metric: "humidity" | "wind" | "uv", value: number, text: string, scaled = value) => {
+    const push = (
+      metric: "humidity" | "wind" | "uv",
+      value: number,
+      text: string,
+      entity: string | undefined,
+      scaled = value,
+    ) => {
       const level = getLevel(metric, scaled);
       out.push({
         metric,
@@ -757,11 +898,12 @@ class HaForecastCard extends LitElement {
         level,
         levelLabel: this.localize(`levels.${metric}.${LEVEL_KEYS[metric][level]}`),
         name: this.localize(`attributes.${metric}`),
+        entity: entity && this.overrideEntity(entity) ? entity : undefined,
       });
     };
 
     const humidity = read(config.humidity_entity, attrs.humidity);
-    if (Number.isFinite(humidity.value)) push("humidity", humidity.value, `${fmt.number(humidity.value)} %`);
+    if (Number.isFinite(humidity.value)) push("humidity", humidity.value, `${fmt.number(humidity.value)} %`, config.humidity_entity);
 
     const wind = read(config.wind_speed_entity, attrs.wind_speed);
     if (Number.isFinite(wind.value)) {
@@ -769,11 +911,11 @@ class HaForecastCard extends LitElement {
         wind.unit ?? (attrs.wind_speed_unit as string | undefined) ?? hass.config.unit_system.wind_speed ?? "km/h";
       const bearing = cardinal(attrs.wind_bearing as number | string | undefined);
       const direction = bearing ? (hass.localize?.(`ui.card.weather.cardinal_direction.${bearing.toLowerCase()}`) || bearing) : "";
-      push("wind", wind.value, `${fmt.number(wind.value, 1)} ${unit}${direction ? ` ${direction}` : ""}`, toKmh(wind.value, unit));
+      push("wind", wind.value, `${fmt.number(wind.value, 1)} ${unit}${direction ? ` ${direction}` : ""}`, config.wind_speed_entity, toKmh(wind.value, unit));
     }
 
     const uv = read(config.uv_index_entity, attrs.uv_index);
-    if (Number.isFinite(uv.value)) push("uv", uv.value, fmt.number(uv.value, 1));
+    if (Number.isFinite(uv.value)) push("uv", uv.value, fmt.number(uv.value, 1), config.uv_index_entity);
     return out;
   }
 }

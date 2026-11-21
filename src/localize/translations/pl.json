@@ -127,7 +127,9 @@
     "camera_tap_action_help": "Domyślnie: otwiera podgląd kamery na żywo.",
     "section_forecast": "Prognoza",
     "section_history": "Przeszłość",
-    "section_header": "Nagłówek"
+    "section_header": "Nagłówek",
+    "add_location": "Dodaj lokalizację",
+    "remove_location": "Usuń lokalizację"
   },
   "chart": {
     "label_hourly": "Temperatura godzinowa od {min}° do {max}°",
@@ -155,5 +157,9 @@
     "open": "Otwórz {name}",
     "expand": "Rozwiń {name}",
     "collapse": "Zwiń {name}"
+  },
+  "location": {
+    "label": "Lokalizacja",
+    "change": "Zmień lokalizację"
   }
 }

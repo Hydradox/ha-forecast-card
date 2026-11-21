@@ -1,5 +1,5 @@
 import type { TemplateResult } from "lit";
-import { LitElement, html, nothing } from "lit";
+import { LitElement, css, html, nothing } from "lit";
 import { DEFAULT_CONFIG, compactConfig, thresholdsInOrder } from "../config";
 import { EDITOR_TAG } from "../const";
 import type { Festivity, FestivityRule } from "../festivities/calendar";
@@ -58,15 +58,129 @@ class HaForecastCardEditor extends LitElement {
     hass: { attribute: false },
     _config: { state: true },
     _draft: { state: true },
+    _selected: { state: true },
   };
+
+  static override styles = css`
+    .locations {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .locations button {
+      min-height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--divider-color);
+      border-radius: 18px;
+      background: transparent;
+      font: inherit;
+      color: var(--primary-text-color);
+      cursor: pointer;
+    }
+    .locations button[aria-selected="true"] {
+      border-color: var(--primary-color);
+      background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+    }
+    .locations button.action {
+      border-style: dashed;
+      color: var(--primary-color);
+    }
+    .locations button.danger {
+      border-color: transparent;
+      color: var(--error-color);
+    }
+    .locations button:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+  `;
 
   declare hass?: HomeAssistant;
   declare _config?: Record<string, unknown>;
   /** Form values while they are invalid: shown to the user but never saved to the card config. */
   declare _draft?: Record<string, unknown>;
+  /** Place being edited when the config has `locations`. */
+  declare _selected: number;
+
+  constructor() {
+    super();
+    this._selected = 0;
+  }
 
   setConfig(config: Record<string, unknown>): void {
-    this._config = hoistSections(config);
+    const hoisted = hoistSections(config);
+    const locations = hoisted.locations;
+    this._config = Array.isArray(locations)
+      ? { ...hoisted, locations: locations.map((location) => hoistSections((location ?? {}) as Record<string, unknown>)) }
+      : hoisted;
+    this._selected = Math.min(this._selected, Math.max(this.locations.length - 1, 0));
+  }
+
+  /** The places of the config; empty when it is a single flat one. */
+  private get locations(): Record<string, unknown>[] {
+    const locations = this._config?.locations;
+    return Array.isArray(locations) ? (locations as Record<string, unknown>[]) : [];
+  }
+
+  /** What the form edits: the selected place, or the whole config when there is only one. */
+  private get current(): Record<string, unknown> | undefined {
+    return this.locations.length ? this.locations[this._selected] : this._config;
+  }
+
+  /** Card-level keys; everything else belongs to a place. */
+  private static readonly CARD_KEYS = ["type", "language", "locations"];
+
+  private emit(config: Record<string, unknown>): void {
+    this.dispatchEvent(new CustomEvent("config-changed", { detail: { config }, bubbles: true, composed: true }));
+  }
+
+  private cardLevel(): Record<string, unknown> {
+    return Object.fromEntries(Object.entries(this._config ?? {}).filter(([key]) => key !== "locations" && HaForecastCardEditor.CARD_KEYS.includes(key)));
+  }
+
+  private placeName(place: Record<string, unknown>): string {
+    const entity = place.entity as string | undefined;
+    return (place.name as string | undefined) || (entity && (this.hass?.states?.[entity]?.attributes.friendly_name as string | undefined)) || entity || "?";
+  }
+
+  private addLocation = (): void => {
+    if (!this._config) return;
+    const used = new Set(this.locations.length ? this.locations.map((l) => l.entity) : [this._config.entity]);
+    const entity = Object.keys(this.hass?.states ?? {}).find((id) => id.startsWith("weather.") && !used.has(id)) ?? "";
+    const places = this.locations.length
+      ? this.locations
+      : [Object.fromEntries(Object.entries(this._config).filter(([key]) => !HaForecastCardEditor.CARD_KEYS.includes(key)))];
+    this._selected = places.length;
+    this._draft = undefined;
+    this.emit({ ...this.cardLevel(), locations: [...places, { entity }] });
+  };
+
+  private removeLocation = (): void => {
+    const places = this.locations.filter((_, index) => index !== this._selected);
+    this._selected = Math.max(0, this._selected - 1);
+    this._draft = undefined;
+    // Back to one place: a plain card config again.
+    this.emit(places.length === 1 ? { ...this.cardLevel(), ...places[0] } : { ...this.cardLevel(), locations: places });
+  };
+
+  private selectLocation(index: number): void {
+    this._selected = index;
+    this._draft = undefined;
+  }
+
+  private renderLocations(t: Translate): TemplateResult {
+    const places = this.locations;
+    return html`<div class="locations" role="tablist">
+      ${places.map(
+        (place, index) => html`<button type="button" role="tab" aria-selected=${index === this._selected} @click=${() => this.selectLocation(index)}>
+          ${this.placeName(place)}
+        </button>`,
+      )}
+      <button type="button" class="action" @click=${this.addLocation}>+ ${t("editor.add_location")}</button>
+      ${places.length ? html`<button type="button" class="danger" @click=${this.removeLocation}>${t("editor.remove_location")}</button>` : nothing}
+    </div>`;
   }
 
   /** Unit thresholds are entered in: always the HA display unit. */
@@ -83,7 +197,7 @@ class HaForecastCardEditor extends LitElement {
   private schema(t: Translate): Schema[] {
     const unit = this.unit;
     // The camera is a tab only with a camera entity and the tab layout.
-    const form = this._draft ?? this._config;
+    const form = this._draft ?? this.current;
     const cameraTab = !!form?.camera_entity && form.camera_layout !== "strip";
     const range = (celsius: number) => Math.round(convertTemperature(celsius, "°C", unit));
     const threshold = (name: string): Schema => ({
@@ -150,7 +264,8 @@ class HaForecastCardEditor extends LitElement {
         name: "section_header",
         schema: [
           { name: "name", selector: { text: {} } },
-          { name: "show_name", selector: { boolean: {} } },
+          // With several places the name line is the selector, so it cannot be hidden.
+          ...(this.locations.length > 1 ? [] : [{ name: "show_name", selector: { boolean: {} } }]),
         ],
       },
       {
@@ -258,7 +373,7 @@ class HaForecastCardEditor extends LitElement {
   protected override render(): TemplateResult | typeof nothing {
     if (!this.hass || !this._config) return nothing;
     const t: Translate = createTranslator((this._config.language as string | undefined) ?? this.hass.language);
-    const source = this._draft ?? this._config;
+    const source = this._draft ?? this.current ?? {};
     const data = { ...this.defaults(), ...source };
     // While editing, an emptied number box stays empty instead of snapping back to the default.
     for (const key of ["cold_threshold", "hot_threshold"]) if (this._draft && !(key in source)) delete data[key];
@@ -281,6 +396,7 @@ class HaForecastCardEditor extends LitElement {
     const invalid = !thresholdsInOrder(data.cold_threshold, data.hot_threshold);
     const badDates = !festivityRulesValid(data.festivities);
     return html`
+      ${this.renderLocations(t)}
       <ha-form
         .hass=${this.hass}
         .data=${data}
@@ -304,7 +420,7 @@ class HaForecastCardEditor extends LitElement {
   private onValueChanged(event: CustomEvent<{ value: Record<string, unknown> }>): void {
     event.stopPropagation();
     const { alerts, festivities, ...rest } = event.detail.value;
-    const yamlOnly = ((this._config?.alerts as Partial<AlertsConfig> | undefined)?.entities ?? []).filter(
+    const yamlOnly = ((this.current?.alerts as Partial<AlertsConfig> | undefined)?.entities ?? []).filter(
       (item) => typeof item !== "string",
     );
     const picked = alerts as Partial<AlertsConfig> | undefined;
@@ -314,13 +430,10 @@ class HaForecastCardEditor extends LitElement {
     this._draft = { ...event.detail.value };
     // Invalid input stays in the form (with an error) and is not saved, so the card keeps its last valid config.
     if (!thresholdsInOrder(value.cold_threshold, value.hot_threshold) || !festivityRulesValid(festivities)) return;
-    this.dispatchEvent(
-      new CustomEvent("config-changed", {
-        detail: { config: compactConfig(value, this.defaults()) },
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    const compact = compactConfig(value, this.defaults());
+    if (!this.locations.length) return this.emit(compact);
+    const locations = this.locations.map((place, index) => (index === this._selected ? compact : place));
+    this.emit({ ...this.cardLevel(), locations });
   }
 }
 

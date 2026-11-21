@@ -66,11 +66,30 @@ tap_action:
   navigation_path: /lovelace/weather
 ```
 
+### Several locations
+
+Show more than one place in the same card with `locations`. Each entry takes the same options as a single card (everything in the table below except `type` and `language`, which stay at the top level). With two or more, the name line becomes a selector (pin, name and chevron) that lists each place with its condition and temperature; `show_name` is then always on, and `name` defaults to the entity name.
+
+```yaml
+type: custom:ha-forecast-card
+locations:
+  - entity: weather.home
+    name: Home
+    camera_entity: camera.garden
+  - entity: weather.beach
+    name: Beach
+    default_view: daily
+    temperature_entity: sensor.beach_temperature
+```
+
+Only the selected place subscribes to forecasts and history or loads its camera; the others are only read (condition and temperature) while the selector is open, so extra places cost nothing at rest. The visual editor shows one tab per place with add/remove buttons. A single entry in `locations` behaves like a plain card.
+
 ## Options
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `entity` | string | **required** | The `weather.*` entity. |
+| `entity` | string | **required** (unless `locations`) | The `weather.*` entity. |
+| `locations` | list | | Several places, see [Several locations](#several-locations). |
 | `name` | string | entity name | Name shown above the condition. |
 | `show_name` | boolean | `true` | Show the name line. |
 | `default_view` | `hourly` \| `daily` \| `camera` | `hourly` | Tab shown first. Falls back to the first available tab (`camera` needs a [camera tab](#camera)). |
@@ -78,13 +97,13 @@ tap_action:
 | `days_to_show` | integer ≥ 1 | `7` | Daily columns. |
 | `history_hours` | integer ≥ 0 | `12` | Past hours reachable by scrolling back (from the recorder history of `temperature_entity` or the weather entity). `0` disables it. |
 | `history_days` | integer ≥ 0 | `3` | Same for the daily view, with each day's recorded high and low. |
-| `temperature_entity` | entity id | | Sensor for the current temperature. |
-| `humidity_entity` | entity id | | Sensor for humidity. |
-| `wind_speed_entity` | entity id | | Sensor for wind speed (its unit is respected). |
-| `uv_index_entity` | entity id | | Sensor for the UV index. |
+| `temperature_entity` | entity id | | Sensor for the current temperature. Tapping it opens the sensor's history. |
+| `humidity_entity` | entity id | | Sensor for humidity. Tapping the value opens the sensor's history. |
+| `wind_speed_entity` | entity id | | Sensor for wind speed (its unit is respected). Tapping the value opens the sensor's history. |
+| `uv_index_entity` | entity id | | Sensor for the UV index. Tapping the value opens the sensor's history. |
 | `cold_threshold` | number | `0` °C / `32` °F | At or below this the colour is fully cold. |
 | `hot_threshold` | number | `35` °C / `95` °F | At or above this the colour is fully hot. Must be greater than `cold_threshold`. |
-| `tap_action` | action | `more-info` | Tap on the card (the weather entity by default). |
+| `tap_action` | action | `more-info` | Tap on the header text (condition and range; the weather entity by default). |
 | `temperature_tap_action` | action | `more-info` | Tap on the temperature (the history of `temperature_entity`, or the weather entity). |
 | `camera_*` | | | See [Camera](#camera). |
 | `alerts` | object | | See [Alerts](#alerts). |

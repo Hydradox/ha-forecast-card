@@ -120,3 +120,50 @@ describe("editor", () => {
     expect(editor.shadowRoot!.querySelector("ha-alert")).not.toBeNull();
   });
 });
+
+describe("editor with several locations", () => {
+  const emitted = (editor: Editor) => {
+    const out: { config?: Record<string, unknown> } = {};
+    editor.addEventListener("config-changed", (e) => (out.config = (e as CustomEvent).detail.config));
+    return out;
+  };
+  const click = (editor: Editor, text: RegExp) =>
+    Array.from(editor.shadowRoot!.querySelectorAll("button"))
+      .find((button) => text.test(button.textContent ?? ""))!
+      .click();
+
+  it("turns a flat config into a list when a location is added", async () => {
+    const editor = await mount({ type: "custom:ha-forecast-card", entity: "weather.a", days_to_show: 3, language: "es" });
+    const out = emitted(editor);
+    click(editor, /^\+/); // language is "es": match the plus sign
+    expect(out.config).toEqual({
+      type: "custom:ha-forecast-card",
+      language: "es",
+      locations: [{ entity: "weather.a", days_to_show: 3 }, { entity: "" }],
+    });
+  });
+
+  it("edits the selected location only, and hides show_name (the name line is the selector)", async () => {
+    const editor = await mount({
+      type: "x",
+      locations: [{ entity: "weather.a" }, { entity: "weather.b", days_to_show: 2 }],
+    });
+    const out = emitted(editor);
+    click(editor, /weather\.b/);
+    await editor.updateComplete;
+    expect(form(editor).data.entity).toBe("weather.b");
+    const header = form(editor).schema.find((item) => item.name === "section_header")!;
+    expect(header.schema!.map((item) => item.name)).toEqual(["name"]);
+
+    form(editor).dispatchEvent(new CustomEvent("value-changed", { detail: { value: { ...form(editor).data, name: "Beach" } } }));
+    expect(out.config).toEqual({ type: "x", locations: [{ entity: "weather.a" }, { entity: "weather.b", days_to_show: 2, name: "Beach" }] });
+  });
+
+  it("goes back to a flat config when one location is left", async () => {
+    const editor = await mount({ type: "x", locations: [{ entity: "weather.a" }, { entity: "weather.b" }] });
+    const out = emitted(editor);
+    click(editor, /Remove location/);
+    expect(out.config).toEqual({ type: "x", entity: "weather.b" }); // the selected one (the first) is removed
+  });
+});
+

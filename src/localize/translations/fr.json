@@ -127,7 +127,9 @@
     "camera_tap_action_help": "Par défaut : ouvre la vue en direct de la caméra.",
     "section_forecast": "Prévisions",
     "section_history": "Passé",
-    "section_header": "En-tête"
+    "section_header": "En-tête",
+    "add_location": "Ajouter un lieu",
+    "remove_location": "Supprimer le lieu"
   },
   "chart": {
     "label_hourly": "Température par heure de {min}° à {max}°",
@@ -155,5 +157,9 @@
     "open": "Ouvrir {name}",
     "expand": "Agrandir {name}",
     "collapse": "Réduire {name}"
+  },
+  "location": {
+    "label": "Lieu",
+    "change": "Changer de lieu"
   }
 }

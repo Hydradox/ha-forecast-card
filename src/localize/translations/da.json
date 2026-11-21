@@ -127,7 +127,9 @@
     "camera_tap_action_help": "Standard: åbner kameraets live-visning.",
     "section_forecast": "Prognose",
     "section_history": "Fortid",
-    "section_header": "Overskrift"
+    "section_header": "Overskrift",
+    "add_location": "Tilføj sted",
+    "remove_location": "Fjern sted"
   },
   "chart": {
     "label_hourly": "Temperatur pr. time fra {min}° til {max}°",
@@ -155,5 +157,9 @@
     "open": "Åbn {name}",
     "expand": "Udvid {name}",
     "collapse": "Skjul {name}"
+  },
+  "location": {
+    "label": "Sted",
+    "change": "Skift sted"
   }
 }
