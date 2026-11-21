@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compactConfig, parseConfig } from "../src/config";
+import { compactConfig, parseConfig, parseLocations } from "../src/config";
 
 describe("parseConfig", () => {
   it("applies defaults", () => {
@@ -43,5 +43,46 @@ describe("threshold order", () => {
     expect(() => parseConfig({ entity: "weather.a", cold_threshold: 20, hot_threshold: 20 })).toThrow(/greater/);
     expect(() => parseConfig({ entity: "weather.a", cold_threshold: 20, hot_threshold: 10 })).toThrow(/greater/);
     expect(parseConfig({ entity: "weather.a", cold_threshold: 10, hot_threshold: 20 }).hot_threshold).toBe(20);
+  });
+});
+
+describe("parseLocations", () => {
+  it("keeps a flat config as a single place", () => {
+    const places = parseLocations({ type: "x", entity: "weather.a", show_name: false });
+    expect(places).toHaveLength(1);
+    expect(places[0].show_name).toBe(false);
+  });
+
+  it("gives every place the full set of options and defaults", () => {
+    const places = parseLocations({
+      type: "x",
+      locations: [
+        { entity: "weather.a", name: "Home", days_to_show: 3 },
+        { entity: "weather.b", name: "Beach", camera_entity: "camera.beach" },
+      ],
+    });
+    expect(places.map((p) => p.entity)).toEqual(["weather.a", "weather.b"]);
+    expect(places[0].days_to_show).toBe(3);
+    expect(places[1].days_to_show).toBe(7);
+    expect(places[1].camera_entity).toBe("camera.beach");
+  });
+
+  it("forces the name line on with several places, since it hosts the selector", () => {
+    const places = parseLocations({
+      type: "x",
+      locations: [
+        { entity: "weather.a", show_name: false },
+        { entity: "weather.b", show_name: false },
+      ],
+    });
+    expect(places.every((p) => p.show_name)).toBe(true);
+    expect(parseLocations({ type: "x", locations: [{ entity: "weather.a", show_name: false }] })[0].show_name).toBe(false);
+  });
+
+  it("shares the language and reports which place is invalid", () => {
+    const places = parseLocations({ type: "x", language: "es", locations: [{ entity: "weather.a" }] });
+    expect(places[0].language).toBe("es");
+    expect(() => parseLocations({ type: "x", locations: [] })).toThrow(/locations/);
+    expect(() => parseLocations({ type: "x", locations: [{ entity: "weather.a" }, { entity: "sensor.b" }] })).toThrow(/locations\[1\]/);
   });
 });

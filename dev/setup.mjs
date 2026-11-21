@@ -214,6 +214,35 @@ const dashboard = {
       ),
     ]),
 
+    view("Locations", "locations", "mdi:map-marker-multiple", [
+      section(heading("Controls", "mdi:tune"), ...weatherControls),
+      section(
+        heading("Several locations (selector in the header)", "mdi:map-marker-multiple"),
+        {
+          type: "custom:ha-forecast-card",
+          festivity: "none",
+          locations: [
+            { entity: "weather.dev_weather", name: "Home" },
+            { entity: "weather.dev_weather_daily_only", name: "Daily only", default_view: "daily", days_to_show: 5 },
+            { entity: "weather.gallery_rainy", name: "Rainy" },
+            { entity: "weather.gallery_snowy", name: "Snowy" },
+          ],
+        },
+      ),
+      // Real Met.no integrations (Settings → Integrations; coordinates in the entity ids). Skipped entities show "Unavailable".
+      section(
+        heading("Real weather (Met.no)", "mdi:earth"),
+        {
+          type: "custom:ha-forecast-card",
+          festivity: "none",
+          locations: [
+            { entity: "weather.met_no_40_4168_3_7038", name: "Madrid", history_hours: 12 },
+            { entity: "weather.met_no_64_1466_21_9426", name: "Reykjavik", default_view: "daily" },
+          ],
+        },
+      ),
+    ]),
+
     view("Camera", "camera", "mdi:cctv", [
       section(heading("Controls", "mdi:tune"), ...weatherControls),
       section(
@@ -297,8 +326,22 @@ const resources = await ws.send({ type: "lovelace/resources" });
 const existing = resources.find((r) => r.url.startsWith(RESOURCE_URL));
 if (existing) await ws.send({ type: "lovelace/resources/update", resource_id: existing.id, res_type: "module", url });
 else await ws.send({ type: "lovelace/resources/create", res_type: "module", url });
-await ws.send({ type: "lovelace/config/save", config: dashboard });
+// Recent HA versions replace the default "Overview" with the built-in Home panel, so the test views get their own dashboard.
+const DASHBOARD_PATH = "dev-card";
+const dashboards = await ws.send({ type: "lovelace/dashboards/list" });
+if (!dashboards.some((d) => d.url_path === DASHBOARD_PATH)) {
+  await ws.send({
+    type: "lovelace/dashboards/create",
+    url_path: DASHBOARD_PATH,
+    mode: "storage",
+    title: "Card dev",
+    icon: "mdi:weather-partly-cloudy",
+    show_in_sidebar: true,
+    require_admin: false,
+  });
+}
+await ws.send({ type: "lovelace/config/save", url_path: DASHBOARD_PATH, config: dashboard });
 ws.close();
 
-console.log(`\nReady: ${base}  (user: ${USER.username} / password: ${USER.password})`);
+console.log(`\nReady: ${base}/${DASHBOARD_PATH}  (user: ${USER.username} / password: ${USER.password})`);
 console.log("Rebuild with `npm run watch`; hard-reload the browser (Ctrl+Shift+R) to pick up the new bundle.");

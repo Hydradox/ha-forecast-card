@@ -127,7 +127,9 @@
     "camera_tap_action_help": "Por defeito: abre a vista em direto da câmara.",
     "section_forecast": "Previsão",
     "section_history": "Passado",
-    "section_header": "Cabeçalho"
+    "section_header": "Cabeçalho",
+    "add_location": "Adicionar localização",
+    "remove_location": "Remover localização"
   },
   "chart": {
     "label_hourly": "Temperatura por hora de {min}° a {max}°",
@@ -155,5 +157,9 @@
     "open": "Abrir {name}",
     "expand": "Expandir {name}",
     "collapse": "Recolher {name}"
+  },
+  "location": {
+    "label": "Localização",
+    "change": "Mudar de localização"
   }
 }

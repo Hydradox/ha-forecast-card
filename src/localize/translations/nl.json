@@ -127,7 +127,9 @@
     "camera_tap_action_help": "Standaard: opent het live beeld van de camera.",
     "section_forecast": "Voorspelling",
     "section_history": "Verleden",
-    "section_header": "Koptekst"
+    "section_header": "Koptekst",
+    "add_location": "Locatie toevoegen",
+    "remove_location": "Locatie verwijderen"
   },
   "chart": {
     "label_hourly": "Temperatuur per uur van {min}° tot {max}°",
@@ -155,5 +157,9 @@
     "open": "{name} openen",
     "expand": "{name} uitvouwen",
     "collapse": "{name} invouwen"
+  },
+  "location": {
+    "label": "Locatie",
+    "change": "Locatie wijzigen"
   }
 }

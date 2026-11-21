@@ -66,11 +66,30 @@ tap_action:
   navigation_path: /lovelace/weather
 ```
 
+### Several locations
+
+Show more than one place in the same card with `locations`. Each entry takes the same options as a single card (everything in the table below except `type` and `language`, which stay at the top level). With two or more, the name line becomes a selector (pin, name and chevron) that lists each place with its condition and temperature; `show_name` is then always on, and `name` defaults to the entity name.
+
+```yaml
+type: custom:ha-forecast-card
+locations:
+  - entity: weather.home
+    name: Home
+    camera_entity: camera.garden
+  - entity: weather.beach
+    name: Beach
+    default_view: daily
+    temperature_entity: sensor.beach_temperature
+```
+
+Only the selected place subscribes to forecasts and history or loads its camera; the others are only read (condition and temperature) while the selector is open, so extra places cost nothing at rest. The visual editor shows one tab per place with add/remove buttons. A single entry in `locations` behaves like a plain card.
+
 ## Options
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `entity` | string | **required** | The `weather.*` entity. |
+| `entity` | string | **required** (unless `locations`) | The `weather.*` entity. |
+| `locations` | list | | Several places, see [Several locations](#several-locations). |
 | `name` | string | entity name | Name shown above the condition. |
 | `show_name` | boolean | `true` | Show the name line. |
 | `default_view` | `hourly` \| `daily` \| `camera` | `hourly` | Tab shown first. Falls back to the first available tab (`camera` needs a [camera tab](#camera)). |

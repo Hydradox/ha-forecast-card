@@ -9,8 +9,8 @@ import { CAMERA_LAYOUTS } from "./utils/camera";
 
 export type ForecastView = "hourly" | "daily";
 
-export interface ForecastCardConfig {
-  type: string;
+/** Everything that can differ per place: one entry of `locations`, or the card's own top level when there is only one. */
+export interface LocationConfig {
   /** `weather.*` entity providing conditions and forecasts. */
   entity: string;
   /** Optional card title override (defaults to the entity friendly name). */
@@ -60,8 +60,6 @@ export interface ForecastCardConfig {
   camera_tap_action?: ActionConfig;
   /** Seconds between image reloads while the camera is visible. */
   camera_refresh?: number;
-  /** Language override; defaults to the Home Assistant UI language. */
-  language?: string;
   /**
    * Seasonal decoration: `auto` follows the calendar, `none` disables it, a festivity name forces it, and an
    * entity id (such as an `input_select`) takes one of those values from its state.
@@ -71,6 +69,18 @@ export interface ForecastCardConfig {
   weather_effects?: boolean;
   /** Per-festivity rules for `festivity: auto`: turn one off, or correct its dates. */
   festivities?: FestivityRules;
+}
+
+export interface ForecastCardConfig extends Partial<LocationConfig> {
+  type: string;
+  /** Language override; defaults to the Home Assistant UI language. */
+  language?: string;
+  /**
+   * Several places, each with the same options as a single card. With two or more, the name line becomes a
+   * selector (so `show_name` is forced on) and only the selected place loads forecasts, history and camera.
+   * Replaces the top-level `entity` and per-location options.
+   */
+  locations?: LocationConfig[];
 }
 
 export const DEFAULT_CONFIG = {
@@ -84,10 +94,11 @@ export const DEFAULT_CONFIG = {
   weather_effects: true,
   camera_layout: "tab",
   camera_refresh: 300,
-} as const satisfies Partial<ForecastCardConfig>;
+} as const satisfies Partial<LocationConfig>;
 
-export type ResolvedConfig = ForecastCardConfig &
-  Required<Pick<ForecastCardConfig, keyof typeof DEFAULT_CONFIG>>;
+/** One place with defaults applied (`language` is shared by the whole card). */
+export type ResolvedConfig = LocationConfig &
+  Required<Pick<LocationConfig, keyof typeof DEFAULT_CONFIG>> & { type?: string; language?: string };
 
 const ENTITY_FIELDS = [
   "entity",
@@ -97,12 +108,12 @@ const ENTITY_FIELDS = [
   "uv_index_entity",
 ] as const;
 
-/** Validates user config. Throws on invalid input. Never touches `hass`. */
+/** Validates one place (the whole card config when `locations` is absent). Throws on invalid input. */
 export function parseConfig(raw: unknown): ResolvedConfig {
   if (!raw || typeof raw !== "object") {
     throw new Error("Invalid configuration");
   }
-  const config = raw as Partial<ForecastCardConfig>;
+  const config = raw as Partial<LocationConfig> & { language?: string };
 
   if (typeof config.entity !== "string" || !config.entity.startsWith("weather.")) {
     throw new Error("`entity` must be a weather.* entity");
@@ -178,6 +189,25 @@ export function parseConfig(raw: unknown): ResolvedConfig {
   if (config.alerts !== undefined) parseAlertsConfig(config.alerts);
 
   return { ...DEFAULT_CONFIG, ...config } as ResolvedConfig;
+}
+
+/**
+ * Validates the card config: the places it shows, in order. `locations` wins over the top-level `entity`;
+ * with two or more, the name line hosts the selector, so `show_name` is forced on.
+ */
+export function parseLocations(raw: unknown): ResolvedConfig[] {
+  if (!raw || typeof raw !== "object") throw new Error("Invalid configuration");
+  const { locations, language } = raw as Partial<ForecastCardConfig>;
+  if (locations === undefined) return [parseConfig(raw)];
+  if (!Array.isArray(locations) || !locations.length) throw new Error("`locations` must be a non-empty list");
+  return locations.map((location, index) => {
+    try {
+      const parsed = parseConfig({ ...(location as object), language });
+      return locations.length > 1 ? { ...parsed, show_name: true } : parsed;
+    } catch (error) {
+      throw new Error(`locations[${index}]: ${(error as Error).message}`);
+    }
+  });
 }
 
 /**

@@ -14,6 +14,7 @@ export class HistoryController implements ReactiveController {
   data: Record<string, HistoryState[]> | undefined;
 
   private key: string | undefined;
+  private ids: string | undefined;
   private connected = false;
 
   constructor(private readonly host: ReactiveControllerHost) {
@@ -44,6 +45,9 @@ export class HistoryController implements ReactiveController {
     const key = `${ids.join(",")}|${hours}|${currentHour}`;
     if (key === this.key) return;
     this.key = key;
+    // Another place: its history is not the one on screen, so show none until it arrives.
+    if (this.ids !== undefined && this.ids !== ids.join(",")) this.data = undefined;
+    this.ids = ids.join(",");
 
     hass
       .callWS<Record<string, HistoryState[]>>({
