@@ -97,13 +97,13 @@ Only the selected place subscribes to forecasts and history or loads its camera;
 | `days_to_show` | integer ≥ 1 | `7` | Daily columns. |
 | `history_hours` | integer ≥ 0 | `12` | Past hours reachable by scrolling back (from the recorder history of `temperature_entity` or the weather entity). `0` disables it. |
 | `history_days` | integer ≥ 0 | `3` | Same for the daily view, with each day's recorded high and low. |
-| `temperature_entity` | entity id | | Sensor for the current temperature. |
-| `humidity_entity` | entity id | | Sensor for humidity. |
-| `wind_speed_entity` | entity id | | Sensor for wind speed (its unit is respected). |
-| `uv_index_entity` | entity id | | Sensor for the UV index. |
+| `temperature_entity` | entity id | | Sensor for the current temperature. Tapping it opens the sensor's history. |
+| `humidity_entity` | entity id | | Sensor for humidity. Tapping the value opens the sensor's history. |
+| `wind_speed_entity` | entity id | | Sensor for wind speed (its unit is respected). Tapping the value opens the sensor's history. |
+| `uv_index_entity` | entity id | | Sensor for the UV index. Tapping the value opens the sensor's history. |
 | `cold_threshold` | number | `0` °C / `32` °F | At or below this the colour is fully cold. |
 | `hot_threshold` | number | `35` °C / `95` °F | At or above this the colour is fully hot. Must be greater than `cold_threshold`. |
-| `tap_action` | action | `more-info` | Tap on the card (the weather entity by default). |
+| `tap_action` | action | `more-info` | Tap on the header text (condition and range; the weather entity by default). |
 | `temperature_tap_action` | action | `more-info` | Tap on the temperature (the history of `temperature_entity`, or the weather entity). |
 | `camera_*` | | | See [Camera](#camera). |
 | `alerts` | object | | See [Alerts](#alerts). |

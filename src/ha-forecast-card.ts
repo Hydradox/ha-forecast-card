@@ -362,6 +362,11 @@ class HaForecastCard extends LitElement {
     if (this._config && this.hass) runAction(this, this.hass, this.temperatureAction(), this._config.entity);
   };
 
+  /** More-info (history) of a custom sensor shown in the strip. */
+  private openEntity = (entity: string): void => {
+    if (this.hass) runAction(this, this.hass, { action: "more-info", entity }, entity);
+  };
+
   private onKeydown(handler: (event: Event) => void) {
     return (event: KeyboardEvent): void => {
       if (event.key === "Enter" || event.key === " ") {
@@ -550,7 +555,6 @@ class HaForecastCard extends LitElement {
     if (!weather || weather.state === "unavailable" || weather.state === "unknown") {
       return html`<ha-card><div class="empty">${this.localize("common.unavailable")}</div></ha-card>`;
     }
-    const interactive = isInteractive(this.cardAction());
     const now = new Date();
     const current = this.currentTemperature(weather);
     const thresholds = resolveThresholds(config, this.hass.config.unit_system.temperature);
@@ -562,13 +566,7 @@ class HaForecastCard extends LitElement {
     const dark = !!this.hass.themes?.darkMode;
 
     return html`
-      <ha-card
-        class=${interactive ? "interactive" : ""}
-        role=${interactive ? "button" : nothing}
-        tabindex=${interactive ? 0 : nothing}
-        @click=${this.onCardTap}
-        @keydown=${this.onKeydown(this.onCardTap)}
-      >
+      <ha-card>
         ${config.weather_effects ? renderWeatherEffect(weather.state, dark) : nothing} ${renderFestivityLayers(this.festivity, dark)} ${iconSprite} ${this.renderHeader(weather, current, now, dark)} ${this.renderAlertBanner(now)}
         ${camera && config.camera_layout === "strip" ? this.renderCameraStrip() : nothing}
         ${this.renderTabs(tabs, view)}
@@ -577,7 +575,7 @@ class HaForecastCard extends LitElement {
           : view
             ? this.renderForecast(weather, view, current, thresholds, now)
             : nothing}
-        ${metrics.length ? renderAttributes(metrics) : nothing}
+        ${metrics.length ? renderAttributes(metrics, this.openEntity) : nothing}
       </ha-card>
     `;
   }
@@ -637,6 +635,7 @@ class HaForecastCard extends LitElement {
     const name = this.locationName(config, weather);
     const picker = this.locations.length > 1;
     const interactive = isInteractive(this.temperatureAction());
+    const cardInteractive = isInteractive(this.cardAction());
     const today = dailySlots(this.daily.forecast, now, 1, fmt, "")[0];
     const range =
       today?.isCurrent && defined(today.temperature) && defined(today.templow)
@@ -667,8 +666,16 @@ class HaForecastCard extends LitElement {
                 ? this.renderPicker(name)
                 : html`<span class="secondary">${name}</span>`
             : nothing}
-          <div class="condition">${weatherIcon(weather.state, 24)}<span class="state">${this.conditionLabel(weather)}</span></div>
-          ${range ? html`<span class="range">${range}</span>` : nothing}
+          <div
+            class="summary ${cardInteractive ? "interactive" : ""}"
+            role=${cardInteractive ? "button" : nothing}
+            tabindex=${cardInteractive ? 0 : nothing}
+            @click=${this.onCardTap}
+            @keydown=${this.onKeydown(this.onCardTap)}
+          >
+            <div class="condition">${weatherIcon(weather.state, 24)}<span class="state">${this.conditionLabel(weather)}</span></div>
+            ${range ? html`<span class="range">${range}</span>` : nothing}
+          </div>
         </div>
       </div>
     `;
@@ -877,7 +884,13 @@ class HaForecastCard extends LitElement {
       return { value, unit: override?.attributes.unit_of_measurement as string | undefined };
     };
     const out: MetricView[] = [];
-    const push = (metric: "humidity" | "wind" | "uv", value: number, text: string, scaled = value) => {
+    const push = (
+      metric: "humidity" | "wind" | "uv",
+      value: number,
+      text: string,
+      entity: string | undefined,
+      scaled = value,
+    ) => {
       const level = getLevel(metric, scaled);
       out.push({
         metric,
@@ -885,11 +898,12 @@ class HaForecastCard extends LitElement {
         level,
         levelLabel: this.localize(`levels.${metric}.${LEVEL_KEYS[metric][level]}`),
         name: this.localize(`attributes.${metric}`),
+        entity: entity && this.overrideEntity(entity) ? entity : undefined,
       });
     };
 
     const humidity = read(config.humidity_entity, attrs.humidity);
-    if (Number.isFinite(humidity.value)) push("humidity", humidity.value, `${fmt.number(humidity.value)} %`);
+    if (Number.isFinite(humidity.value)) push("humidity", humidity.value, `${fmt.number(humidity.value)} %`, config.humidity_entity);
 
     const wind = read(config.wind_speed_entity, attrs.wind_speed);
     if (Number.isFinite(wind.value)) {
@@ -897,11 +911,11 @@ class HaForecastCard extends LitElement {
         wind.unit ?? (attrs.wind_speed_unit as string | undefined) ?? hass.config.unit_system.wind_speed ?? "km/h";
       const bearing = cardinal(attrs.wind_bearing as number | string | undefined);
       const direction = bearing ? (hass.localize?.(`ui.card.weather.cardinal_direction.${bearing.toLowerCase()}`) || bearing) : "";
-      push("wind", wind.value, `${fmt.number(wind.value, 1)} ${unit}${direction ? ` ${direction}` : ""}`, toKmh(wind.value, unit));
+      push("wind", wind.value, `${fmt.number(wind.value, 1)} ${unit}${direction ? ` ${direction}` : ""}`, config.wind_speed_entity, toKmh(wind.value, unit));
     }
 
     const uv = read(config.uv_index_entity, attrs.uv_index);
-    if (Number.isFinite(uv.value)) push("uv", uv.value, fmt.number(uv.value, 1));
+    if (Number.isFinite(uv.value)) push("uv", uv.value, fmt.number(uv.value, 1), config.uv_index_entity);
     return out;
   }
 }

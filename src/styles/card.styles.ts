@@ -15,11 +15,11 @@ export const cardStyles = css`
     gap: 14px;
     color: var(--hfc-text);
   }
-  ha-card.interactive,
+  .summary.interactive,
   .temperature.interactive {
     cursor: pointer;
   }
-  ha-card:focus-visible,
+  .summary:focus-visible,
   .temperature:focus-visible {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
@@ -41,6 +41,13 @@ export const cardStyles = css`
   }
   .header .info > * {
     max-width: 100%;
+  }
+  /* Condition + range: only as wide as its content, so the pointer is not shown on the empty space */
+  .summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
   }
   /* Location selector (several places): the name line as a button, the list floats over the card */
   .picker {
@@ -750,6 +757,13 @@ export const cardStyles = css`
     min-width: 0;
     padding: 0 10px;
     border-left: 1px solid var(--hfc-divider);
+  }
+  .metric.interactive {
+    cursor: pointer;
+  }
+  .metric:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
   }
   .metric:first-child {
     padding-left: 0;
