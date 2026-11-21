@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/Hydradox/ha-forecast-card/compare/v1.6.0...v1.6.1) (2026-11-21)
+
+### Bug fixes
+
+* **editor:** allow reordering locations with a drag handle ([e9773a0](https://github.com/Hydradox/ha-forecast-card/commit/e9773a02b908239049d9d79511dbfeeae4f11461))
+* follow the clock, scope the editor preview and memoize the editor form ([10a210d](https://github.com/Hydradox/ha-forecast-card/commit/10a210db811b607b30d5bf990b146a8630b2d8a7))
+
 ## [1.6.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.5.1...v1.6.0) (2026-11-21)
 
 ### Features
