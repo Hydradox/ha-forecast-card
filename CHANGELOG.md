@@ -10,6 +10,16 @@
 
 * card interactivity ([ca98023](https://github.com/Hydradox/ha-forecast-card/commit/ca98023afaf007717c225a845c8919acd5fc53bb))
 
+## [1.6.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.5.1...v1.6.0) (2026-11-21)
+
+### Features
+
+* multi location selector ([c079539](https://github.com/Hydradox/ha-forecast-card/commit/c079539282c515cc69276c03ff2c4b017e0ee38e))
+
+### Bug fixes
+
+* card interactivity ([ca98023](https://github.com/Hydradox/ha-forecast-card/commit/ca98023afaf007717c225a845c8919acd5fc53bb))
+
 ## [1.5.1](https://github.com/Hydradox/ha-forecast-card/compare/v1.5.0...v1.5.1) (2026-11-16)
 
 ### Bug fixes
