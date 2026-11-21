@@ -456,3 +456,30 @@ describe("camera as default view", () => {
     expect(without.shadowRoot!.querySelector(".scroller")).not.toBeNull();
   });
 });
+
+describe("preview following the editor", () => {
+  const announce = (index: number, signature: string) =>
+    window.dispatchEvent(new CustomEvent("ha-forecast-card:preview-location", { detail: { index, signature } }));
+  const shown = (card: Card) => (card as unknown as { _config: { entity: string } })._config.entity;
+
+  it("shows the place the editor selected, and ignores other cards' places", async () => {
+    const card = document.createElement("ha-forecast-card") as Card;
+    document.body.append(card);
+    card.setConfig({ locations: [{ entity: "weather.a" }, { entity: "weather.b" }] });
+    announce(1, "weather.a|weather.b");
+    expect(shown(card)).toBe("weather.b");
+    announce(0, "weather.x|weather.y");
+    expect(shown(card)).toBe("weather.b");
+    card.remove();
+  });
+
+  it("applies a selection announced before its config arrives (reorder)", () => {
+    const card = document.createElement("ha-forecast-card") as Card;
+    document.body.append(card);
+    card.setConfig({ locations: [{ entity: "weather.a" }, { entity: "weather.b" }] });
+    announce(0, "weather.b|weather.a");
+    card.setConfig({ locations: [{ entity: "weather.b" }, { entity: "weather.a" }] });
+    expect(shown(card)).toBe("weather.b");
+    card.remove();
+  });
+});

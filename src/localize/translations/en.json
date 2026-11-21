@@ -129,7 +129,8 @@
     "section_history": "Past",
     "section_header": "Header",
     "add_location": "Add location",
-    "remove_location": "Remove location"
+    "remove_location": "Remove location",
+    "reorder_location": "Drag to reorder (or use the arrow keys)"
   },
   "chart": {
     "label_hourly": "Hourly temperature from {min}° to {max}°",

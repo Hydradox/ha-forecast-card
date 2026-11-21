@@ -129,7 +129,8 @@
     "section_history": "Verleden",
     "section_header": "Koptekst",
     "add_location": "Locatie toevoegen",
-    "remove_location": "Locatie verwijderen"
+    "remove_location": "Locatie verwijderen",
+    "reorder_location": "Sleep om te herschikken (of gebruik de pijltjestoetsen)"
   },
   "chart": {
     "label_hourly": "Temperatuur per uur van {min}° tot {max}°",

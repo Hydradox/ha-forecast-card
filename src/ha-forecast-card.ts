@@ -3,7 +3,8 @@ import { LitElement, html, nothing } from "lit";
 import type { ResolvedConfig } from "./config";
 import type { ForecastView } from "./config";
 import { parseLocations } from "./config";
-import { CARD_TAG, EDITOR_TAG } from "./const";
+import type { PreviewLocationDetail } from "./const";
+import { CARD_TAG, EDITOR_TAG, PREVIEW_EVENT, placesSignature } from "./const";
 import { ForecastSubscription, supportsForecast } from "./controllers/forecast-subscription";
 import { CameraRefresh } from "./controllers/camera-refresh";
 import { HistoryController } from "./controllers/history";
@@ -124,6 +125,11 @@ class HaForecastCard extends LitElement {
   setConfig(config: unknown): void {
     this.locations = parseLocations(config);
     this._index = Math.min(this._index, this.locations.length - 1); // the editor re-sends the config on every edit
+    // A selection the editor announced before this config (reorder, add, remove) arrives with it.
+    if (this.pendingPreview && this.pendingPreview.signature === this.signature()) {
+      this._index = Math.min(this.pendingPreview.index, this.locations.length - 1);
+      this.pendingPreview = undefined;
+    }
     this._config = this.locations[this._index];
     this._view = this._config.default_view;
   }
@@ -149,8 +155,26 @@ class HaForecastCard extends LitElement {
     return document.createElement(EDITOR_TAG);
   }
 
+  private pendingPreview?: PreviewLocationDetail;
+
+  private signature(): string {
+    return placesSignature(this.locations.map((place) => place.entity));
+  }
+
+  /** The editor selected a place: show it here when this card has the same places. */
+  private onPreviewLocation = (event: Event): void => {
+    const detail = (event as CustomEvent<PreviewLocationDetail>).detail;
+    if (!this.locations || detail.signature !== this.signature()) {
+      this.pendingPreview = detail; // the matching config may still be on its way
+      return;
+    }
+    this.pendingPreview = undefined;
+    this.selectLocation(detail.index);
+  };
+
   override connectedCallback(): void {
     super.connectedCallback();
+    window.addEventListener(PREVIEW_EVENT, this.onPreviewLocation);
     // Effects only animate while the card is on screen.
     if (typeof IntersectionObserver !== "undefined") {
       this.visibility ??= new IntersectionObserver(([entry]) => this.toggleAttribute("data-fx-paused", !entry.isIntersecting));
@@ -160,6 +184,7 @@ class HaForecastCard extends LitElement {
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
+    window.removeEventListener(PREVIEW_EVENT, this.onPreviewLocation);
     this.visibility?.disconnect();
     this.closePicker();
     clearTimeout(this.pickerTimer);

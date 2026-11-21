@@ -82,7 +82,7 @@ locations:
     temperature_entity: sensor.beach_temperature
 ```
 
-Only the selected place subscribes to forecasts and history or loads its camera; the others are only read (condition and temperature) while the selector is open, so extra places cost nothing at rest. The visual editor shows one tab per place with add/remove buttons. A single entry in `locations` behaves like a plain card.
+Only the selected place subscribes to forecasts and history or loads its camera; the others are only read (condition and temperature) while the selector is open, so extra places cost nothing at rest. The visual editor shows one tab per place with add/remove buttons and you drag a tab (mouse or touch; arrow keys also work) to reorder them. A single entry in `locations` behaves like a plain card.
 
 ## Options
 

@@ -159,6 +159,29 @@ describe("editor with several locations", () => {
     expect(out.config).toEqual({ type: "x", locations: [{ entity: "weather.a" }, { entity: "weather.b", days_to_show: 2, name: "Beach" }] });
   });
 
+  it("reorders a location with the keyboard on its handle", async () => {
+    const editor = await mount({ type: "x", locations: [{ entity: "weather.a" }, { entity: "weather.b" }, { entity: "weather.c" }] });
+    const out = emitted(editor);
+    const handle = editor.shadowRoot!.querySelector<HTMLElement>('.chip[data-index="1"] button')!;
+    handle.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+    expect(out.config).toEqual({ type: "x", locations: [{ entity: "weather.b" }, { entity: "weather.a" }, { entity: "weather.c" }] });
+  });
+
+  it("can still select another location after reordering", async () => {
+    const editor = await mount({ type: "x", locations: [{ entity: "weather.a" }, { entity: "weather.b" }, { entity: "weather.c" }] });
+    editor.shadowRoot!.querySelector<HTMLElement>('.chip[data-index="0"] button')!.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    editor.setConfig({ type: "x", locations: [{ entity: "weather.b" }, { entity: "weather.a" }, { entity: "weather.c" }] });
+    await editor.updateComplete;
+    click(editor, /weather\.c/);
+    await editor.updateComplete;
+    expect(form(editor).data.entity).toBe("weather.c");
+  });
+
+  it("shows no grip with a single location", async () => {
+    const editor = await mount({ type: "x", locations: [{ entity: "weather.a" }] });
+    expect(editor.shadowRoot!.querySelector(".grip")).toBeNull();
+  });
+
   it("goes back to a flat config when one location is left", async () => {
     const editor = await mount({ type: "x", locations: [{ entity: "weather.a" }, { entity: "weather.b" }] });
     const out = emitted(editor);

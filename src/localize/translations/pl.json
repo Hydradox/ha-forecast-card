@@ -129,7 +129,8 @@
     "section_history": "Przeszłość",
     "section_header": "Nagłówek",
     "add_location": "Dodaj lokalizację",
-    "remove_location": "Usuń lokalizację"
+    "remove_location": "Usuń lokalizację",
+    "reorder_location": "Przeciągnij, aby zmienić kolejność (lub użyj strzałek)"
   },
   "chart": {
     "label_hourly": "Temperatura godzinowa od {min}° do {max}°",
