@@ -20,6 +20,7 @@ A Home Assistant Lovelace card that shows the weather forecast at a glance: a te
 - [Usage](#usage)
 - [Options](#options)
 - [Features](#features)
+  - [Sunrise and sunset](#sunrise-and-sunset)
   - [Camera](#camera)
   - [Alerts](#alerts)
   - [Festivities](#festivities)
@@ -121,11 +122,30 @@ Thresholds are in your Home Assistant temperature unit. Actions support `more-in
 - Humidity, wind and UV with a level label and a 5-segment scale.
 - Temperature colours with configurable cold and hot thresholds.
 - Your own sensors for temperature, humidity, wind or UV.
+- [Sunrise and sunset](#sunrise-and-sunset) on the hourly chart, from Home Assistant's Sun integration or Sun2.
 - [Camera](#camera): a tab or an expandable strip, with live stream when the camera supports it.
 - [Weather alerts](#alerts) from Meteoalarm, NWS, Environment Canada or any sensor.
 - Animated weather effects and [seasonal decoration](#festivities).
 - Visual editor for every option (YAML works too). Follows your theme, locale and units.
 - Languages: English, Spanish, Dutch, German, French, Italian, Polish, Swedish, Danish, Norwegian and Portuguese.
+
+### Sunrise and sunset
+
+On the hourly chart, a dashed line with its time marks each sunrise and sunset, and clear hours after dark show the moon instead of the sun. Both come from entities you choose; without them the card draws neither.
+
+```yaml
+# Home Assistant's Sun integration
+sun_entity: sun.sun
+
+# Or any other source whose state is a timestamp, such as Sun2
+sunrise_entity: sensor.home_next_rising
+sunset_entity: sensor.home_next_setting
+```
+
+- **One Sun entity per Home Assistant.** The Sun integration follows the Home Assistant location. For places elsewhere, use [Sun2](https://github.com/pnbruckner/ha-sun2) (one location per config entry), a template sensor or any entity with a timestamp state.
+- **Precedence.** `sunrise_entity` and `sunset_entity` override the matching value of `sun_entity`, which can be left out.
+- **Both events recommended.** With one of them and no `sun_entity`, the day or night of the hours beyond it is not known.
+- Polar day or night (an event more than 26 hours away) is ignored.
 
 ### Camera
 

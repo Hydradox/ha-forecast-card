@@ -221,6 +221,18 @@ template:
           {% endfor %}
           {{ ns.items }}
 
+  # Sunrise and sunset as timestamp sensors (what Sun2 provides), shifted from now so they always fall inside the
+  # visible hours of the chart (used for the README screenshots). Real times: use `sun_entity: sun.sun`.
+  - sensor:
+      - name: Dev next sunset
+        unique_id: dev_next_sunset
+        device_class: timestamp
+        state: "{{ (now().replace(minute=0, second=0, microsecond=0) + timedelta(hours=2, minutes=17)).isoformat() }}"
+      - name: Dev next sunrise
+        unique_id: dev_next_sunrise
+        device_class: timestamp
+        state: "{{ (now().replace(minute=0, second=0, microsecond=0) + timedelta(hours=6, minutes=42)).isoformat() }}"
+
   # Sensors for the per-entity overrides.
   - sensor:
       - name: Dev outdoor temperature
