@@ -103,7 +103,7 @@ Only the selected place subscribes to forecasts and history or loads its camera;
 | `wind_speed_entity` | entity id | | Sensor for wind speed (its unit is respected). Tapping the value opens the sensor's history. |
 | `uv_index_entity` | entity id | | Sensor for the UV index. Tapping the value opens the sensor's history. |
 | `sun_entity` | `sun.*` | | Home Assistant's [Sun](https://www.home-assistant.io/integrations/sun/) entity (`sun.sun`). Marks the next sunrise or sunset on the hourly chart (dashed line with its time) and shows the moon instead of the sun on clear hours after dark. Set per place: the Sun integration follows the Home Assistant location, so leave it out for places elsewhere. |
-| `sunrise_entity` / `sunset_entity` | entity | | Sunrise and sunset from any entity whose state is a timestamp, such as [Sun2](https://github.com/pnbruckner/ha-sun2)'s `sensor.*_next_rising` and `sensor.*_next_setting`, or a template sensor. They override the values of `sun_entity`, which is not needed then: Home Assistant allows only one Sun entity, so use these for other places. |
+| `sunrise_entity` / `sunset_entity` | entity | | Sunrise and sunset from any entity whose state is a timestamp, such as the **Rising** and **Setting** sensors of [Sun2](https://github.com/pnbruckner/ha-sun2), or a template sensor. They override the values of `sun_entity`, which is not needed then: Home Assistant allows only one Sun entity, so use these for other places. |
 | `cold_threshold` | number | `0` °C / `32` °F | At or below this the colour is fully cold. |
 | `hot_threshold` | number | `35` °C / `95` °F | At or above this the colour is fully hot. Must be greater than `cold_threshold`. |
 | `tap_action` | action | `more-info` | Tap on the header text (condition and range; the weather entity by default). |
@@ -138,11 +138,12 @@ On the hourly chart, a dashed line with its time marks each sunrise and sunset, 
 sun_entity: sun.sun
 
 # Or any other source whose state is a timestamp, such as Sun2
-sunrise_entity: sensor.home_next_rising
-sunset_entity: sensor.home_next_setting
+sunrise_entity: sensor.home_rising # Sun2 "Rising" sensor (look it up in Settings → Entities)
+sunset_entity: sensor.home_setting # Sun2 "Setting" sensor
 ```
 
 - **One Sun entity per Home Assistant.** The Sun integration follows the Home Assistant location. For places elsewhere, use [Sun2](https://github.com/pnbruckner/ha-sun2) (one location per config entry), a template sensor or any entity with a timestamp state.
+- **Sun2.** It has no `sun.*` entity: it creates one sensor per event. Use its **Rising** (sunrise) and **Setting** (sunset) sensors, enabled by default; the entity ids depend on the location name, so pick them in the editor or search for "Rising" and "Setting" in Settings → Entities. They hold today's time, which the card repeats every 24 hours.
 - **Precedence.** `sunrise_entity` and `sunset_entity` override the matching value of `sun_entity`, which can be left out.
 - **Both events recommended.** With one of them and no `sun_entity`, the day or night of the hours beyond it is not known.
 - Polar day or night (an event more than 26 hours away) is ignored.
