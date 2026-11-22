@@ -41,6 +41,13 @@ export interface LocationConfig {
    */
   sun_entity?: string;
   /**
+   * Sunrise and sunset from any other source: entities whose state is a timestamp, such as the Sun2
+   * integration's `sensor.*_next_rising` and `sensor.*_next_setting`. They override `sun_entity`, so Home
+   * Assistant's single Sun entity is not needed (use them for places elsewhere).
+   */
+  sunrise_entity?: string;
+  sunset_entity?: string;
+  /**
    * Temperature colour thresholds, in the Home Assistant display unit. Omitted → defaults
    * (declared once in °C, see `utils/temperature.ts`) converted to that unit.
    */
@@ -113,6 +120,8 @@ const ENTITY_FIELDS = [
   "wind_speed_entity",
   "uv_index_entity",
   "sun_entity",
+  "sunrise_entity",
+  "sunset_entity",
 ] as const;
 
 /** Validates one place (the whole card config when `locations` is absent). Throws on invalid input. */

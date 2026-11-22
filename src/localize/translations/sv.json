@@ -84,6 +84,8 @@
     "wind_speed_entity": "Vindhastighetssensor",
     "uv_index_entity": "UV-indexsensor",
     "sun_entity": "Solentitet",
+    "sunrise_entity": "Soluppgång-entitet (t.ex. Sun2)",
+    "sunset_entity": "Solnedgång-entitet (t.ex. Sun2)",
     "cold_threshold": "Kallt",
     "hot_threshold": "Varmt",
     "cold_threshold_help": "Helt blå vid detta värde eller lägre.",

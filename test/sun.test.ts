@@ -4,7 +4,7 @@ import { createTranslator } from "../src/localize";
 import { createFormatters } from "../src/utils/format";
 import { hourlySlots } from "../src/utils/forecast-view";
 import type { ForecastEntry } from "../src/types/weather";
-import { isDaytimeAt, readSun, sunChanged, sunEvents, withDaylight } from "../src/utils/sun";
+import { isDaytimeAt, readSun, readSunSources, sunChanged, sunEvents, withDaylight } from "../src/utils/sun";
 import { renderChart } from "../src/views/chart";
 import { parseConfig } from "../src/config";
 
@@ -165,5 +165,25 @@ describe("hourly chart marker", () => {
     const labels = [...host.querySelectorAll("text.label")].map((t) => Number(t.getAttribute("y")));
     const points = [...host.querySelectorAll("circle.dot")].map((c) => Number(c.getAttribute("cy")));
     expect(labels.some((y, i) => y > points[i])).toBe(true);
+  });
+});
+
+describe("readSunSources", () => {
+  const sensor = (state: string) => ({ entity_id: "sensor.home_next_rising", state, attributes: {}, last_changed: "", last_updated: "" });
+  it("reads timestamp sensors without a sun entity", () => {
+    const read = readSunSources({ rising: sensor("2026-11-06T07:42:00+00:00"), setting: sensor("2026-11-05T17:51:00+00:00") }, at(14, 40));
+    expect(read).toEqual({ rising: at(31, 42), setting: at(17, 51), isUp: undefined });
+  });
+  it("lets sensors override the sun entity and falls back to it", () => {
+    const sunEntity = entity("above_horizon", { next_rising: "2026-11-06T07:42:00+00:00", next_setting: "2026-11-05T17:51:00+00:00" });
+    expect(readSunSources({ sun: sunEntity, setting: sensor("2026-11-05T18:00:00+00:00") }, at(14, 40))).toEqual({ rising: at(31, 42), setting: at(18), isUp: true });
+  });
+  it("ignores unusable sensors", () => {
+    expect(readSunSources({ rising: sensor("unavailable") }, at(14))).toBeUndefined();
+  });
+});
+describe("sun config", () => {
+  it("accepts any entity for sunrise_entity and sunset_entity", () => {
+    expect(parseConfig({ entity: "weather.home", sunrise_entity: "sensor.home_next_rising", sunset_entity: "sensor.home_next_setting" }).sunrise_entity).toBe("sensor.home_next_rising");
   });
 });

@@ -31,7 +31,7 @@ import { cameraFrame, hasCamera } from "./utils/camera";
 import { dialogOf } from "./utils/dom";
 import { ensureCameraStream, supportsStream } from "./utils/camera-stream";
 import { LEVEL_KEYS, getLevel } from "./utils/scales";
-import { readSun, sunChanged, withDaylight } from "./utils/sun";
+import { readSunSources, sunChanged, withDaylight } from "./utils/sun";
 import { resolveThresholds } from "./utils/temperature";
 import { convertTemperature, toKmh } from "./utils/units";
 import { renderAlerts } from "./views/alerts";
@@ -222,9 +222,9 @@ class HaForecastCard extends LitElement {
     if (!previous || !this.hass) return true;
     if (previous.language !== this.hass.language) return true;
     if (previous.themes?.darkMode !== this.hass.themes?.darkMode) return true;
-    const sunId = this._config.sun_entity;
+    const { sun_entity, sunrise_entity, sunset_entity } = this._config;
     return this.watchedEntities().some((id) =>
-      id === sunId ? sunChanged(previous.states[id], this.hass!.states[id]) : previous.states[id] !== this.hass!.states[id],
+      id === sun_entity || id === sunrise_entity || id === sunset_entity ? sunChanged(previous.states[id], this.hass!.states[id]) : previous.states[id] !== this.hass!.states[id],
     );
   }
 
@@ -384,6 +384,8 @@ class HaForecastCard extends LitElement {
       c.wind_speed_entity,
       c.uv_index_entity,
       c.sun_entity,
+      c.sunrise_entity,
+      c.sunset_entity,
       c.camera_entity,
       c.festivity?.includes(".") ? c.festivity : undefined,
       ...alertSources(c.alerts).map((source) => source.entity),
@@ -872,7 +874,18 @@ class HaForecastCard extends LitElement {
       this.history.data && (view === "hourly" ? config.history_hours : config.history_days) > 0
         ? this.pastSlots(view, weather, forecastUnit, now)
         : [];
-    const sun = view === "hourly" && config.sun_entity ? readSun(this.hass!.states[config.sun_entity], now.getTime()) : undefined;
+    const states = this.hass!.states;
+    const sun =
+      view === "hourly"
+        ? readSunSources(
+            {
+              sun: config.sun_entity ? states[config.sun_entity] : undefined,
+              rising: config.sunrise_entity ? states[config.sunrise_entity] : undefined,
+              setting: config.sunset_entity ? states[config.sunset_entity] : undefined,
+            },
+            now.getTime(),
+          )
+        : undefined;
     const slots =
       view === "hourly"
         ? hourlySlots(

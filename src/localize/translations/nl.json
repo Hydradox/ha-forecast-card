@@ -84,6 +84,8 @@
     "wind_speed_entity": "Windsnelheidssensor",
     "uv_index_entity": "UV-indexsensor",
     "sun_entity": "Zon-entiteit",
+    "sunrise_entity": "Zonsopkomst-entiteit (bijv. Sun2)",
+    "sunset_entity": "Zonsondergang-entiteit (bijv. Sun2)",
     "cold_threshold": "Koud",
     "hot_threshold": "Heet",
     "cold_threshold_help": "Volledig blauw bij deze waarde of lager.",

@@ -1,4 +1,4 @@
-/** Sunrise and sunset from HA's Sun integration (`sun.*`). Pure: no DOM, fully testable. */
+/** Sunrise and sunset from HA's Sun integration (`sun.*`) or any entity with a timestamp state (Sun2...). Pure: no DOM, fully testable. */
 import type { HassEntity } from "../types/ha";
 import type { Slot } from "./forecast-view";
 
@@ -43,6 +43,28 @@ export function readSun(entity: HassEntity | undefined, now: number = Date.now()
   const isUp = entity.state === "above_horizon" ? true : entity.state === "below_horizon" ? false : undefined;
   if (rising === undefined && setting === undefined && isUp === undefined) return undefined;
   return { rising, setting, isUp };
+}
+
+/** Entities the sun data may come from. `rising` and `setting` take precedence over `sun`. */
+export interface SunSources {
+  sun?: HassEntity;
+  rising?: HassEntity;
+  setting?: HassEntity;
+}
+
+/** The state of a timestamp entity (Sun2 `sensor.*_next_rising`, a template sensor...), if it is a usable time. */
+const stateTime = (entity: HassEntity | undefined, now: number): number | undefined => timestamp(entity?.state, now);
+
+/**
+ * Combines the Sun integration entity with dedicated sunrise and sunset entities, which override its values.
+ * This is what lets integrations other than `sun` (Home Assistant allows only one Sun entity) feed the card.
+ */
+export function readSunSources(sources: SunSources, now: number = Date.now()): SunTimes | undefined {
+  const base = readSun(sources.sun, now);
+  const rising = stateTime(sources.rising, now) ?? base?.rising;
+  const setting = stateTime(sources.setting, now) ?? base?.setting;
+  if (rising === undefined && setting === undefined && base?.isUp === undefined) return undefined;
+  return { rising, setting, isUp: base?.isUp };
 }
 
 /** Whether `next` and `previous` differ in what the card draws (the sun entity also updates its elevation every minute). */

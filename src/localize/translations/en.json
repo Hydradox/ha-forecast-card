@@ -84,6 +84,8 @@
     "wind_speed_entity": "Wind speed sensor",
     "uv_index_entity": "UV index sensor",
     "sun_entity": "Sun entity",
+    "sunrise_entity": "Sunrise entity (e.g. Sun2)",
+    "sunset_entity": "Sunset entity (e.g. Sun2)",
     "cold_threshold": "Cold",
     "hot_threshold": "Hot",
     "cold_threshold_help": "Fully blue at or below this.",

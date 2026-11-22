@@ -151,7 +151,7 @@ const dashboard = {
       section(
         heading("Card", "mdi:weather-partly-cloudy"),
         // Showcase card (README screenshots): thresholds tuned so the colour ramp spans the visible range.
-        card({ cold_threshold: 12, hot_threshold: 24 }),
+        card({ cold_threshold: 12, hot_threshold: 24, sunrise_entity: "sensor.dev_next_sunrise", sunset_entity: "sensor.dev_next_sunset" }),
         card({ name: "Daily first", default_view: "daily", cold_threshold: 12, hot_threshold: 24 }),
       ),
       section(

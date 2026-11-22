@@ -84,6 +84,8 @@
     "wind_speed_entity": "Sensore di velocità del vento",
     "uv_index_entity": "Sensore dell’indice UV",
     "sun_entity": "Entità sole",
+    "sunrise_entity": "Entità alba (es. Sun2)",
+    "sunset_entity": "Entità tramonto (es. Sun2)",
     "cold_threshold": "Freddo",
     "hot_threshold": "Caldo",
     "cold_threshold_help": "Completamente blu a questo valore o inferiore.",
