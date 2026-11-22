@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.8.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.7.0...v1.8.0) (2026-11-22)
+
+### Features
+
+* allow custom sun entity ([14f1949](https://github.com/Hydradox/ha-forecast-card/commit/14f1949534c8a3a817d16aa0a60c7d3a64e592b9))
+
+### Documentation
+
+* updated README ([fcbbc73](https://github.com/Hydradox/ha-forecast-card/commit/fcbbc73d208e454068d213af297b9223f97612c8))
+
 ## [1.7.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.6.1...v1.7.0) (2026-11-22)
 
 ### Features
