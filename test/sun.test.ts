@@ -4,7 +4,7 @@ import { createTranslator } from "../src/localize";
 import { createFormatters } from "../src/utils/format";
 import { hourlySlots } from "../src/utils/forecast-view";
 import type { ForecastEntry } from "../src/types/weather";
-import { isDaytimeAt, readSun, sunEvents, withDaylight } from "../src/utils/sun";
+import { isDaytimeAt, readSun, sunChanged, sunEvents, withDaylight } from "../src/utils/sun";
 import { renderChart } from "../src/views/chart";
 import { parseConfig } from "../src/config";
 
@@ -22,13 +22,13 @@ const entity = (state: string, attributes: Record<string, unknown>) => ({ entity
 
 describe("readSun", () => {
   it("reads next rising and setting and the horizon state", () => {
-    const read = readSun(entity("above_horizon", { next_rising: "2026-11-06T07:42:00+00:00", next_setting: "2026-11-05T17:51:00+00:00" }));
+    const read = readSun(entity("above_horizon", { next_rising: "2026-11-06T07:42:00+00:00", next_setting: "2026-11-05T17:51:00+00:00" }), at(14, 40));
     expect(read).toEqual({ rising: at(31, 42), setting: at(17, 51), isUp: true });
   });
   it("gives nothing for a missing or unusable entity", () => {
     expect(readSun(undefined)).toBeUndefined();
-    expect(readSun(entity("unavailable", {}))).toBeUndefined();
-    expect(readSun(entity("above_horizon", { next_setting: "nope" }))).toBeUndefined();
+    expect(readSun(entity("unavailable", {}), at(14))).toBeUndefined();
+    expect(readSun(entity("unavailable", { next_setting: "nope" }), at(14))).toBeUndefined();
   });
 });
 
@@ -45,10 +45,29 @@ describe("isDaytimeAt", () => {
     expect(isDaytimeAt(night, at(22))).toBe(false);
     expect(isDaytimeAt(night, at(24 + 9))).toBe(true);
   });
-  it("only trusts the horizon state up to the one known event", () => {
+  it("with one event left, the state holds until it and flips after", () => {
     const partial = { setting: at(17, 51), isUp: true };
     expect(isDaytimeAt(partial, at(16))).toBe(true);
-    expect(isDaytimeAt(partial, at(20))).toBeUndefined();
+    expect(isDaytimeAt(partial, at(20))).toBe(false);
+  });
+  it("polar day or night: the state alone decides and no sunrise is invented", () => {
+    const polar = readSun(
+      entity("below_horizon", { next_rising: "2026-12-20T10:00:00+00:00", next_setting: "2027-01-20T10:00:00+00:00" }),
+      at(14),
+    );
+    expect(polar).toEqual({ rising: undefined, setting: undefined, isUp: false });
+    expect(isDaytimeAt(polar!, at(24 * 5))).toBe(false);
+    expect(sunEvents(slots(), polar)).toEqual([]);
+  });
+  it("drops stale timestamps and keeps the state", () => {
+    const stale = readSun(entity("above_horizon", { next_rising: "2020-01-01T00:00:00Z", next_setting: "2020-01-01T10:00:00Z" }), at(14));
+    expect(stale).toEqual({ rising: undefined, setting: undefined, isUp: true });
+  });
+  it("is not thrown off by a slot with an invalid date", () => {
+    const list = slots();
+    list[1] = { ...list[1], start: Number.NaN };
+    expect(sunEvents(list, sun).map((e) => e.kind)).toEqual(["sunset"]);
+    expect(withDaylight(list, sun)[1].isDaytime).toBeUndefined();
   });
 });
 
@@ -100,10 +119,21 @@ describe("formatters.time", () => {
   });
 });
 
+describe("sunChanged", () => {
+  const e = (state: string, extra: Record<string, unknown> = {}) => entity(state, { next_rising: "a", next_setting: "b", elevation: 10, ...extra });
+  it("ignores elevation and azimuth updates, reacts to state and next times", () => {
+    expect(sunChanged(e("above_horizon"), e("above_horizon", { elevation: 11 }))).toBe(false);
+    expect(sunChanged(e("above_horizon"), e("below_horizon"))).toBe(true);
+    expect(sunChanged(e("above_horizon"), e("above_horizon", { next_setting: "c" }))).toBe(true);
+    expect(sunChanged(undefined, e("above_horizon"))).toBe(true);
+  });
+});
+
 describe("sun_entity config", () => {
   it("accepts sun.* and rejects other domains", () => {
     expect(parseConfig({ entity: "weather.home", sun_entity: "sun.sun" }).sun_entity).toBe("sun.sun");
     expect(() => parseConfig({ entity: "weather.home", sun_entity: "sensor.sun" })).toThrow("sun.*");
+    expect(() => parseConfig({ entity: "weather.home", sun_entity: "" })).not.toThrow();
   });
 });
 

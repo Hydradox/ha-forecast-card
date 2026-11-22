@@ -131,7 +131,7 @@ export function parseConfig(raw: unknown): ResolvedConfig {
       throw new Error(`\`${field}\` must be an entity id`);
     }
   }
-  if (config.sun_entity !== undefined && !config.sun_entity.startsWith("sun.")) {
+  if (config.sun_entity && !config.sun_entity.startsWith("sun.")) {
     throw new Error("`sun_entity` must be a sun.* entity");
   }
   if (config.default_view !== undefined && !["hourly", "daily", "camera"].includes(config.default_view)) {

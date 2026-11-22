@@ -31,7 +31,7 @@ import { cameraFrame, hasCamera } from "./utils/camera";
 import { dialogOf } from "./utils/dom";
 import { ensureCameraStream, supportsStream } from "./utils/camera-stream";
 import { LEVEL_KEYS, getLevel } from "./utils/scales";
-import { readSun, withDaylight } from "./utils/sun";
+import { readSun, sunChanged, withDaylight } from "./utils/sun";
 import { resolveThresholds } from "./utils/temperature";
 import { convertTemperature, toKmh } from "./utils/units";
 import { renderAlerts } from "./views/alerts";
@@ -222,7 +222,10 @@ class HaForecastCard extends LitElement {
     if (!previous || !this.hass) return true;
     if (previous.language !== this.hass.language) return true;
     if (previous.themes?.darkMode !== this.hass.themes?.darkMode) return true;
-    return this.watchedEntities().some((id) => previous.states[id] !== this.hass!.states[id]);
+    const sunId = this._config.sun_entity;
+    return this.watchedEntities().some((id) =>
+      id === sunId ? sunChanged(previous.states[id], this.hass!.states[id]) : previous.states[id] !== this.hass!.states[id],
+    );
   }
 
   protected override willUpdate(): void {
@@ -869,7 +872,7 @@ class HaForecastCard extends LitElement {
       this.history.data && (view === "hourly" ? config.history_hours : config.history_days) > 0
         ? this.pastSlots(view, weather, forecastUnit, now)
         : [];
-    const sun = view === "hourly" && config.sun_entity ? readSun(this.hass!.states[config.sun_entity]) : undefined;
+    const sun = view === "hourly" && config.sun_entity ? readSun(this.hass!.states[config.sun_entity], now.getTime()) : undefined;
     const slots =
       view === "hourly"
         ? hourlySlots(

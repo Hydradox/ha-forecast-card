@@ -22,33 +22,49 @@ export interface SunEvent {
   position: number;
 }
 
-const timestamp = (value: unknown): number | undefined => {
+/** Next sunrise or sunset is never further than a day away; beyond this the value is stale or polar. */
+const MAX_DISTANCE_MS = 26 * HOUR_MS;
+
+const timestamp = (value: unknown, now: number): number | undefined => {
   if (typeof value !== "string") return undefined;
   const time = Date.parse(value);
-  return Number.isFinite(time) ? time : undefined;
+  return Number.isFinite(time) && Math.abs(time - now) <= MAX_DISTANCE_MS ? time : undefined;
 };
 
-/** Reads `next_rising`, `next_setting` and the horizon state; `undefined` when the entity gives nothing usable. */
-export function readSun(entity: HassEntity | undefined): SunTimes | undefined {
+/**
+ * Reads `next_rising`, `next_setting` and the horizon state. An event more than 26 h from `now` is dropped:
+ * in polar day or night it is weeks away, and repeating it every 24 h would invent sunrises. Then only the
+ * horizon state remains, which is right for the whole chart. `undefined` when nothing usable is left.
+ */
+export function readSun(entity: HassEntity | undefined, now: number = Date.now()): SunTimes | undefined {
   if (!entity) return undefined;
-  const rising = timestamp(entity.attributes.next_rising);
-  const setting = timestamp(entity.attributes.next_setting);
+  const rising = timestamp(entity.attributes.next_rising, now);
+  const setting = timestamp(entity.attributes.next_setting, now);
   const isUp = entity.state === "above_horizon" ? true : entity.state === "below_horizon" ? false : undefined;
-  if (rising === undefined && setting === undefined) return undefined;
+  if (rising === undefined && setting === undefined && isUp === undefined) return undefined;
   return { rising, setting, isUp };
+}
+
+/** Whether `next` and `previous` differ in what the card draws (the sun entity also updates its elevation every minute). */
+export function sunChanged(previous: HassEntity | undefined, next: HassEntity | undefined): boolean {
+  if (previous === next) return false;
+  const keys = ["next_rising", "next_setting"] as const;
+  return previous?.state !== next?.state || keys.some((key) => previous?.attributes[key] !== next?.attributes[key]);
 }
 
 const mod = (value: number, period: number): number => ((value % period) + period) % period;
 
 /**
  * Whether the sun is up at `time`. The next sunrise and sunset repeat every 24 h (a few minutes of drift
- * across a day is invisible at hourly resolution). With only one of them, the horizon state holds until it.
+ * across a day is invisible at hourly resolution). With fewer, the horizon state decides (see `readSun`).
  */
 export function isDaytimeAt(sun: SunTimes, time: number): boolean | undefined {
   const { rising, setting, isUp } = sun;
   if (rising === undefined || setting === undefined) {
+    // One event left (the other is far away or missing): the state holds until it, and flips after.
     const next = rising ?? setting;
-    return next !== undefined && isUp !== undefined && time < next ? isUp : undefined;
+    if (isUp === undefined) return undefined;
+    return next === undefined || time < next ? isUp : !isUp;
   }
   // Night starts at a sunset and lasts until the next sunrise.
   return mod(time - setting, DAY_MS) >= mod(rising - setting, DAY_MS);
@@ -61,8 +77,8 @@ export function isDaytimeAt(sun: SunTimes, time: number): boolean | undefined {
 export function withDaylight(slots: readonly Slot[], sun: SunTimes | undefined): Slot[] {
   if (!sun) return [...slots];
   return slots.map((slot) => {
-    if (slot.isDaytime !== undefined || slot.start === undefined) return slot;
-    const daytime = slot.isCurrent && sun.isUp !== undefined ? sun.isUp : isDaytimeAt(sun, slot.start + HOUR_MS / 2);
+    if (slot.isDaytime !== undefined || !Number.isFinite(slot.start)) return slot;
+    const daytime = slot.isCurrent && sun.isUp !== undefined ? sun.isUp : isDaytimeAt(sun, slot.start! + HOUR_MS / 2);
     return daytime === undefined ? slot : { ...slot, isDaytime: daytime };
   });
 }
@@ -74,7 +90,7 @@ export function withDaylight(slots: readonly Slot[], sun: SunTimes | undefined):
  */
 export function sunEvents(slots: readonly Slot[], sun: SunTimes | undefined): SunEvent[] {
   if (!sun) return [];
-  const timed = slots.filter((slot) => slot.start !== undefined);
+  const timed = slots.filter((slot) => Number.isFinite(slot.start));
   if (!timed.length) return [];
   const first = Math.min(...timed.map((slot) => slot.start!));
   const last = Math.max(...timed.map((slot) => slot.start!)) + HOUR_MS;
@@ -83,7 +99,7 @@ export function sunEvents(slots: readonly Slot[], sun: SunTimes | undefined): Su
   for (const [kind, base] of candidates) {
     if (base === undefined) continue;
     for (let time = base + Math.ceil((first - base) / DAY_MS) * DAY_MS; time < last; time += DAY_MS) {
-      const index = slots.findIndex((slot) => slot.start !== undefined && time >= slot.start && time < slot.start + HOUR_MS);
+      const index = slots.findIndex((slot) => Number.isFinite(slot.start) && time >= slot.start! && time < slot.start! + HOUR_MS);
       if (index >= 0) events.push({ kind, time, position: index + 0.5 + (time - slots[index].start!) / HOUR_MS });
     }
   }
