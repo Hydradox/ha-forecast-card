@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.7.0](https://github.com/Hydradox/ha-forecast-card/compare/v1.6.1...v1.7.0) (2026-11-22)
+
+### Features
+
+* sun entity sunrise-sunset indicator ([c87f5f8](https://github.com/Hydradox/ha-forecast-card/commit/c87f5f8c56a68058e158cdf44efecc3c748c5b95))
+
+### Bug fixes
+
+* edge cases ([c82afe1](https://github.com/Hydradox/ha-forecast-card/commit/c82afe1331a44216914940224a267dc6e8929917))
+
 ## [1.6.1](https://github.com/Hydradox/ha-forecast-card/compare/v1.6.0...v1.6.1) (2026-11-21)
 
 ### Bug fixes
