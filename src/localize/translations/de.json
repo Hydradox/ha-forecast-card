@@ -83,6 +83,7 @@
     "humidity_entity": "Luftfeuchtigkeitssensor",
     "wind_speed_entity": "Windgeschwindigkeitssensor",
     "uv_index_entity": "UV-Index-Sensor",
+    "sun_entity": "Sonnen-Entität",
     "cold_threshold": "Kalt",
     "hot_threshold": "Heiß",
     "cold_threshold_help": "Ab diesem Wert abwärts vollständig blau.",
@@ -137,7 +138,9 @@
     "label_daily": "Tägliche Temperaturen von {min}° bis {max}°",
     "no_data": "Keine Temperaturdaten",
     "scroll": "Stündliche Vorhersage, scrollen für mehr",
-    "days": "Tägliche Vorhersage"
+    "days": "Tägliche Vorhersage",
+    "sunrise": "Sonnenaufgang um {time}",
+    "sunset": "Sonnenuntergang um {time}"
   },
   "alerts": {
     "levels": {

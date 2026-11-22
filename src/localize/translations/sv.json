@@ -83,6 +83,7 @@
     "humidity_entity": "Luftfuktighetssensor",
     "wind_speed_entity": "Vindhastighetssensor",
     "uv_index_entity": "UV-indexsensor",
+    "sun_entity": "Solentitet",
     "cold_threshold": "Kallt",
     "hot_threshold": "Varmt",
     "cold_threshold_help": "Helt blå vid detta värde eller lägre.",
@@ -137,7 +138,9 @@
     "label_daily": "Temperaturer per dag från {min}° till {max}°",
     "no_data": "Inga temperaturdata",
     "scroll": "Timprognos, rulla för att se mer",
-    "days": "Dagsprognos"
+    "days": "Dagsprognos",
+    "sunrise": "Soluppgång kl. {time}",
+    "sunset": "Solnedgång kl. {time}"
   },
   "alerts": {
     "levels": {

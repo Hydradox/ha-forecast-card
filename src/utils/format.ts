@@ -4,6 +4,8 @@ import type { HassLocale } from "../types/ha";
 export interface Formatters {
   /** Hour label: `3 PM` in 12h locales, `15:00` otherwise. */
   hour(date: Date): string;
+  /** Clock time with minutes: `5:51 PM` or `17:51`. */
+  time(date: Date): string;
   weekday(date: Date): string;
   /** `YYYY-MM-DD` in the display time zone, for day comparisons. */
   dayKey(date: Date): string;
@@ -30,12 +32,14 @@ export function createFormatters(
       ? { hour: "numeric", hour12: true, timeZone }
       : { hour: "2-digit", minute: "2-digit", hour12: false, timeZone },
   );
+  const time = new Intl.DateTimeFormat(language, { hour: use12h ? "numeric" : "2-digit", minute: "2-digit", hour12: use12h, timeZone });
   const weekday = new Intl.DateTimeFormat(language, { weekday: "short", timeZone });
   const dayKey = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", day: "2-digit", timeZone });
   const numbers = new Map<number, Intl.NumberFormat>();
 
   return {
     hour: (date) => hour.format(date),
+    time: (date) => time.format(date),
     weekday: (date) => weekday.format(date),
     dayKey: (date) => dayKey.format(date),
     number(value, maxDigits = 0) {

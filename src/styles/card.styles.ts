@@ -572,6 +572,32 @@ export const cardStyles = css`
   svg .bar {
     fill: var(--hfc-rain-bar);
   }
+  /* The halo keeps values readable where they cross the sun line or the temperature line. */
+  svg text.label,
+  svg text.label-min {
+    paint-order: stroke;
+    stroke: var(--hfc-surface);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+  svg .sun-line {
+    stroke: var(--hfc-sun-line);
+    stroke-width: 1.5;
+    stroke-dasharray: 2 3;
+    stroke-linecap: round;
+    opacity: 0.6;
+  }
+  svg .sun-line.sunset {
+    stroke: var(--hfc-sunset-line);
+  }
+  svg .sun-label text {
+    fill: var(--hfc-sun-text);
+    font-size: 11px;
+    text-anchor: start;
+  }
+  svg .sun-label.sunset text {
+    fill: var(--hfc-sunset-text);
+  }
   svg .baseline {
     stroke: var(--hfc-divider);
     stroke-width: 1;

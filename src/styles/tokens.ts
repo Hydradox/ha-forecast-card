@@ -29,6 +29,13 @@ export const tokens = css`
     --hfc-cloud-fill: color-mix(in srgb, var(--hfc-cloud-stroke) 14%, var(--hfc-surface));
     --hfc-moon-stroke: var(--indigo-color, #5c6bc0);
     --hfc-moon-fill: color-mix(in srgb, var(--hfc-moon-stroke) 15%, var(--hfc-surface));
+    --hfc-sun-line: var(--hfc-sun-fill);
+    --hfc-sun-text: color-mix(in srgb, var(--hfc-sun-stroke) 75%, var(--hfc-text));
+    /* Sunset is lilac, so it never reads as the (amber) sunrise */
+    --hfc-sunset-stroke: var(--purple-color, #7e57c2);
+    --hfc-sunset-fill: color-mix(in srgb, var(--hfc-sunset-stroke) 45%, var(--hfc-surface));
+    --hfc-sunset-line: var(--hfc-sunset-stroke);
+    --hfc-sunset-text: color-mix(in srgb, var(--hfc-sunset-stroke) 75%, var(--hfc-text));
     --hfc-bolt: var(--amber-color, #ffb300);
     --hfc-snow: var(--light-blue-color, #4fc3f7);
     --hfc-warning: var(--error-color, #db4437);

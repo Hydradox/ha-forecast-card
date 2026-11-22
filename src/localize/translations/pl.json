@@ -83,6 +83,7 @@
     "humidity_entity": "Czujnik wilgotności",
     "wind_speed_entity": "Czujnik prędkości wiatru",
     "uv_index_entity": "Czujnik indeksu UV",
+    "sun_entity": "Encja słońca",
     "cold_threshold": "Zimno",
     "hot_threshold": "Gorąco",
     "cold_threshold_help": "W pełni niebieski przy tej wartości lub niższej.",
@@ -137,7 +138,9 @@
     "label_daily": "Temperatury dzienne od {min}° do {max}°",
     "no_data": "Brak danych o temperaturze",
     "scroll": "Prognoza godzinowa, przewiń, aby zobaczyć więcej",
-    "days": "Prognoza dzienna"
+    "days": "Prognoza dzienna",
+    "sunrise": "Wschód słońca o {time}",
+    "sunset": "Zachód słońca o {time}"
   },
   "alerts": {
     "levels": {

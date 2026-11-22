@@ -7,6 +7,7 @@ import { html, svg } from "lit";
  */
 
 const sunFill = "fill:var(--hfc-sun-fill);stroke:var(--hfc-sun-stroke)";
+const sunsetFill = "fill:var(--hfc-sunset-fill);stroke:var(--hfc-sunset-stroke)";
 const cloudFill = "fill:var(--hfc-cloud-fill);stroke:var(--hfc-cloud-stroke)";
 const CLOUD = "M7 19h10.2a4.3 4.3 0 0 0 .7-8.55A6 6 0 0 0 6.4 11.2 4 4 0 0 0 7 19z";
 const lines = "fill:none;stroke-linecap:round";
@@ -30,6 +31,16 @@ const SPRITE = svg`
   </symbol>
   <symbol id="hfc-clear-night" viewBox="0 0 24 24">
     <path d="M19.5 14.6A8 8 0 1 1 9.4 4.5a6.4 6.4 0 0 0 10.1 10.1z" style="fill:var(--hfc-moon-fill);stroke:var(--hfc-moon-stroke)" stroke-width="1.6" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="hfc-sunrise" viewBox="0 0 24 24">
+    <path d="M3 19.5h18" style="${lines};stroke:var(--hfc-sun-stroke)" stroke-width="1.8"/>
+    <path d="M7 19.5a5 5 0 0 1 10 0z" style=${sunFill} stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M12 9V3.5M9.6 6l2.4-2.5L14.4 6" style="${lines};stroke:var(--hfc-sun-stroke);stroke-linejoin:round" stroke-width="1.8"/>
+  </symbol>
+  <symbol id="hfc-sunset" viewBox="0 0 24 24">
+    <path d="M3 19.5h18" style="${lines};stroke:var(--hfc-sunset-stroke)" stroke-width="1.8"/>
+    <path d="M7 19.5a5 5 0 0 1 10 0z" style=${sunsetFill} stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M12 3.5V9M9.6 6.5L12 9l2.4-2.5" style="${lines};stroke:var(--hfc-sunset-stroke);stroke-linejoin:round" stroke-width="1.8"/>
   </symbol>
   <symbol id="hfc-rainy" viewBox="0 0 24 24">${cloud(-3)}${rainLines([9.5, 13.5, 17.5])}</symbol>
   <symbol id="hfc-pouring" viewBox="0 0 24 24">${cloud(-3)}${rainLines([7.5, 11, 14.5, 18])}<path d="M9.5 20.5l-.8 2M13 20.5l-.8 2M16.5 20.5l-.8 2" style="${lines};stroke:var(--hfc-rain)" stroke-width="1.6"/></symbol>

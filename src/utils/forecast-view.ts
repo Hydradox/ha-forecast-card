@@ -14,6 +14,8 @@ export interface Slot {
   precipitation?: number;
   probability?: number;
   isDaytime?: boolean;
+  /** Start of the hour (ms) for hourly slots: lets time-of-day features such as the sun marker place themselves. */
+  start?: number;
 }
 
 export interface CurrentConditions {
@@ -37,9 +39,9 @@ export function hourlySlots(
   const upcoming = (entries ?? [])
     .filter((entry) => new Date(entry.datetime).getTime() > currentHour)
     .slice(0, Math.max(count - 1, 0))
-    .map<Slot>((entry) => toSlot(entry, fmt.hour(new Date(entry.datetime)), false));
+    .map<Slot>((entry) => ({ ...toSlot(entry, fmt.hour(new Date(entry.datetime)), false), start: Date.parse(entry.datetime) }));
   // `count` limits Now + forecast; recorded hours come on top, before them.
-  return [...past, ...[{ key: "now", label: nowLabel, isCurrent: true, ...current }, ...upcoming].slice(0, count)];
+  return [...past, ...[{ key: "now", label: nowLabel, isCurrent: true, start: currentHour, ...current }, ...upcoming].slice(0, count)];
 }
 
 /** Today (labelled) and the following days. */

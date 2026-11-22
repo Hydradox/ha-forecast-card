@@ -83,6 +83,7 @@
     "humidity_entity": "Sensor de humidade",
     "wind_speed_entity": "Sensor de velocidade do vento",
     "uv_index_entity": "Sensor de índice UV",
+    "sun_entity": "Entidade do sol",
     "cold_threshold": "Frio",
     "hot_threshold": "Quente",
     "cold_threshold_help": "Totalmente azul neste valor ou abaixo.",
@@ -137,7 +138,9 @@
     "label_daily": "Temperaturas por dia de {min}° a {max}°",
     "no_data": "Sem dados de temperatura",
     "scroll": "Previsão por hora, desloque para ver mais",
-    "days": "Previsão por dia"
+    "days": "Previsão por dia",
+    "sunrise": "Nascer do sol às {time}",
+    "sunset": "Pôr do sol às {time}"
   },
   "alerts": {
     "levels": {

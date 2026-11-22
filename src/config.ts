@@ -35,6 +35,12 @@ export interface LocationConfig {
   wind_speed_entity?: string;
   uv_index_entity?: string;
   /**
+   * Sun integration entity (`sun.sun`). Adds sunrise and sunset to the hourly chart and day or night icons to
+   * the hours that lack them. It is per place: the Sun integration follows the Home Assistant location, so
+   * leave it out for places elsewhere.
+   */
+  sun_entity?: string;
+  /**
    * Temperature colour thresholds, in the Home Assistant display unit. Omitted → defaults
    * (declared once in °C, see `utils/temperature.ts`) converted to that unit.
    */
@@ -106,6 +112,7 @@ const ENTITY_FIELDS = [
   "humidity_entity",
   "wind_speed_entity",
   "uv_index_entity",
+  "sun_entity",
 ] as const;
 
 /** Validates one place (the whole card config when `locations` is absent). Throws on invalid input. */
@@ -123,6 +130,9 @@ export function parseConfig(raw: unknown): ResolvedConfig {
     if (value !== undefined && typeof value !== "string") {
       throw new Error(`\`${field}\` must be an entity id`);
     }
+  }
+  if (config.sun_entity !== undefined && !config.sun_entity.startsWith("sun.")) {
+    throw new Error("`sun_entity` must be a sun.* entity");
   }
   if (config.default_view !== undefined && !["hourly", "daily", "camera"].includes(config.default_view)) {
     throw new Error("`default_view` must be 'hourly', 'daily' or 'camera'");

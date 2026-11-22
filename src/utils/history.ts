@@ -133,6 +133,7 @@ export function pastSlots(
     if (value === undefined) continue;
     slots.push({
       key: `past-${start}`,
+      start,
       label: fmt.hour(new Date(start)),
       isCurrent: false,
       isPast: true,
