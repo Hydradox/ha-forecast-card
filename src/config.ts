@@ -42,7 +42,7 @@ export interface LocationConfig {
   sun_entity?: string;
   /**
    * Sunrise and sunset from any other source: entities whose state is a timestamp, such as the Sun2
-   * integration's `sensor.*_next_rising` and `sensor.*_next_setting`. They override `sun_entity`, so Home
+   * integration's "Rising" and "Setting" sensors. They override `sun_entity`, so Home
    * Assistant's single Sun entity is not needed (use them for places elsewhere).
    */
   sunrise_entity?: string;
