@@ -147,6 +147,7 @@ function buildSchema(t: Translate, unit: string, cameraTab: boolean, multiple: b
         sensor("humidity_entity", "humidity"),
         sensor("wind_speed_entity", "wind_speed"),
         sensor("uv_index_entity"),
+        { name: "sun_entity", selector: { entity: { domain: "sun" } } },
       ],
     },
     {

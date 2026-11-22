@@ -31,6 +31,7 @@ import { cameraFrame, hasCamera } from "./utils/camera";
 import { dialogOf } from "./utils/dom";
 import { ensureCameraStream, supportsStream } from "./utils/camera-stream";
 import { LEVEL_KEYS, getLevel } from "./utils/scales";
+import { readSun, sunChanged, withDaylight } from "./utils/sun";
 import { resolveThresholds } from "./utils/temperature";
 import { convertTemperature, toKmh } from "./utils/units";
 import { renderAlerts } from "./views/alerts";
@@ -221,7 +222,10 @@ class HaForecastCard extends LitElement {
     if (!previous || !this.hass) return true;
     if (previous.language !== this.hass.language) return true;
     if (previous.themes?.darkMode !== this.hass.themes?.darkMode) return true;
-    return this.watchedEntities().some((id) => previous.states[id] !== this.hass!.states[id]);
+    const sunId = this._config.sun_entity;
+    return this.watchedEntities().some((id) =>
+      id === sunId ? sunChanged(previous.states[id], this.hass!.states[id]) : previous.states[id] !== this.hass!.states[id],
+    );
   }
 
   protected override willUpdate(): void {
@@ -379,6 +383,7 @@ class HaForecastCard extends LitElement {
       c.humidity_entity,
       c.wind_speed_entity,
       c.uv_index_entity,
+      c.sun_entity,
       c.camera_entity,
       c.festivity?.includes(".") ? c.festivity : undefined,
       ...alertSources(c.alerts).map((source) => source.entity),
@@ -867,6 +872,7 @@ class HaForecastCard extends LitElement {
       this.history.data && (view === "hourly" ? config.history_hours : config.history_days) > 0
         ? this.pastSlots(view, weather, forecastUnit, now)
         : [];
+    const sun = view === "hourly" && config.sun_entity ? readSun(this.hass!.states[config.sun_entity], now.getTime()) : undefined;
     const slots =
       view === "hourly"
         ? hourlySlots(
@@ -883,10 +889,11 @@ class HaForecastCard extends LitElement {
             past,
           )
         : dailySlots(data, now, config.days_to_show, this.formatters, this.localize("common.today"), past);
+    const shown = withDaylight(slots, sun);
 
     const width = this._width;
-    const pastColumns = pastCount(slots);
-    const scrollable = isScrollable(view, width, slots.length, pastColumns);
+    const pastColumns = pastCount(shown);
+    const scrollable = isScrollable(view, width, shown.length, pastColumns);
 
     return html`
       <div class="forecast" @click=${this.stop} @keydown=${this.stop}>
@@ -906,7 +913,8 @@ class HaForecastCard extends LitElement {
             >
               ${renderChart({
                 kind: view,
-                slots,
+                slots: shown,
+                sun,
                 width,
                 temperatureUnit: forecastUnit,
                 precipitationUnit,

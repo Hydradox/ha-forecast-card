@@ -4,6 +4,8 @@ import type { Translate } from "../localize";
 import type { Formatters } from "../utils/format";
 import type { RainMode, Slot } from "../utils/forecast-view";
 import { RAIN_FLOOR, barHeight, createScale, defined, extent, rainMode, rainValue } from "../utils/forecast-view";
+import type { SunEvent, SunTimes } from "../utils/sun";
+import { sunEvents } from "../utils/sun";
 import type { Thresholds } from "../utils/temperature";
 import { temperatureColor } from "../utils/temperature";
 import { toCelsius } from "../utils/units";
@@ -19,6 +21,8 @@ export interface ChartInput {
   temperatureUnit: string;
   precipitationUnit: string;
   thresholds: Thresholds;
+  /** Sunrise and sunset to mark on the hourly chart. */
+  sun?: SunTimes;
   fmt: Formatters;
   localize: Translate;
 }
@@ -105,6 +109,7 @@ export function renderChart(input: ChartInput): TemplateResult | typeof nothing 
   const color = (value: number) =>
     temperatureColor(toCelsius(value, input.temperatureUnit), input.thresholds);
 
+  const markers = kind === "hourly" ? sunMarkers(sunEvents(slots, input.sun), column, width, fmt) : [];
   const maxPoints = slots.flatMap((slot, i) => (defined(slot.temperature) ? [{ x: x(i), y: y(slot.temperature), v: slot.temperature }] : []));
   const minPoints = slots.flatMap((slot, i) => (defined(slot.templow) ? [{ x: x(i), y: y(slot.templow), v: slot.templow }] : []));
 
@@ -123,6 +128,7 @@ export function renderChart(input: ChartInput): TemplateResult | typeof nothing 
           const h = Math.max(barHeight(value, largest, floor, layout.bars), 2);
           return svg`<rect class="bar" x=${x(i) - barWidth / 2} y=${layout.height - h} width=${barWidth} height=${h} rx="4"/>`;
         })}
+        ${markers.map((m) => svg`<line class="sun-line ${m.kind}" x1=${round(m.x)} x2=${round(m.x)} y1=${SUN_STRIP} y2=${layout.height - 1}/>`)}
         ${dry ? nothing : svg`<line class="baseline" x1="0" x2=${width} y1=${layout.height - 0.5} y2=${layout.height - 0.5}/>`}
         ${minPoints.length
           ? svg`<polyline class="line-min" points=${polyline(minPoints)}/>
@@ -130,13 +136,52 @@ export function renderChart(input: ChartInput): TemplateResult | typeof nothing 
                 <text class="label-min" x=${p.x} y=${p.y + 15}>${fmt.number(p.v)}°</text>`)}`
           : nothing}
         <polyline class="line" points=${polyline(maxPoints)} stroke=${range ? "url(#hfc-gradient)" : "currentColor"}/>
-        ${maxPoints.map((p) => svg`<circle class="dot" cx=${p.x} cy=${p.y} r=${layout.radius} stroke=${range ? "url(#hfc-gradient)" : "currentColor"}/>
-          <text class="label" x=${p.x} y=${p.y - (kind === "hourly" ? 10 : 8)}>${fmt.number(p.v)}°</text>`)}
+        ${maxPoints.map((p) => {
+          const text = `${fmt.number(p.v)}°`;
+          const above = p.y - (kind === "hourly" ? 10 : 8);
+          // A value under the sun label drops below its point instead.
+          const clash = markers.some((m) => overlaps(m, { left: p.x - text.length * 4.5, right: p.x + text.length * 4.5, top: above - 11, bottom: above + 2 }));
+          return svg`<circle class="dot" cx=${p.x} cy=${p.y} r=${layout.radius} stroke=${range ? "url(#hfc-gradient)" : "currentColor"}/>
+            <text class="label" x=${p.x} y=${clash ? p.y + SUN_BELOW : above}>${text}</text>`;
+        })}
+        ${markers.map((m) => svg`<g class="sun-label ${m.kind}"><use href=${`#hfc-${m.kind}`} x=${round(m.left)} y="0" width=${SUN_ICON} height=${SUN_ICON}/><text x=${round(m.left + SUN_ICON + 2)} y="11.5">${m.text}</text></g>`)}
       </svg>
       ${dry ? nothing : html`<div class="row rain">${rain.map((value) => rainLabel(value, mode, input))}</div>`}
     </div>
   `;
 }
+
+/** Height of the strip over the chart that holds the sun label; values never use it unless they clash. */
+const SUN_STRIP = 16;
+const SUN_ICON = 15;
+/** Where a value that clashes with the sun label goes: this far below its point. */
+const SUN_BELOW = 20;
+
+interface SunMarker {
+  kind: SunEvent["kind"];
+  /** Real position of the event: the dashed line. */
+  x: number;
+  /** Label box (icon and time), shifted to stay inside the chart. */
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+  text: string;
+}
+
+function sunMarkers(events: readonly SunEvent[], column: number, width: number, fmt: Formatters): SunMarker[] {
+  return events.map((event) => {
+    const text = fmt.time(new Date(event.time));
+    const labelWidth = SUN_ICON + 2 + text.length * 6.4;
+    const x = event.position * column;
+    // The icon sits left of the line and the time right of it, as drawn in the design.
+    const left = Math.min(Math.max(x - SUN_ICON - 9, 0), Math.max(width - labelWidth, 0));
+    return { kind: event.kind, x, left, right: left + labelWidth, top: 0, bottom: SUN_STRIP, text };
+  });
+}
+
+const overlaps = (a: Pick<SunMarker, "left" | "right" | "top" | "bottom">, b: Pick<SunMarker, "left" | "right" | "top" | "bottom">): boolean =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 
 function polyline(points: readonly { x: number; y: number }[]): string {
   return points.map((p) => `${round(p.x)},${round(p.y)}`).join(" ");
@@ -168,8 +213,10 @@ function rainLabel(value: number | undefined, mode: RainMode, input: ChartInput)
 
 function ariaLabel(input: ChartInput, range: [number, number] | undefined): string {
   if (!range) return input.localize("chart.no_data");
-  return input.localize(input.kind === "hourly" ? "chart.label_hourly" : "chart.label_daily", {
+  const base = input.localize(input.kind === "hourly" ? "chart.label_hourly" : "chart.label_daily", {
     min: input.fmt.number(range[0]),
     max: input.fmt.number(range[1]),
   });
+  const sun = input.kind === "hourly" ? sunEvents(input.slots, input.sun) : [];
+  return [base, ...sun.map((event) => input.localize(`chart.${event.kind}`, { time: input.fmt.time(new Date(event.time)) }))].join(". ");
 }
