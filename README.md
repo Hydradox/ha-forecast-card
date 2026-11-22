@@ -102,6 +102,7 @@ Only the selected place subscribes to forecasts and history or loads its camera;
 | `wind_speed_entity` | entity id | | Sensor for wind speed (its unit is respected). Tapping the value opens the sensor's history. |
 | `uv_index_entity` | entity id | | Sensor for the UV index. Tapping the value opens the sensor's history. |
 | `sun_entity` | `sun.*` | | Home Assistant's [Sun](https://www.home-assistant.io/integrations/sun/) entity (`sun.sun`). Marks the next sunrise or sunset on the hourly chart (dashed line with its time) and shows the moon instead of the sun on clear hours after dark. Set per place: the Sun integration follows the Home Assistant location, so leave it out for places elsewhere. |
+| `sunrise_entity` / `sunset_entity` | entity | | Sunrise and sunset from any entity whose state is a timestamp, such as [Sun2](https://github.com/pnbruckner/ha-sun2)'s `sensor.*_next_rising` and `sensor.*_next_setting`, or a template sensor. They override the values of `sun_entity`, which is not needed then: Home Assistant allows only one Sun entity, so use these for other places. |
 | `cold_threshold` | number | `0` °C / `32` °F | At or below this the colour is fully cold. |
 | `hot_threshold` | number | `35` °C / `95` °F | At or above this the colour is fully hot. Must be greater than `cold_threshold`. |
 | `tap_action` | action | `more-info` | Tap on the header text (condition and range; the weather entity by default). |

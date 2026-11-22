@@ -84,6 +84,8 @@
     "wind_speed_entity": "Czujnik prędkości wiatru",
     "uv_index_entity": "Czujnik indeksu UV",
     "sun_entity": "Encja słońca",
+    "sunrise_entity": "Encja wschodu słońca (np. Sun2)",
+    "sunset_entity": "Encja zachodu słońca (np. Sun2)",
     "cold_threshold": "Zimno",
     "hot_threshold": "Gorąco",
     "cold_threshold_help": "W pełni niebieski przy tej wartości lub niższej.",
